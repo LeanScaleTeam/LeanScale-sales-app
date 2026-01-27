@@ -1,0 +1,257 @@
+# Playbooks Site Changelog
+
+## 2026-01-20 - Fix Broken Playbook Links (Post-Reorganization)
+
+### Problem
+After the Session 2 reorganization (moving playbooks from `docs/` to `docs/projects/`), all 68 playbook links from the `/projects` page were returning 404 errors.
+
+**Symptom:** Clicking any playbook card on `/projects` page → "Page Not Found"
+
+**Example broken URL:**
+```
+/docs/automated-inbound-data-enrichment/playbook_automated-inbound-data-enrichment
+```
+
+**Should have been:**
+```
+/docs/projects/automated-inbound-data-enrichment/playbook_automated-inbound-data-enrichment
+```
+
+### Root Cause Analysis
+
+**Debug process:**
+1. Checked local build - files existed at correct paths
+2. Found local repo was behind origin/main by 5 commits
+3. Pulled latest and discovered commit `9581310` moved all docs to `docs/projects/`
+4. But `src/data/projects.ts` still had old `docPath` values without `/projects/`
+
+**Key insight:** The folder restructure changed URL routing, but the project cards data file wasn't updated to match.
+
+### Solution
+Simple find-and-replace - no redirects needed since site is new and not indexed by Google.
+
+**Files Changed:**
+
+1. `src/data/projects.ts` - Updated 68 `docPath` entries:
+   ```typescript
+   // Before
+   docPath: '/docs/growth-model/playbook_growth-model',
+
+   // After
+   docPath: '/docs/projects/growth-model/playbook_growth-model',
+   ```
+
+2. `docs/projects/00-intro/intro.md` - Fixed 1 hardcoded link:
+   ```markdown
+   // Before
+   [1. Growth Model](/docs/growth-model/playbook_growth-model)
+
+   // After
+   [1. Growth Model](/docs/projects/growth-model/playbook_growth-model)
+   ```
+
+### Decision: Redirects vs Fix Links
+
+**Considered:** Adding Netlify redirects to map old URLs → new URLs
+
+**Decided:** Just fix the source links because:
+- Site is new, not indexed by Google
+- No external bookmarks or inbound links exist
+- Fixing at source is cleaner than redirect band-aids
+- Redirects only needed for external traffic (which doesn't exist yet)
+
+### Dev Notes
+
+**When reorganizing folder structure in Docusaurus:**
+1. Folder moves change URL routing automatically
+2. But hardcoded links in code/data files don't auto-update
+3. Always grep for old paths after restructuring:
+   ```bash
+   grep -r "/docs/old-path" src/ docs/
+   ```
+
+**Netlify CLI installed globally:**
+```bash
+PATH="/opt/homebrew/bin:$PATH" npm install -g netlify-cli
+# Requires PATH set because Bash tool doesn't inherit full shell PATH
+```
+
+---
+
+## 2026-01-19 (Session 3) - External Embeds
+
+### Services Catalog Page (Coda Embed)
+**Goal:** Add "Catalog" tab in navbar that embeds `services.leanscale.team`
+
+**Friction Point #1 - iframe blocking:**
+- Initial test showed `X-Frame-Options` / `frame-ancestors` CSP blocking iframe
+- Discovered the site is hosted on Coda which has restrictive default headers
+- **Solution:** Use Coda's official embed feature (Share → Share to web → Embed tab)
+- Coda generates embed URL: `https://coda.io/embed/[docId]/_[pageId]?viewMode=embedplay`
+
+**Implementation:**
+- Created `src/pages/services-catalog.tsx` - React page with full-height iframe
+- Added navbar item pointing to `/services-catalog`
+
+**Files Created:**
+- `src/pages/services-catalog.tsx`
+
+### Diagnostic Section (Docs with Sidebar)
+**Goal:** Add "Diagnostic" in navbar with sidebar containing two embed pages
+
+**Implementation:**
+- Created `diagnostic/` folder with MDX files
+- Created docs plugin for the section
+- Added sidebar with two items: Diagnostic + Diagnostic Demo
+
+**Friction Point #2 - MDX iframe rendering issues:**
+- MDX pages had extra UI clutter (breadcrumbs, titles, padding)
+- **Solution:** Added frontmatter `hide_title: true` and `hide_table_of_contents: true`
+- Added CSS using `:has()` selector to hide breadcrumbs on embed pages
+
+**Friction Point #3 - Iframe not filling page:**
+- Framer embed (gtm.leanscale.team) wasn't taking full available space
+- Docusaurus docs layout has container padding
+- **Solution:** Aggressive CSS to remove all padding on pages with `.embed-container`
+
+**Files Created:**
+- `diagnostic/index.mdx` - embeds gtm.leanscale.team (Framer)
+- `diagnostic/demo.mdx` - embeds Coda diagnostic demo
+- `sidebarsDiagnostic.ts` - sidebar config
+
+**Files Modified:**
+- `docusaurus.config.ts` - added diagnostic plugin + navbar items
+- `src/css/custom.css` - embed container styles
+
+### Known Limitations (Coda Embeds)
+1. **"Open in Coda" button** - Cannot be hidden, no URL parameter available
+2. **Cookie consent banner** - Coda's GDPR banner shows inside iframe, cannot be controlled externally
+3. **Coda breadcrumb bar** - Internal navigation bar cannot be hidden
+
+### Navbar Changes
+- Added: "Catalog" (Coda services embed)
+- Added: "Diagnostic" (docs section with sidebar)
+- Removed: "LeanScale Home" external link
+
+---
+
+## 2026-01-19 (Session 2)
+
+### Sidebar Restructure - Separate In-Depth from Main Projects
+**Problem:** In-Depth Playbooks was showing twice - once from autogenerated sidebar, once from manual section.
+
+**Solution:**
+- Moved all 68 numbered playbooks (00-68) into `docs/projects/` folder
+- Changed sidebar to autogenerate only from `projects/` folder
+- In-Depth section added manually below with divider
+- Fixed `00-intro/_category_.json` link path (changed `intro/intro` → `projects/intro/intro`)
+
+**Files Changed:**
+- `docs/projects/` - new folder with all numbered playbooks
+- `docs/projects/_category_.json` - `collapsed: false, collapsible: false`
+- `sidebars.ts` - autogenerate from `projects/`, manual In-Depth section below
+
+### Typography - GitBook-style Tight Spacing
+**Problem:** Line spacing and list spacing was too spread out compared to GitBook.
+
+**Initial attempts that didn't fully work:**
+- Setting `margin-bottom` on `.markdown li`
+- Setting `margin: 0` on nested lists
+- These helped but big gap remained between numbered items
+
+**Root cause found via browser debugging:**
+```javascript
+// The <p> inside <li> had margin-top: 16px!
+document.querySelector('.markdown ol li').innerHTML
+// → "<p><strong>Text</strong></p><ul><li>Sub-bullet</li></ul>"
+```
+
+**The fix:** Target `<p>` tags inside list items:
+```css
+.markdown li > p {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+}
+```
+
+**Files Changed:**
+- `src/css/custom.css` - added tight typography rules
+
+### Other Changes
+- Renamed `z-archive` → `_z-archive` (hidden from sidebar)
+- Stepper title size increased to 1.15rem
+- "1 of 4" positioned absolutely to top-right of stepper card
+
+---
+
+## 2026-01-19 (Session 1)
+
+### Stepper Navigation for Multi-Page Playbooks
+- Added `PlaybookStepper` component in `src/theme/DocBreadcrumbs/index.tsx`
+- Replaces breadcrumbs for in-depth playbooks with visual stepper (● Overview ― ○ Methodology ― ○ Impl ― ○ Support)
+- Config-driven: add new playbooks to `PLAYBOOK_NAV` object
+- "Browse GTM Projects" back link above stepper
+
+### Docusaurus Learnings
+- Files starting with `_` are excluded from build (use `index.md` not `_index.md`)
+- Number prefixes stripped from slugs (`1-overview.md` → `overview`)
+- Sidebar IDs must match generated slugs
+- Internal links must use slugs, not filenames
+
+### Files Changed
+- `src/theme/DocBreadcrumbs/index.tsx` - stepper nav component
+- `src/theme/DocBreadcrumbs/styles.module.css` - stepper styles
+- `sidebars.ts` - fixed doc IDs to match slugs
+- `docs/in-depth/market-map/index.md` - renamed from `_index.md`, fixed links
+
+---
+
+## Dev Notes
+
+### Adding a New Multi-Page Playbook
+
+1. Edit `src/theme/DocBreadcrumbs/index.tsx`
+2. Add entry to `PLAYBOOK_NAV` object:
+```tsx
+'in-depth/your-playbook': {
+  title: 'Your Playbook',
+  pages: [
+    {slug: 'overview', label: 'Overview'},
+    {slug: 'methodology', label: 'Methodology'},
+    // ...
+  ],
+},
+```
+
+### Component Locations
+- Stepper nav: `src/theme/DocBreadcrumbs/index.tsx`
+- TOC wrapper: `src/theme/TOC/index.tsx`
+- Global styles: `src/css/custom.css`
+
+### Debugging CSS in Docusaurus
+
+**Key insight:** Markdown renders `<p>` tags inside `<li>` elements. These `<p>` tags have default margins that create gaps.
+
+**Debug workflow:**
+```bash
+# Use agent-browser to inspect computed styles
+agent-browser open http://localhost:3000/page
+agent-browser eval "window.getComputedStyle(document.querySelector('.markdown ol li p')).marginTop"
+# Found: "16px" ← the culprit!
+```
+
+**Common CSS selectors for Docusaurus content:**
+- `.markdown` - content area
+- `.theme-doc-markdown` - same, more specific
+- `.markdown li > p` - paragraphs inside list items (IMPORTANT)
+- `.markdown > ol > li` - top-level numbered items
+
+### Sidebar Architecture
+
+**Autogenerated sidebars:** `{type: 'autogenerated', dirName: 'folder'}` scans that folder and creates items.
+
+**To exclude a folder from autogenerated:**
+1. Move it outside the autogenerated scope (we moved playbooks to `projects/`)
+2. Or rename with `_` prefix (excludes from doc generation entirely)
+
+**Multiple sidebars:** Define in `sidebars.ts`, assign to docs via `displayed_sidebar` in front matter.

@@ -1,0 +1,188 @@
+/* Mobile Filter Drawer - matches Docusaurus navbar-sidebar pattern */
+
+.backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--ifm-transition-fast) ease-in-out,
+              visibility var(--ifm-transition-fast) ease-in-out;
+}
+
+.backdropVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 83vw;
+  max-width: 320px;
+  background: var(--ifm-background-color);
+  box-shadow: var(--ifm-global-shadow-md);
+  z-index: 101;
+  transform: translate3d(-100%, 0, 0);
+  opacity: 0;
+  visibility: hidden;
+  overflow-y: auto;
+  transition: transform var(--ifm-transition-fast) ease-in-out,
+              opacity var(--ifm-transition-fast) ease-in-out,
+              visibility var(--ifm-transition-fast) ease-in-out;
+}
+
+.drawerOpen {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-color);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--ifm-color-emphasis-600);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color var(--ifm-transition-fast);
+}
+
+.closeButton:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.clearButton {
+  display: block;
+  width: calc(100% - 2rem);
+  margin: 0.75rem 1rem;
+  padding: 0.6rem 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--ifm-transition-fast);
+}
+
+.clearButton:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.categories {
+  padding-bottom: 1rem;
+}
+
+/* Category group styles - match FilterSidebar */
+.categoryGroup {
+  border-bottom: 1px solid var(--ifm-color-emphasis-100);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-600);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.categoryTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selectedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  background: var(--ifm-color-primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.checkboxList {
+  padding: 0.25rem 0.5rem 0.75rem 1rem;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.checkboxItem:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--ifm-color-primary);
+}
+
+.label {
+  flex: 1;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.count {
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.8rem;
+}
+
+/* Only show drawer on mobile - it's controlled by JS but we hide the button on desktop */
+@media (min-width: 997px) {
+  .backdrop,
+  .drawer {
+    display: none !important;
+  }
+}

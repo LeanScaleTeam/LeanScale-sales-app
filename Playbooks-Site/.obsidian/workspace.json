@@ -1,0 +1,221 @@
+{
+  "main": {
+    "id": "9893b4fc837f9ccc",
+    "type": "split",
+    "children": [
+      {
+        "id": "e2a229b3ce39c1bb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9a9c44ce40926224",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "blog/2021-08-26-welcome/docusaurus-plushie-banner.jpeg"
+              },
+              "icon": "lucide-image",
+              "title": "docusaurus-plushie-banner"
+            }
+          },
+          {
+            "id": "51cac83bde62d4da",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.10.6"
+              },
+              "icon": "lucide-book-up",
+              "title": "Release Notes 1.10.6"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "de2b9ac046588f94",
+    "type": "split",
+    "children": [
+      {
+        "id": "039548ed087285c1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a1ff7c7f01cb579b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "a6dd5e825495c7a6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "54dc138888bbb33d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "3a280bb058dd2844",
+    "type": "split",
+    "children": [
+      {
+        "id": "76c280db99991b52",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4fac00d78db578f4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/tutorial-basics/congratulations.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for congratulations"
+            }
+          },
+          {
+            "id": "a4a9172a8688c937",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/tutorial-basics/congratulations.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from congratulations"
+            }
+          },
+          {
+            "id": "cc3d7b35a1a6cffd",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "3f825e12fff261ce",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/tutorial-basics/congratulations.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of congratulations"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "bases:Create new base": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "51cac83bde62d4da",
+  "lastOpenFiles": [
+    "sidebarsMilestones.ts",
+    "sidebarsDocs1.ts",
+    "sidebars copy.ts",
+    "blog/2021-08-26-welcome/index.md",
+    "blog/2021-08-26-welcome/docusaurus-plushie-banner.jpeg",
+    "blog/2019-05-29-long-blog-post.md",
+    "blog/2019-05-28-first-blog-post.md",
+    "README.md",
+    "src/pages/markdown-page.md",
+    "docs/tutorial-basics/test page sales territory.md",
+    "docs/tutorial-extras/translate-your-site.md",
+    "docs/tutorial-basics/create-a-blog-post.md",
+    "Milestones/tutorial-extras/img/localeDropdown.png",
+    "Milestones/tutorial-extras/img/docsVersionDropdown.png",
+    "Milestones/tutorial-extras/translate-your-site.md",
+    "Milestones/tutorial-extras/manage-docs-versions.md",
+    "Milestones/tutorial-extras/img",
+    "Milestones/tutorial-extras/_category_.json",
+    "Milestones/tutorial-basics/markdown-features.mdx",
+    "Milestones/tutorial-basics/test page sales territory.md",
+    "Milestones/tutorial-basics/create-a-page.md",
+    "Milestones/tutorial-basics/deploy-your-site.md",
+    "Milestones/tutorial-basics/create-a-blog-post.md",
+    "Milestones/tutorial-basics/create-a-document.md",
+    "Milestones/tutorial-basics/congratulations.md",
+    "Milestones/tutorial-basics/_category_.json",
+    "Milestones/tutorial-extras",
+    "Milestones/tutorial-basics",
+    "Milestones/intro.md",
+    "Milestones",
+    "docs/tutorial-basics/create-a-document.md",
+    "docs/intro.md",
+    "docs/tutorial-basics/create-a-page.md",
+    "docs/tutorial-basics/congratulations.md"
+  ]
+}

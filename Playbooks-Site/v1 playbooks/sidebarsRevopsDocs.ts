@@ -1,0 +1,282 @@
+import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+
+const sidebars: SidebarsConfig = {
+  revopsDocsSidebar: [
+    { type: 'doc', id: 'index', label: 'Welcome' },
+    {
+      type: 'category',
+      label: 'Getting Started',
+      className: 'sidebar-icon-getting-started',
+      items: [
+        'getting-started/quickstart',
+        'getting-started/about-leanscale',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Growth Modeling',
+      className: 'sidebar-icon-growth',
+      items: [
+        {
+          type: 'category',
+          label: 'Building a Growth Model',
+          items: [
+            'growth-modeling/building-a-growth-model',
+            'growth-modeling/growth-model-assumptions',
+            'growth-modeling/growth-model-approaches',
+            'growth-modeling/growth-model-segmentations',
+          ],
+        },
+        'growth-modeling/sales-capacity-plan',
+        'growth-modeling/marketing-plan',
+        'growth-modeling/customer-success-plan',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Go-to-Market Lifecycle',
+      className: 'sidebar-icon-lifecycle',
+      items: [
+        'gtm-lifecycle/overview',
+        'gtm-lifecycle/lead-lifecycle',
+        'gtm-lifecycle/sales-lifecycle',
+        'gtm-lifecycle/customer-lifecycle',
+        'gtm-lifecycle/poc-lifecycle',
+        'gtm-lifecycle/lifecycle-measurement',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Lead Attribution',
+      className: 'sidebar-icon-attribution',
+      items: [
+        'lead-attribution/overview',
+        'lead-attribution/lead-source-taxonomy',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Measuring Metrics',
+      className: 'sidebar-icon-metrics',
+      items: [
+        'measuring-metrics/reporting-analytics',
+        {
+          type: 'category',
+          label: 'Sales Metrics',
+          items: [
+            'measuring-metrics/sales-metrics',
+            'measuring-metrics/sales/created-pipeline',
+            'measuring-metrics/sales/weighted-pipeline',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Marketing Metrics',
+          items: [
+            'measuring-metrics/marketing-metrics',
+            'measuring-metrics/marketing/lead-impact-matrix',
+            'measuring-metrics/marketing/cac-ltv',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'CS Metrics',
+          items: [
+            'measuring-metrics/cs-metrics',
+            'measuring-metrics/cs/net-retention',
+          ],
+        },
+        'measuring-metrics/partnership-metrics',
+        'measuring-metrics/presenting-metrics',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'GTM Tech Stack',
+      className: 'sidebar-icon-techstack',
+      items: [
+        'gtm-tech-stack/overview',
+        'gtm-tech-stack/when-to-buy',
+        'gtm-tech-stack/driving-adoption',
+        {
+          type: 'category',
+          label: 'CRM Considerations',
+          items: [
+            'gtm-tech-stack/crm-considerations',
+            'gtm-tech-stack/crm/user-oriented',
+            'gtm-tech-stack/crm/data-reporting',
+            'gtm-tech-stack/crm/security-focused',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Aligning Sales & Marketing',
+      className: 'sidebar-icon-alignment',
+      items: [
+        'aligning-sales-marketing/overview',
+        'aligning-sales-marketing/how-to-align',
+        'aligning-sales-marketing/sql-definition',
+        'aligning-sales-marketing/marketing-operations',
+        'aligning-sales-marketing/gtm-process',
+        'aligning-sales-marketing/interviewing-leaders',
+        'aligning-sales-marketing/finding-talent',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'System Demos',
+      className: 'sidebar-icon-demos',
+      items: [
+        {
+          type: 'category',
+          label: 'Data Enrichment',
+          items: [
+            'system-demos/data-enrichment',
+            'system-demos/data-enrichment/clay',
+            'system-demos/data-enrichment/traction-complete',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Conversational Intelligence',
+          items: [
+            'system-demos/conversational-intelligence',
+            'system-demos/conversational-intelligence/gong',
+            'system-demos/conversational-intelligence/unthread',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'CPQ',
+          items: [
+            'system-demos/cpq',
+            'system-demos/cpq/dealhub',
+            'system-demos/cpq/salesbricks',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Data Analytics',
+          items: [
+            'system-demos/data-analytics',
+            'system-demos/data-analytics/revvue',
+            'system-demos/data-analytics/qflow',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'CRM Tips',
+      className: 'sidebar-icon-crm',
+      items: [
+        {
+          type: 'category',
+          label: 'Salesforce',
+          className: 'sidebar-icon-salesforce',
+          items: [
+            'crm-tips/salesforce/index',
+            'crm-tips/salesforce/create-opp-from-contact',
+            'crm-tips/salesforce/validation-rules-flow',
+            'crm-tips/salesforce/rollup-summary',
+            'crm-tips/salesforce/close-date-counter',
+            'crm-tips/salesforce/lead-stages',
+            'crm-tips/salesforce/sales-stages',
+            'crm-tips/salesforce/customer-stages',
+            'crm-tips/salesforce/next-step-fields',
+            'crm-tips/salesforce/lead-source-taxonomy',
+            'crm-tips/salesforce/proof-of-concept-stages',
+            'crm-tips/salesforce/displaying-record-information',
+            'crm-tips/salesforce/display-dynamic-lists',
+            'crm-tips/salesforce/messages-to-end-users',
+            'crm-tips/salesforce/create-custom-buttons',
+            'crm-tips/salesforce/tips-for-data-loader',
+            'crm-tips/salesforce/salesforce-inspector-reloaded',
+            'crm-tips/salesforce/sfdc-navigator-for-lightning',
+            'crm-tips/salesforce/bypass-validation-rules',
+            'crm-tips/salesforce/sales-manager-notes-field',
+            'crm-tips/salesforce/renaming-fields-and-objects',
+            'crm-tips/salesforce/getting-faster-to-record-id',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'HubSpot',
+          className: 'sidebar-icon-hubspot',
+          items: [
+            'crm-tips/hubspot/index',
+            'crm-tips/hubspot/disable-picklist-options',
+            'crm-tips/hubspot/create-todays-date',
+            'crm-tips/hubspot/create-yesterdays-date',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Strategic Walkthroughs',
+      className: 'sidebar-icon-strategic',
+      items: [
+        'strategic-walkthroughs/revops-flywheel',
+        'strategic-walkthroughs/post-fundraise',
+        'strategic-walkthroughs/board-decks',
+        {
+          type: 'category',
+          label: 'Building Dashboards',
+          items: [
+            'strategic-walkthroughs/dashboards/executive-dashboards',
+            'strategic-walkthroughs/dashboards/ceo-dashboards',
+            'strategic-walkthroughs/dashboards/sales-dashboards',
+            'strategic-walkthroughs/dashboards/marketing-dashboards',
+            'strategic-walkthroughs/dashboards/cs-dashboards',
+            'strategic-walkthroughs/dashboards/funnel-analytics',
+          ],
+        },
+        'strategic-walkthroughs/chatgpt-sf-admin',
+        'strategic-walkthroughs/sales-commissions',
+        'strategic-walkthroughs/sales-territories',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'GTM Expert Interviews',
+      className: 'sidebar-icon-interviews',
+      items: [
+        'gtm-expert-interviews/sophie-buonassski',
+        'gtm-expert-interviews/guy-rubin',
+        'gtm-expert-interviews/growth-modeling-economics',
+        'gtm-expert-interviews/jack-jackson',
+        'gtm-expert-interviews/ai-website-optimization',
+        'gtm-expert-interviews/ai-saturated-gtm',
+        'gtm-expert-interviews/hiring-gtm',
+        'gtm-expert-interviews/justin-st-louis-wood',
+        'gtm-expert-interviews/lean-revops-ai',
+        'gtm-expert-interviews/anthony-enrio',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'GTM Tech Demos',
+      className: 'sidebar-icon-techdemos',
+      items: [
+        'gtm-tech-demos/flowlie',
+        'gtm-tech-demos/polytomic',
+        'gtm-tech-demos/spara',
+        'gtm-tech-demos/valley',
+        'gtm-tech-demos/subskribe',
+        'gtm-tech-demos/amplemarket',
+        'gtm-tech-demos/adam-x',
+        'gtm-tech-demos/peoplelens',
+        'gtm-tech-demos/luster',
+        'gtm-tech-demos/ebsta',
+        'gtm-tech-demos/attio',
+        'gtm-tech-demos/orca',
+        'gtm-tech-demos/luella',
+      ],
+    },
+  ],
+};
+
+export default sidebars;

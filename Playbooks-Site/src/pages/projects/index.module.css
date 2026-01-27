@@ -1,0 +1,67 @@
+/* YC-style two-column layout */
+.pageWrapper {
+  display: flex;
+  min-height: calc(100vh - var(--ifm-navbar-height));
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.contentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  margin-bottom: 1.5rem;
+}
+
+.resultCount {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-600);
+  white-space: nowrap;
+}
+
+.resultCount strong {
+  color: var(--ifm-color-emphasis-800);
+}
+
+.intro {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ifm-color-emphasis-600);
+  line-height: 1.5;
+  text-align: left;
+  padding: 0 1.5rem;
+}
+
+/* Mobile: full width, no sidebar */
+@media (max-width: 996px) {
+  .pageWrapper {
+    flex-direction: column;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .contentHeader {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .intro {
+    display: none; /* Hide intro on mobile for cleaner layout */
+  }
+
+  .resultCount {
+    order: -1; /* Move result count to top row */
+    flex: 1;
+  }
+}

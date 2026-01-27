@@ -1,0 +1,10 @@
+{
+  "label": "Scale ($5-15M)",
+  "position": 4,
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "overview"
+  }
+}

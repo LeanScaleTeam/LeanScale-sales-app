@@ -1,0 +1,49 @@
+# Customer Health Model - Project Details / Task List
+
+**Tag:** `health-model`
+**Total Hours:** 30h
+**Structure:** Single Milestone (&lt;=50h)
+
+---
+
+## Milestone: Customer Health Model
+**Description:** A technical and strategic implementation project that creates a multi-dimensional scoring system to measure customer health by combining product usage signals, CSM sentiment, support interactions, and engagement metrics into a unified health score that enables proactive churn prevention.
+
+---
+
+### Task List: (Customer Health Model) 1. Discovery & Design
+**Contains:** Parts 1-2
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 1. Analyze Historical Churn Data | 2.5h | Review past churn events to identify patterns and signals that preceded customer departures. End state: Documented list of leading indicators correlated with churn in your specific business.<br /><br />• Pull list of all churned customers from past 12-24 months<br />• Categorize churn reasons (product fit, support issues, champion left, budget, competitor)<br />• Identify common behaviors before churn (usage decline, support ticket spikes, missed QBRs)<br />• Interview 2-3 CSMs on what they noticed before accounts churned<br />• Document 5-10 potential health score signals based on churn analysis |
+| 2. Define Health Score Dimensions and Metrics | 2.5h | Identify the specific metrics that will comprise the health score across multiple dimensions. End state: Finalized list of 5-10 metrics organized by dimension with clear definitions.<br /><br />• Define Product dimension metrics (login frequency, feature adoption, license utilization, active user trend)<br />• Define Engagement dimension metrics (QBR attendance, email response rate, executive sponsor engagement)<br />• Define Support dimension metrics (ticket volume, escalation frequency, time to resolution)<br />• Define Financial dimension metrics (payment timeliness, expansion history, renewal timing)<br />• Include CSM sentiment as a qualitative override dimension<br />• Document data source for each metric (CRM, product analytics, support system) |
+| 3. Validate Metrics with Stakeholders | 1.5h | Review proposed metrics with CS leadership and cross-functional partners to ensure buy-in. End state: Approved metric list with stakeholder alignment on what signals matter.<br /><br />• Schedule review meeting with VP Customer Success and CS managers<br />• Present proposed metrics with rationale from churn analysis<br />• Gather feedback on missing signals or irrelevant metrics<br />• Validate data availability with RevOps/Data team<br />• Finalize approved metric list with documented rationale |
+| 4. Establish Metric Weights | 2h | Assign relative importance weights to each metric based on correlation with retention outcomes. End state: Weighted scoring model with percentages assigned to each metric.<br /><br />• Analyze historical correlation between each metric and renewal/churn outcomes<br />• Assign weights totaling 100% across all metrics (e.g., product usage 40%, engagement 25%, support 20%, financial 15%)<br />• Consider segment-specific weights (enterprise vs SMB may weight differently)<br />• Document rationale for each weight assignment<br />• Create scoring formula combining weighted metrics |
+| 5. Define Scoring Thresholds and Categories | 2h | Establish the score ranges that define Red (at-risk), Yellow (needs attention), and Green (healthy) accounts. End state: Clear threshold definitions with category descriptions.<br /><br />• Set numeric thresholds for each category (e.g., 0-40 Red, 41-70 Yellow, 71-100 Green)<br />• Define what each category means operationally (Red = immediate intervention required)<br />• Document edge cases and override rules (e.g., CSM can override if major event occurred)<br />• Consider adding "Black" category for accounts with insufficient data<br />• Test thresholds against historical churned accounts to validate accuracy |
+| 6. Design Segment-Specific Scoring Rules | 2h | Customize scoring criteria for different customer segments to ensure fair comparison. End state: Segment-specific scoring rules that account for usage patterns by account size.<br /><br />• Define customer segments (Enterprise, Mid-Market, SMB, or by product tier)<br />• Adjust usage expectations by segment (50% login rate may be healthy for Enterprise, concerning for SMB)<br />• Set different metric weights per segment if needed<br />• Document lookup windows for each metric (e.g., trailing 30 days vs 90 days)<br />• Create segment mapping rules for automated categorization |
+
+---
+
+### Task List: (Customer Health Model) 2. Implementation & Enablement
+**Contains:** Parts 3-5
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 7. Configure Data Integrations | 3h | Set up data flows from source systems into the customer success platform. End state: All required data sources connected and syncing reliably.<br /><br />• Connect CRM (Salesforce/HubSpot) to CS platform via native integration<br />• Set up product analytics integration (Segment, Amplitude, Mixpanel, or direct API)<br />• Configure support system integration (Zendesk, Intercom, Freshdesk)<br />• Establish billing/financial data sync from payment system<br />• Verify data freshness and sync frequency for each source<br />• Document any data transformation or field mapping required |
+| 8. Build Health Score in CS Platform | 3.5h | Configure the health score calculation in Gainsight, ChurnZero, Vitally, or similar platform. End state: Automated health score calculating correctly for all accounts.<br /><br />• Create health score measures for each defined metric<br />• Configure metric calculations with correct lookback windows<br />• Apply weights to each measure per approved model<br />• Set up segment-based scoring variations if applicable<br />• Configure score refresh frequency (daily recommended)<br />• Set up CSM sentiment input field for manual override |
+| 9. Create Health Score Dashboard | 3h | Build reporting dashboards for health score visibility across the CS organization. End state: Dashboard showing account health distribution with drill-down capability.<br /><br />• Create executive summary view (health distribution pie chart, trend over time)<br />• Build CSM-level view filtered by book of business<br />• Include health score trend charts for individual accounts<br />• Add drill-down to see which metrics are driving low scores<br />• Configure alerts for accounts crossing threshold boundaries<br />• Set up scheduled dashboard delivery to CS leadership |
+| 10. Test Score Accuracy Against Historical Data | 2h | Validate the health score model by checking if it correctly identifies known churned accounts. End state: Validated model with documented accuracy metrics.<br /><br />• Run health scores retrospectively against accounts that churned 6+ months ago<br />• Calculate false positive rate (Green accounts that churned)<br />• Calculate false negative rate (Red accounts that renewed/expanded)<br />• Adjust thresholds or weights if accuracy is below 70%<br />• Document model accuracy baseline for future comparison<br />• Identify any segments where model performs poorly |
+| 11. Conduct Pilot with CSM Team | 2h | Run pilot period with subset of CSMs to validate score usefulness and gather feedback. End state: Pilot complete with documented feedback and refinements.<br /><br />• Select 2-3 CSMs for pilot program (mix of tenure and segment coverage)<br />• Review their top 10 accounts by health score (high and low)<br />• Validate scores match CSM intuition and known account situations<br />• Gather feedback on missing signals or incorrect assessments<br />• Refine model based on pilot learnings<br />• Document changes made and rationale |
+| 12. Develop Intervention Playbooks | 2h | Create standardized response playbooks for each health score category. End state: Documented playbooks defining actions for Red, Yellow, and Green accounts.<br /><br />• Define Red account intervention steps (executive escalation, QBR scheduling, product review)<br />• Define Yellow account monitoring cadence and proactive touchpoints<br />• Define Green account expansion opportunity identification<br />• Create escalation path for accounts declining into Red status<br />• Document SLA for CSM response to score changes<br />• Build playbook templates in CS platform if supported |
+| 13. Train Customer Success Team | 1.5h | Enable the CS team on health score interpretation and usage. End state: Team trained and confident using health scores in daily workflow.<br /><br />• Schedule training session (45-60 minutes) with full CS team<br />• Explain each metric, weight, and threshold rationale<br />• Demonstrate dashboard navigation and account drill-down<br />• Review intervention playbooks and expected actions<br />• Practice with sample accounts (what would you do for this Red account?)<br />• Create quick-reference guide for ongoing use |
+| 14. Hand Off to Client | 2.5h | Transfer ownership and establish ongoing governance process. End state: Client self-sufficient with admin access and quarterly review process defined.<br /><br />• Transfer admin access to CS Operations or RevOps owner<br />• Deliver configuration documentation (metrics, weights, thresholds, data sources)<br />• Establish quarterly health score review cadence to assess accuracy<br />• Define process for requesting metric or threshold changes<br />• Schedule 30-day check-in to review adoption and address questions<br />• Close out project with success metrics documentation |
+
+---
+
+## Summary
+- **Total Task Lists:** 2 (consolidated from 5 Parts)
+- **Total Tasks:** 14 (one per Step)
+- **Total Hours:** 30h
+- **Generated from:** playbook_customer-health-model.md
+- **Generated on:** 2025-12-31

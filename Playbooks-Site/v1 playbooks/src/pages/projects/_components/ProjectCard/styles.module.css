@@ -1,0 +1,81 @@
+/* Make entire card clickable */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.cardLink:hover {
+  text-decoration: none;
+}
+
+.projectCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.cardLink:hover .projectCard {
+  transform: translateY(-2px);
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+.cardLink:hover .title {
+  color: var(--ifm-color-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--ifm-heading-color);
+  transition: color 0.2s ease;
+}
+
+.featuredBadge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--ifm-color-primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.description {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+  flex-grow: 1;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tag {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: 500;
+}
+
+.tagMore {
+  padding: 0.125rem 0.5rem;
+  background: var(--ifm-color-emphasis-300);
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--ifm-color-emphasis-700);
+}

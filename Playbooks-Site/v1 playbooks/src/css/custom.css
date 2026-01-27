@@ -1,0 +1,324 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #301934;
+  --ifm-color-primary-dark: #2a162e;
+  --ifm-color-primary-darker: #27142b;
+  --ifm-color-primary-darkest: #1f1023;
+  --ifm-color-primary-light: #361c3a;
+  --ifm-color-primary-lighter: #391e3d;
+  --ifm-color-primary-lightest: #432449;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #d9afd0;
+  --ifm-color-primary-dark: #cc96c2;
+  --ifm-color-primary-darker: #c587b9;
+  --ifm-color-primary-darkest: #ab5e9c;
+  --ifm-color-primary-light: #e6c8de;
+  --ifm-color-primary-lighter: #efd7e7;
+  --ifm-color-primary-lightest: #ffffff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Table of Contents - Active link highlighting */
+.table-of-contents__link--active,
+.table-of-contents__link--active:hover {
+  font-weight: 700;
+  color: #642585;
+}
+
+[data-theme='dark'] .table-of-contents__link--active,
+[data-theme='dark'] .table-of-contents__link--active:hover {
+  color: #d9afd0;
+}
+
+/* TOC link hover state */
+.table-of-contents__link:hover {
+  color: #642585;
+}
+
+[data-theme='dark'] .table-of-contents__link:hover {
+  color: #d9afd0;
+}
+
+/* Search bar styling - wider and more prominent */
+.navbar__search-input {
+  width: 200px;
+  transition: width 0.3s ease;
+}
+
+.navbar__search-input:focus {
+  width: 280px;
+}
+
+/* Search modal styling */
+:root {
+  --search-local-modal-width: 600px;
+  --search-local-highlight-color: #642585;
+}
+
+[data-theme='dark'] {
+  --search-local-highlight-color: #d9afd0;
+}
+
+/* Search result hover - light purple background with dark text */
+.aa-Autocomplete .aa-Item[aria-selected="true"],
+.aa-Autocomplete .aa-Item:hover {
+  background-color: #f3e8f5 !important;
+}
+
+.aa-Autocomplete .aa-Item[aria-selected="true"] *,
+.aa-Autocomplete .aa-Item:hover * {
+  color: #301934 !important;
+}
+
+[data-theme='dark'] .aa-Autocomplete .aa-Item[aria-selected="true"],
+[data-theme='dark'] .aa-Autocomplete .aa-Item:hover {
+  background-color: #432449 !important;
+}
+
+[data-theme='dark'] .aa-Autocomplete .aa-Item[aria-selected="true"] *,
+[data-theme='dark'] .aa-Autocomplete .aa-Item:hover * {
+  color: #ffffff !important;
+}
+
+@media (max-width: 996px) {
+  .navbar__search-input {
+    width: 150px;
+  }
+  .navbar__search-input:focus {
+    width: 200px;
+  }
+}
+
+/* Hide in-depth folder from auto-generated sidebar (shown manually below) */
+.hidden-category {
+  display: none;
+}
+
+/* Sidebar section header (In-Depth Playbooks label) */
+.sidebar-section-header {
+  font-weight: bold;
+  color: #301934;
+  padding: 0.5rem 1rem;
+  display: block;
+}
+
+[data-theme='dark'] .sidebar-section-header {
+  color: #d9afd0;
+}
+
+/* ==========================================
+   Sidebar Category Icons (Lucide Icons)
+   ========================================== */
+
+/* Base icon styles for all sidebar categories with icons */
+[class*="sidebar-icon-"] > .menu__list-item-collapsible > .menu__link::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.7;
+}
+
+/* Dark mode: invert icons for visibility */
+[data-theme='dark'] [class*="sidebar-icon-"] > .menu__list-item-collapsible > .menu__link::before {
+  filter: invert(0.85) sepia(0.2) saturate(0.5) hue-rotate(260deg);
+}
+
+/* Individual section icons */
+.sidebar-icon-getting-started > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/rocket.svg');
+}
+
+.sidebar-icon-growth > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/trending-up.svg');
+}
+
+.sidebar-icon-lifecycle > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/git-branch.svg');
+}
+
+.sidebar-icon-attribution > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/crosshair.svg');
+}
+
+.sidebar-icon-metrics > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/bar-chart-2.svg');
+}
+
+.sidebar-icon-techstack > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/layers.svg');
+}
+
+.sidebar-icon-alignment > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/users.svg');
+}
+
+.sidebar-icon-demos > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/play-circle.svg');
+}
+
+.sidebar-icon-crm > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/database.svg');
+}
+
+.sidebar-icon-strategic > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/compass.svg');
+}
+
+.sidebar-icon-interviews > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/mic.svg');
+}
+
+.sidebar-icon-techdemos > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/presentation.svg');
+}
+
+/* Nested CRM category icons */
+.sidebar-icon-salesforce > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/salesforce.svg');
+}
+
+.sidebar-icon-hubspot > .menu__list-item-collapsible > .menu__link::before {
+  background-image: url('/img/icons/hubspot.svg');
+}
+
+
+
+
+
+
+/* Tighter typography like GitBook */
+.markdown {
+  line-height: 1.5;
+}
+
+.markdown p {
+  margin-bottom: 0.75rem;
+}
+
+.markdown h1, .markdown h2, .markdown h3, .markdown h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Tight list spacing like GitBook */
+.markdown ul, .markdown ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.markdown li {
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.markdown li > p {
+  margin-bottom: 0;
+}
+
+/* Nested lists tight to parent */
+.markdown li ul, .markdown li ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown li li {
+  margin-bottom: 0;
+}
+
+/* Top-level numbered list items need small gap */
+.markdown > ol > li {
+  margin-bottom: 0.15rem;
+}
+
+/* Remove p margin inside list items - THIS is what creates the big gap */
+.markdown li > p {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+}
+
+.markdown li > p:first-child {
+  margin-top: 0;
+}
+
+.markdown li > p:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   Embed Container Styles (Diagnostic pages)
+   ========================================== */
+
+/* Full-height embed container */
+.embed-container {
+  width: 100%;
+  height: calc(100vh - 60px);
+  min-height: 700px;
+  margin: 0;
+  padding: 0;
+}
+
+.embed-container iframe {
+  border: none;
+}
+
+/* Remove ALL padding on docs pages with embeds */
+.container:has(.embed-container) {
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+
+.container:has(.embed-container) .row {
+  margin: 0 !important;
+}
+
+.container:has(.embed-container) .col {
+  padding: 0 !important;
+}
+
+[class*="docItemContainer"]:has(.embed-container) {
+  padding: 0 !important;
+}
+
+article:has(.embed-container) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Hide ALL navigation cruft on pages with embed-container */
+article:has(.embed-container) [class*="breadcrumb"],
+article:has(.embed-container) .theme-doc-breadcrumbs,
+[class*="docItemContainer"]:has(.embed-container) [class*="breadcrumbRow"] {
+  display: none !important;
+}
+
+/* Hide the back link */
+article:has(.embed-container) a[href="/projects"] {
+  display: none !important;
+}
+
+/* Hide footer and pagination on embed pages */
+article:has(.embed-container) + footer,
+article:has(.embed-container) ~ .theme-doc-footer,
+article:has(.embed-container) ~ nav,
+[class*="docItemContainer"]:has(.embed-container) ~ nav {
+  display: none !important;
+}

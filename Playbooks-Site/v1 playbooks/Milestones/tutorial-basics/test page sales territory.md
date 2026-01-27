@@ -1,0 +1,158 @@
+- Bernardo:
+    - Timeline
+        - About 1 month
+        - A lot of it is back and forth with Mistral
+            - What we say is the sets of fields and cuts… “does this look right” - yes this looks right for now, but is this how we see the business to be end of next year?
+            - You want it to be pretty stable… they should AT LEAST last for 18months (minimum)
+            - (same with the balancing)
+        - Joel is going to want to socialize that with sales management
+        - The impact of this project is pretty wide… impacts the ENTIRE org for a very long period of time
+            - And this one is going to come along with sales comp changs… (they are guaranteeing 100% sales reps OTEs to keep the business moving… raised a lot of cash)
+        - He wants to roll this out by Feb 1st (their fiscal year)
+            - So we should when he comes back - to go over live the general approach structure we generally take..
+            - ICP tam = august / sept
+        - Note: How they want to load new accounts in
+            - We talked about the quarterly refresh… that might be okay…
+            - But esp for how long term this is… we want to have a built in system for adding / updating and making sure as things are evolving… bc the market is going to change drastically… they should be prepared for that (even if we did the ICP tam valuation today… if it gets deployed in Feb, its going to look very different)
+        - Also call out (as footnote)
+            - We want to develop a HOLD OVER POLICY
+            - So that when the territories roll out… you dont eff over a rep - “i’ve been trying to sell into this account for a year”
+            - Has to be some rules of engagements and policies…..
+        - Another call out:
+            - Because of their funding and who they are… they want the best in breed tech slack… (so clay yes works… but that salesforce territory management thing.. And it works… and makes their life easier… lets do some research to point out the approaches that it can be 1) custom object (which is free) or 2) lead them down a path that is paid
+    - 3 big milestone steps
+        - **Total: 100hrs?** 
+            - **Cam: 120-200 max?**
+            - **Bernardo: if we get to 200 hours… thats brutal.** 
+                - Struggle in with milestones: our hours vs overall project timeline… (they see 20hours… but its actually 2 months bc its like “how come”
+        - **Step 1) ICP / TAM Refresh (esp focus on account valuation)** 
+            - TIME:
+                - **How many hours: our hours:** **10hrs** **(run the models, trying things etc) // cam: 50 // meet in the middle: 20 (****bernardo: 10 hands on)**  **– 25-50 (partnership convo changed things, cannbelization with the partners, adds a lot more complexity)** 
+                    - Probably not clay prompts for them
+                    - Most work will be in the valuation
+                    - VS for other customers its real deep dives of how we tailor who we are going after (example: with sgnl - very specific… its like 40 accounts as their T1 super deep)
+                    - VS with mistral we are not going to get that deep.
+                    - Cam: very specific claygent prompts, like the hyperscalers…
+            - Esp for company of their size it is a pre-req
+            - Otherwise hard to create equitable fair long lasting without clean data
+            - (understand what ecosystem looks like - creating benchmarks, forecasting futures… tight sense on: if we give someone 15 (example) accounts… what does that mean from TAM perspective)
+            - Cam: they had an internal initiative - but it fell off
+                - Bernardo: the TAM for them is probably less interesting… the VALUATION is probably the more relevant part… putting $$$ values to how much an account is worth it… (cause their TAM is everybody)
+                - Cam: Even with assembly.. Approach to territory was tough bc its hard to put a $$$ value that feels as tight as some other approaches (saas or license based / selling to sales teams based on how many reps)
+                    - But with AI & consumption we dont know the use cases
+                - Q: how do you think about that bernardo?
+                    - Bernardo: it sucks bc their existing base is so small (52 committed customers) but most fruitful you can do is benchmark against them (from the people we have a $$$ for, find the closest account, closest penetration (if contract is 50M today, and they have potential to 100M, benchmark to hedge of lets say 75M)
+                        - Anchoring to real life numbers will make it tangible.
+                    - Tough bc of 1) the market and 2) bc they dont have a ton of real life anchoring points and 3) future creates a lot of uncertainty
+                        - A lot of finger in the air… but as long as there is a method to the madness… then its directionally better than not having anything on there.
+            - Bernardo: try to refresh this QUARTERLY (to keep it up to date - so we can keep a pulse on it) - “Launch and monitor really closely”
+            - Data: 45 committed customers.
+            - Tactical:
+                - 0) Teamwork
+                    - We have it in the milestone menu… a little out of date but can work
+                    - X) ICP workshop - where the matrix is built (working session
+                    - X) data
+                - 1) start with ICP then do a tiered (like in a matrix)
+                    - Lead the witness
+                    - “You guys are curshing it with XYZ” - no we have to make some general assumptions… guess…
+                - 2) operationalize it in clay
+                    - Clay workbook, pull in all the accounts
+        - **Step 2) Segmentation Hierarchy** 
+            - TIME:
+                - **Bernardo: 10 hours** **// Cam: step 2 and step 3 together**
+            - Figuring out  looks like for that.
+            - Factors:
+                - What kind of teams (inside team vs X ) SMB vs enterprise
+                - Metrics & firmographic things they will be using to determine what a territory looks like
+                    - People specialized on geography (time zones)? Product specific? Overlay teams (like CS / expansion or partnerships across territories rather than embedded)
+                    - All these are factors of what we can divide a territory with (and how they think about the business)
+            - Current state
+                - EMEA - Commercial - less than 1B
+                - EMEA - Enterprise - 1B+ company annual revenue
+                - Public Sector APAC - mostly outbound (not really inbound)
+            - Bernardo: how they are thinking about this:
+                - Their first cut) firmographic
+                - Second cut) regional component
+                - (at least what current state is)
+            - Ideal scene:
+                - Also cut based on: industry, product
+                - Joel has been talking about: sector and industry quite a bit (so that will be easy to slide in)
+                - Can also have a: hyper enterprise (which would be at the top) - named account approach where everyone has targets and we can load that in as well (would be at the very top of the hierarchy period, because you take those out first then divi out the rest)
+            - Cam: Solution Architect / Solution Engineering Team (not sure how that operates in the sales process)
+                - But we can make that into the sales territory planning?
+                - Bernardo: once we have the actual cuts… we go through personsell decisions… the first one that usually comes up is peronsel allocations… and its a question of: “are we making this a true pod” yes/no
+                    - SDRs / Sellers / AEs / CS / solution engineering / solution architects… either they fit nicely into a territory – otherwise get into situation that is a mess.
+                    - Just like we struggle with multiple people telling you what is priority…
+                    - Generally: lead with: make it a ratio rather than multiple people supporting…
+                    - Bc as we role it out in system:
+                        - Make a territory object… easier when you know consistently who’s assigning to.
+                - Cam: they are fully solution team thread - and only bringing in one AM - they arent hiring any SDRs, they are full AE based… (bernardo: SDR role doesnt exist ~18 months from now? All the AI tools will make it reundant)
+            - Product Cuts
+                - Q: Having the solutions team makes it less applicable to have specific product overlays / product specific reps?
+                - Bernardo: product cuts come up if team is organically already segmented that way…
+                    - Example: clio vs clio draft… there is a product cut… bc this team has only sold something and they havnt been cross trained to sell the other things.
+                    - So unless the org has a bunch of products that require deep expertise or you just run out of segmentation cuts and you need MORE cuts… most people dont start with a product cut (unless its something that looks very different than everything else that is sold)
+                    - Example: MEDDICC - they have their core learning now they are launching software… they would have different people selling each of those different products.
+                - Ans: dont push for product cut unless they need it.
+                    - You dont usually miss product cuts… when there’s one… you see it right away.
+            - Bernardo Note: with mistral we will run into situations where:
+                - When you talk about geography… there is a level of granularity of concerns…
+                - Example: california, NY - you can’t just assign and say “this person gets cali” (because 15-20% of the global business is going to be in) – its worth keeping in mind: “do we need to do zip code level stuff” - its unfun to do that but that is helpful
+                - So be ready to go deeper than state level, might have to go city level (esp like with cali… san fran vs LA vs San jose)
+                - Wealth playground sheet (just to show how we manipulate the data)
+        - **Step 3) Territory balancing & loading everything together**
+            - Time:
+                - **Bernardo: 25-30 hours** 
+                    - Why? Becaus once we get ALL the data… then you realize all your assumptions from step 2 are all effed up… now you are playing with different cuts…
+                    - Is cali 1 piece, 2 piece? 3 piece? A lot of hands on in data
+                    - Tool: Fullcast (tool)
+                    - Very in the weeds…
+            - Making sure we’re not designing territories which are aligned for short term goals > but then if going to 500M, sales team tripling… we dont want to be half way through year and being like “oh we now have to redo territories” (it will wreck the reps if you are farming and then manager comes and tells you its not different, doesnt feel good)
+            - We want these cuts ahead of time and its redundant (in a way) and we say “here are the 5 territory pieces… you can farm/hunt in all 5, but just know this is your anchoring point, and that is what you will be on” – so when you are talking to someone new (prospect talent pipeline) - you can tell them well ahead of time what they will have and what they will lose
+            - Wealth playground sheet (just to show how we manipulate the data)
+                - ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXe74yYZBlW5v-2VFiufn31thS4Gkdvgq8Pocd9h2I-9901F0ULy0Ps_yvv5MhWkpQepoMdZEU8cfoJ97EZlGoAMOTA6ILUE6XL3o5AtZVsbWo2nrKfBLoZP-4FSzt99gczM3fnNvg?key=mZWGLRSAOY471oWDuVyrcg)
+                - Midwest very much worse based on volume
+                - So we want to make sure in phase 2 – being deliberate of if i am giving each territory a solid number AND value..  (if you do either in isolation… cause 100 SMB accounts are not the same as 100 enterprise accounts) — esp if 1 account is half their TAM…
+                - So we want to look at ALL the data… then we divide up as equally
+                    - Also index it a little with the best reps with the best territories
+                    - BUT we dont want a rep (new talent)… while other guy is going to make 500k in commissions
+                    - (a little bit of science art)
+            - (this part tends to be the most difficult section… in terms of being time consuming)
+                - Example: we did this first time for emailage - just getting the data took a long time (no ai tools or budget / had to do manually)
+                    - Territory balancing: workshopped that for 3 weeks… for 12 people to draw 24 territories in case we expanded… a lot of back and forth and running the numbers etc…
+            - The most important step..
+                - Its where you buy and lose good will in 1 second (if you are hiring the best… (mistral going to get the best from a seller perspecive) someone will be able to tell if they have a winning or losing mission…
+        - **STep 4) Implementing it in the system**
+            - Time:
+                - **Bernardo: 15-20 hours** 
+            - What we mean when we say "implementing territories”
+                - It really is just a VLOOKUP table that we put into SFDC
+                - Usually people are used to seeing it in excel.
+                - But at LS, we build: a list of all the territories and the factors we are assigning them
+                - Then create an object that stores all of those records (so each territory 1= enterprise in cali for a - so that is your routing logic… and it would look against that logic…)
+                - Then in that object you store the territory TEAM
+                    - Then the system is instead of using routing (traditional sfdc infra) it pings the object first… and then tag everybody and assign to right person etc.
+                - Why we do it this way?
+                    - Makes it super easy to manage from a code free perspective.
+                    - Why? If someone leaves the company, then you have to go into a flow and then change things
+                    - But with a territory object, you can go in and have anybody… update account team… and then its fixed moving forward.
+                - Assignment rules are on the objects / records… (instead of a full flow with branches for everything)
+                    - Only time to change flow is if product…
+                - Q: do we want to explore SFDC solution?
+                    - DMB has experience with the salesforce territory
+                    - Teams opinion on sfdc products - usually not good… (usually in our favor)
+                - Our design hasn’t changed in about 3 years (this was a product we made in first 6 months)
+            - Example of how it looks:
+                - ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdMbgW9OCbEWU3OZYdXBkureGveQpAEixKuL2EOQItVW3GdkKLUgtS2dTM37tRGfXJ2kpU4xxCJqFHpv5uVlnc0_07i4M39EYpG-iewAlPt_psRQX-3V1_vs8hjHNqc-E4kaG-wZw?key=mZWGLRSAOY471oWDuVyrcg)
+                - ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXeXcY80tR1L0TMSqA9gQbaOhO4ECKk7OqrabC7N_3h95C4w9YIm09WbARjVSmZkPOC-YdhItZ2Mp01-7GYpISuuPSAiteBUGSQp5D74Y_JWAXzzDIa0jZ8JHrmg6XnTTAOKckBhPA?key=mZWGLRSAOY471oWDuVyrcg)
+                - Bc of all these attributes… decide where it should go from there…
+        - **Step 5) Extra credit**
+            - Things that are like follow ups:
+                - 1) commission adjustments (commission redesign)
+                    - This usually goes hand in hand with territory redesign
+                - 2) hold over policy  / rules of engagement
+                - 3) territory disputes / rules of engagement (but highlighting of their own)
+                    - Esp with geography… emilage example… american express would say its a NY account but emailage their operating HQ was down the street in scotts dale…
+                        - So you would think where it would belong vs who would you assign as a resource… (the team that can visit them has to operate out of the SW)
+                    - Example 2: if its right on the bubble, ARR etc
+                    - Operationzlie that in the system (we have a design for clio… in salesforce… click a button and “this should be my territory” and the person who owns it and accepts / deny… and then it goes to the manager or ops… so we can operationalize the account movement in the system.

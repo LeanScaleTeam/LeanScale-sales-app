@@ -1,0 +1,48 @@
+# Marketing Database Segmentation - Project Details / Task List
+
+**Tag:** `database-segmentation`
+**Total Hours:** 38h
+**Structure:** Single Milestone (&lt;=50h)
+
+---
+
+## Milestone: Marketing Database Segmentation
+**Description:** A strategic and technical implementation project that creates a segmented marketing database enabling targeted marketing efforts through defined segmentation criteria, enriched data, and operationalized segments in the MAP/CRM.
+
+---
+
+### Task List: (Database Segmentation) 1. Strategy & Data Enrichment
+**Contains:** Parts 1-2
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 1. Assess Current Database State | 2.5h | Audit the existing database to understand data quality, completeness, and any existing segmentation. End state: Gap analysis documenting current state, data quality issues, and segmentation opportunities.<br /><br />• Pull database summary from CRM/MAP (total records, field completion rates, duplicate count)<br />• Review existing segments, lists, or filters currently in use<br />• Interview marketing and sales stakeholders on current pain points with database targeting<br />• Document which fields are populated vs. empty (industry, company size, revenue, location)<br />• Quantify data quality issues (duplicates, outdated records, non-standardized values)<br />• Assess percentage of contacts associated to companies vs. orphan records |
+| 2. Define Segmentation Criteria Framework | 2.5h | Establish the specific criteria and dimensions that will be used to segment the database. End state: Approved segmentation framework document with 3-5 primary segmentation dimensions.<br /><br />• Identify firmographic criteria (industry, company size, revenue band, geographic region)<br />• Define behavioral criteria (engagement level, product interest, buying stage)<br />• Determine technographic criteria if relevant (tech stack, tools used)<br />• Align segmentation criteria with ICP and target account definitions<br />• Prioritize 3-5 primary segmentation dimensions based on business impact<br />• Get stakeholder sign-off on segmentation framework (Marketing, Sales, RevOps) |
+| 3. Map Data Requirements to Sources | 2h | Identify what data is needed for each segmentation dimension and where it will come from. End state: Data requirements matrix showing each field, source, and enrichment method.<br /><br />• List all data fields required for defined segmentation criteria<br />• Identify which fields exist in CRM vs. need enrichment<br />• Map enrichment sources for missing fields (Clay, ZoomInfo, Apollo, Clearbit)<br />• Document data standardization needs (industry values, company size bands, job title normalization)<br />• Estimate enrichment costs and coverage rates by source<br />• Create data requirements matrix with field, source, and priority |
+| 4. Execute Data Enrichment | 3.5h | Enrich the database with missing segmentation fields from third-party data providers. End state: Target fields populated for 85%+ of account/contact records.<br /><br />• Set up enrichment tool connections (Clay, ZoomInfo, Apollo, or similar)<br />• Configure field mappings between enrichment tool and CRM/MAP<br />• Run enrichment on account/company records first (industry, size, revenue, location)<br />• Run enrichment on contact records (job title, department, seniority level)<br />• Validate enrichment results with spot checks (10-20 sample records)<br />• Document enrichment coverage rates and any gaps requiring manual research |
+| 5. Standardize Field Values | 3h | Normalize enriched and existing data into consistent, segmentable values. End state: All segmentation fields contain standardized values from defined picklists.<br /><br />• Create standardized picklist values for industry (consolidate variations like "Tech" vs "Technology" vs "Information Technology")<br />• Define company size bands with clear thresholds (1-50, 51-200, 201-1000, 1000+)<br />• Normalize job titles to standard roles (C-Level, VP, Director, Manager, Individual Contributor)<br />• Build automation rules or use tools like Insycle to apply standardization<br />• Validate standardized values match across MAP and CRM<br />• Document standardization rules for ongoing data governance |
+| 6. Clean and Deduplicate Database | 2.5h | Remove duplicates, merge records, and clean invalid data to ensure segment accuracy. End state: Database deduplicated with &lt;2% duplicate rate and orphan contacts associated to companies.<br /><br />• Run duplicate detection on contacts and companies (use native tools or third-party)<br />• Merge or delete duplicate records following defined merge rules<br />• Associate orphan contacts to companies using domain matching or manual research<br />• Remove invalid records (bounced emails, defunct companies, test data)<br />• Verify data sync between HubSpot/Marketo and Salesforce after cleanup<br />• Document final record counts and data quality metrics |
+
+---
+
+### Task List: (Database Segmentation) 2. Build & Enablement
+**Contains:** Parts 3-4
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 7. Create Segment Definitions | 2.5h | Define the specific filter criteria for each segment in the MAP/CRM. End state: Documented segment definitions with clear inclusion/exclusion criteria.<br /><br />• Translate segmentation framework into specific filter logic (AND/OR conditions)<br />• Define segment naming convention for consistency (e.g., "Industry: Technology | Size: Mid-Market")<br />• Create segment hierarchy if using nested segments (primary → sub-segments)<br />• Document each segment with name, description, criteria, and expected record count<br />• Validate segment logic with stakeholders before building<br />• Estimate segment sizes and flag any that are too small or too large to be actionable |
+| 8. Build Segments in Marketing Automation Platform | 3.5h | Create the actual segments/lists in HubSpot, Marketo, or other MAP. End state: All defined segments live in MAP with contacts dynamically assigned.<br /><br />• Build active/smart lists for each segment in MAP<br />• Configure dynamic membership criteria so contacts flow in/out automatically<br />• Test segment membership with sample records across different criteria combinations<br />• Verify segment counts match expected estimates<br />• Set up segment exclusions where needed (do not email, competitors, etc.)<br />• Document any segment dependencies or nesting relationships |
+| 9. Sync Segments to CRM | 3h | Ensure segment data is visible and usable in Salesforce/CRM for sales team. End state: Segment fields visible on account/contact records in CRM with accurate sync.<br /><br />• Create or update CRM fields to store segment values<br />• Configure MAP-to-CRM field mapping for segment fields<br />• Set up sync rules to push segment membership to CRM<br />• Validate sync is working correctly with test records<br />• Verify segment fields are visible on account and contact page layouts<br />• Test sales team can filter views and reports by segment criteria |
+| 10. Update Marketing and Sales Reporting | 3h | Modify existing reports and dashboards to leverage new segmentation data. End state: Key reports show segment-level performance metrics.<br /><br />• Identify existing reports that should incorporate segment dimensions<br />• Add segment filters and breakdowns to marketing performance dashboards<br />• Update pipeline reports to show conversion by segment<br />• Create new segment performance report (records per segment, engagement by segment)<br />• Validate report accuracy with spot checks against raw data<br />• Document any reporting limitations or caveats |
+| 11. Train Marketing Team on Segment Usage | 2h | Enable marketing team to use segments for campaigns and targeting. End state: Marketing team self-sufficient in using segments for campaign targeting.<br /><br />• Schedule training session with marketing team (30-45 minutes)<br />• Demonstrate how to use segments in email campaigns, ads, and workflows<br />• Walk through segment selection and exclusion best practices<br />• Show how to interpret segment performance reports<br />• Create quick-reference guide for segment usage<br />• Record session for future reference and new team members |
+| 12. Train Sales Team on Segment Filters | 1.5h | Enable sales team to use segment data for prioritization and outreach. End state: Sales team can filter and prioritize accounts using segment criteria in CRM.<br /><br />• Schedule training session with sales team (20-30 minutes)<br />• Demonstrate how to filter account/contact views by segment<br />• Show how to identify high-priority accounts using segment data<br />• Walk through segment fields on record layouts<br />• Address questions about segment definitions and updates<br />• Create quick-reference guide for sales segment usage |
+| 13. Document and Hand Off to Client | 2.5h | Transfer ownership of segmentation system to client with full documentation. End state: Client self-sufficient with documentation, governance rules, and admin access.<br /><br />• Compile segmentation framework documentation (criteria, definitions, logic)<br />• Document data governance rules for maintaining segment quality<br />• Create troubleshooting guide for common segment issues<br />• Transfer admin access and credentials to client RevOps<br />• Schedule 30-day check-in to address questions<br />• Close out project with delivery confirmation |
+
+---
+
+## Summary
+- **Total Task Lists:** 2 (consolidated from 4 Parts)
+- **Total Tasks:** 13 (one per Step)
+- **Total Hours:** 38h
+- **Generated from:** playbook_marketing-database-segmentation.md
+- **Generated on:** 2025-12-31

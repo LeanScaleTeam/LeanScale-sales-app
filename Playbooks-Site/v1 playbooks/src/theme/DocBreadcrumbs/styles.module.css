@@ -1,0 +1,126 @@
+.breadcrumbRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.breadcrumbsContainer {
+  --ifm-breadcrumb-size-multiplier: 0.8;
+  margin-bottom: 0;
+}
+
+.browseLink {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+}
+
+/* Playbook Stepper Nav */
+.playbookWrapper {
+  margin-bottom: 1rem;
+}
+
+.backLink {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.playbookNav {
+  background: var(--ifm-color-emphasis-100);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.playbookHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.playbookTitle {
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.pageCount {
+  position: absolute;
+  right: 1rem;
+  top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.stepConnector {
+  color: var(--ifm-color-emphasis-300);
+  font-size: 0.85rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: all 0.15s ease;
+}
+
+.step:hover {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.stepCurrent {
+  background: var(--ifm-color-primary);
+  color: white;
+  font-weight: 500;
+}
+
+.stepCurrent:hover {
+  background: var(--ifm-color-primary-dark);
+  color: white;
+}
+
+.stepPast {
+  color: var(--ifm-color-primary);
+}
+
+.stepDot {
+  font-size: 0.5rem;
+}
+
+.stepLabel {
+  /* inherits */
+}

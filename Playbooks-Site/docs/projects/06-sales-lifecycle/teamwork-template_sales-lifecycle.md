@@ -1,0 +1,48 @@
+# Sales Lifecycle - Project Details / Task List
+
+**Tag:** `sales-lifecycle`
+**Total Hours:** 30h
+**Structure:** Single Milestone (&lt;=50h)
+
+---
+
+## Milestone: Sales Lifecycle
+**Description:** A strategic and technical implementation project that designs and builds an opportunity stage or deal lifecycle structure in the CRM, complete with clear stage definitions, entry/exit criteria, automations, and stage date/timestamp tracking to enable visibility into how deals move through the sales funnel.
+
+---
+
+### Task List: (Sales Lifecycle) 1. Discovery & Design
+**Contains:** Parts 1-2
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 1. Conduct Stakeholder Interviews | 2h | Interview key stakeholders to understand business objectives, current sales process, and pain points with existing lifecycle tracking. End state: Documented understanding of how the sales team currently works and what visibility gaps exist.<br /><br />• Schedule 30-45 minute interviews with VP Sales, Sales Managers, and 2-3 top-performing reps<br />• Document how deals currently progress from creation to close (their mental model)<br />• Identify pain points: Where do reps get confused about stages? Where do deals stall?<br />• Understand what reports/visibility leadership currently lacks<br />• Capture any existing stage definitions or documentation (often informal or tribal knowledge)<br />• Note which CRM (Salesforce or HubSpot) and current opportunity object configuration |
+| 2. Audit Current Opportunity Data | 2h | Pull reports on existing opportunity data to understand current usage patterns and data quality issues. End state: Quantified baseline of current stage usage, stagnation rates, and data gaps.<br /><br />• Export opportunity report showing all stages, time in stage, and conversion rates for last 6 months<br />• Identify stages with high stagnation (opportunities sitting 30+ days without movement)<br />• Document which stage fields exist (picklist values, date fields, probability mappings)<br />• Check for existing stage timestamp fields (Stage Hit Date fields) and their population rates<br />• Assess data quality: percentage of opps with blank required fields, inconsistent stage usage<br />• Create a "before" snapshot for comparison after implementation |
+| 3. Document Current vs. Desired State | 2h | Synthesize interview findings and data audit into a gap analysis. End state: Clear documentation of what exists today versus what the ideal lifecycle looks like.<br /><br />• Map current stages against actual sales process milestones<br />• Identify stages that are "catch-all buckets" with no clear meaning<br />• Document missing stages that would improve pipeline visibility<br />• List automation gaps (manual stage changes that should be automated)<br />• Quantify the visibility problem (e.g., "No way to measure average days in Proposal stage") |
+| 4. Define Opportunity Stages and Entry Criteria | 3h | Design the complete set of opportunity stages with clear, documented entry and exit criteria for each. End state: Written stage definitions that everyone on the team can understand and apply consistently.<br /><br />• Define 5-8 opportunity stages aligned to actual sales milestones (avoid generic names like "Evaluation")<br />• Use process-specific naming (e.g., "Demo Scheduled", "Demo Completed", "Proposal Sent", "Contract Negotiation")<br />• Write 2-3 bullet entry criteria for each stage (what must be true to enter this stage)<br />• Define exit criteria where relevant (what triggers move to next stage)<br />• Assign probability percentages to each stage for forecasting purposes<br />• Review with VP Sales and get sign-off before implementation |
+| 5. Design Stage Date Timestamp Fields | 2h | Determine which stage date fields are needed to track when opportunities hit each stage. End state: Field specification for all timestamp fields to be created in CRM.<br /><br />• Identify which stages need dedicated timestamp fields (typically all stages except Closed Lost/Won)<br />• Define field naming convention (e.g., "Stage Hit Date - Discovery", "Stage Hit Date - Proposal")<br />• Determine whether to track first entry date only or also track re-entry<br />• Specify field type (Date vs. DateTime) based on reporting needs<br />• Document which fields should be auto-populated vs. editable |
+| 6. Plan Automation Rules | 2h | Design the automation logic for stage transitions and field updates. End state: Documented automation specification ready for CRM implementation.<br /><br />• Identify which stage transitions should be automated (e.g., meeting booked triggers stage change)<br />• Define validation rules to prevent skipping stages or backward movement without approval<br />• Specify workflow/process builder logic for timestamp field population<br />• Plan automation for probability updates when stage changes<br />• Document edge cases: what happens when opp is reopened from Closed Lost? |
+
+---
+
+### Task List: (Sales Lifecycle) 2. Implementation & Rollout
+**Contains:** Parts 3-4
+
+| Task | Est | Description |
+|------|-----|-------------|
+| 7. Configure Opportunity Stage Picklist | 3h | Update the opportunity stage picklist in CRM to reflect the new lifecycle design. End state: CRM opportunity stage field updated with new values and old values either removed or mapped.<br /><br />• Create new stage values in Salesforce/HubSpot opportunity object<br />• Set default probability percentages for each stage<br />• Map existing opportunities to new stages (create migration plan for in-flight deals)<br />• Remove or archive deprecated stage values<br />• Update any Sales Process / Record Type associations in Salesforce<br />• Configure stage order for proper pipeline visualization |
+| 8. Create Stage Timestamp Fields and Automation | 3h | Build the timestamp fields and automation to populate them. End state: All stage date fields created and auto-populating when opportunities change stages.<br /><br />• Create custom date fields for each stage timestamp<br />• Build workflow rules or Process Builder flows to set timestamp on stage entry<br />• Configure logic to prevent timestamp overwrite (only set if blank)<br />• Test automation with sample opportunity through all stages<br />• Verify timestamp fields appear in opportunity page layout |
+| 9. Set Up Validation and Required Fields | 2.5h | Implement validation rules to enforce stage criteria and data quality. End state: Reps cannot advance stages without meeting entry requirements.<br /><br />• Create validation rules requiring key fields before stage advancement<br />• Configure required field logic (e.g., "Close Date" required for Negotiation stage)<br />• Set up path/guidance for each stage in Salesforce Lightning or HubSpot deal properties<br />• Balance enforcement with usability - avoid over-complicating and frustrating reps<br />• Test validation rules with sales team member before full deployment |
+| 10. Build Pipeline and Velocity Dashboards | 3.5h | Create dashboards that visualize pipeline health and stage velocity. End state: Leadership has real-time visibility into pipeline progression and bottlenecks.<br /><br />• Build pipeline stage distribution chart (count and value by stage)<br />• Create stage conversion rate report (what % move from Stage A to B)<br />• Build "time in stage" report showing average days per stage<br />• Create stagnation alert report (opps stuck in stage 14+ days)<br />• Add dashboards to Sales Manager homepage<br />• Configure scheduled dashboard email to leadership |
+| 11. Pilot Test with Small User Group | 2h | Test the new lifecycle with a small group of reps before full rollout. End state: Validated that the lifecycle works in practice and any issues are identified.<br /><br />• Select 3-5 reps for pilot group (mix of tenures and skill levels)<br />• Have pilot reps process 5-10 opportunities through full lifecycle<br />• Observe and note any confusion, friction, or workaround behaviors<br />• Collect feedback on stage definitions, validation rules, and usability<br />• Adjust configuration based on pilot findings before full rollout |
+| 12. Conduct Sales Team Training | 2h | Train the full sales team on the new opportunity lifecycle and stage definitions. End state: All reps understand how to correctly stage opportunities and why it matters.<br /><br />• Schedule 45-60 minute training session (live or recorded)<br />• Cover: stage definitions, entry criteria, what happens when you change stage<br />• Demonstrate how timestamp data enables velocity reporting<br />• Show reps what reports/dashboards they can now access<br />• Create quick-reference guide (1-page PDF of stages and criteria)<br />• Record session and distribute to team with reference materials |
+| 13. Hand Off to Client and Establish Governance | 3h | Transfer ownership of the lifecycle to client RevOps and establish ongoing governance. End state: Client is self-sufficient with documentation, admin access, and change management process.<br /><br />• Transfer admin documentation (field specifications, automation logic, dashboard filters)<br />• Train client RevOps on how to modify stages, update automations, add new fields<br />• Establish change request process (how to request lifecycle modifications)<br />• Define data hygiene cadence (weekly pipeline review for stagnant opps)<br />• Schedule 30-day check-in to review adoption and answer questions<br />• Close out project with final deliverables summary |
+
+---
+
+## Summary
+- **Total Task Lists:** 2 (consolidated from 4 Parts)
+- **Total Tasks:** 13 (one per Step)
+- **Total Hours:** 30h
+- **Generated from:** playbook_sales-lifecycle.md
+- **Generated on:** 2025-12-31

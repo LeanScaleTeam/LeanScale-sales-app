@@ -11,6 +11,7 @@ const projects = [
     icon: '🗺️',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'market-map',
   },
   { 
     id: 'automated-inbound-data-enrichment', 
@@ -19,6 +20,7 @@ const projects = [
     icon: '🚀',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'automated-inbound-data-enrichment',
   },
   { 
     id: 'automated-outbound-process', 
@@ -27,6 +29,7 @@ const projects = [
     icon: '📤',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'automated-outbound-process',
   },
   { 
     id: 'clay-custom-enrichment', 
@@ -36,6 +39,7 @@ const projects = [
     badge: 'Clay',
     price: '$45,000',
     duration: '3 months',
+    playbookId: null,
     customContent: {
       definition: {
         whatItIs: 'A specialized Clay implementation project that builds custom enrichment signals and data workflows tailored to your unique ICP criteria, leveraging Clay\'s waterfall enrichment, AI capabilities, and integrations to create proprietary data assets.',
@@ -69,13 +73,13 @@ const projects = [
     },
   },
   { 
-    id: 'hubspot-to-salesforce-crm-migration', 
+    id: 'crm-migration', 
     name: 'CRM Migration', 
     status: 'Available', 
     icon: '🏠',
-    altId: 'salesforce-to-hubspot-crm-migration',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'hubspot-to-salesforce-crm-migration',
   },
   { 
     id: 'quote-to-cash', 
@@ -84,22 +88,25 @@ const projects = [
     icon: '💰',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'quote-to-cash',
   },
   { 
-    id: 'lead-and-opportunity-attribution', 
+    id: 'lead-attribution-rebuild', 
     name: 'Lead Attribution Rebuild', 
     status: 'Coming Q1 2026', 
     icon: '🔍',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'lead-and-opportunity-attribution',
   },
   { 
-    id: 'lead-routing', 
+    id: 'lead-routing-rebuild', 
     name: 'Lead Routing Rebuild', 
     status: 'Coming Q1 2026', 
     icon: '🛤️',
     price: '$45,000',
     duration: '3 months',
+    playbookId: 'lead-routing',
   },
 ];
 
@@ -189,7 +196,8 @@ export default function OneTimeProjects() {
 
   const getProjectContent = (project) => {
     if (project.customContent) return project.customContent;
-    return playbookContent[project.id] || playbookContent[project.altId] || null;
+    if (project.playbookId) return playbookContent[project.playbookId] || null;
+    return null;
   };
 
   const content = selectedProject ? getProjectContent(selectedProject) : null;
@@ -360,11 +368,13 @@ export default function OneTimeProjects() {
             </div>
 
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <Link href={`/playbooks/${selectedProject.id}`} style={{ textDecoration: 'none' }}>
-                <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
-                  View Full Playbook
-                </button>
-              </Link>
+              {selectedProject.playbookId && (
+                <Link href={`/playbooks/${selectedProject.playbookId}`} style={{ textDecoration: 'none' }}>
+                  <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
+                    View Full Playbook
+                  </button>
+                </Link>
+              )}
               <Link href="/buy-leanscale" style={{ textDecoration: 'none' }}>
                 <button className="btn btn-primary">
                   Start Engagement →

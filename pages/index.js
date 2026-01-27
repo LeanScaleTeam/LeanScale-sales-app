@@ -24,10 +24,11 @@ export default function Home() {
         <section style={{ marginBottom: '3rem' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>tl;dr</h2>
           <ul style={{ lineHeight: 1.8, paddingLeft: '1.5rem' }}>
-            <li>LeanScale provides fractional GTM Operations teams for B2B tech startups</li>
-            <li>We&apos;ve supported 100+ startups across Series A through IPO</li>
-            <li>Our team combines startup operator experience with deep technical expertise</li>
-            <li>We help you build scalable revenue infrastructure, not just fix point problems</li>
+            <li>Founded in 2021</li>
+            <li>GTM Ops firm for B2B companies</li>
+            <li>Work w/ lean, hypergrowth teams—Mistral, Clio, Anrok, Portnox, etc</li>
+            <li>25+ full-time team members</li>
+            <li>Premier partner for Salesforce, Hubspot, Clay and hundreds of other GTM Systems</li>
           </ul>
         </section>
 

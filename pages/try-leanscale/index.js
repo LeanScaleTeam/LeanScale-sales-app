@@ -25,10 +25,10 @@ export default function TryLeanScale() {
         {/* Video */}
         <div className="video-container">
           <iframe
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-            title="GTM Diagnostic Overview"
+            src="https://fast.wistia.net/embed/iframe/38bjmcwsau"
+            title="GTM VSL"
             frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="autoplay; fullscreen"
             allowFullScreen
           />
         </div>

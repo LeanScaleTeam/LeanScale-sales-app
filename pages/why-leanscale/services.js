@@ -247,15 +247,15 @@ export default function ServicesCatalog() {
                               {service.name}
                             </h3>
                             
-                            {activeTab === 'tools' && service.vendor && (
-                              <span style={{
-                                display: 'inline-block',
-                                marginTop: '0.25rem',
+                            {service.description && (
+                              <p style={{
+                                margin: '0.5rem 0 0 0',
                                 color: '#6b7280',
-                                fontSize: '0.75rem',
+                                fontSize: '0.8rem',
+                                lineHeight: 1.4,
                               }}>
-                                {service.vendor}
-                              </span>
+                                {service.description}
+                              </p>
                             )}
                             
                             {playbook && (

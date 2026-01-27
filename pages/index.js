@@ -1,0 +1,111 @@
+import Link from 'next/link';
+import Layout from '../components/Layout';
+import customerConfig from '../data/customer-config';
+
+export default function Home() {
+  return (
+    <Layout title="LeanScale">
+      {/* Hero Section */}
+      <div className="hero">
+        <div className="hero-content">
+          <img
+            src="/leanscale-logo.svg"
+            alt="LeanScale"
+            className="hero-logo"
+          />
+          <h1 className="hero-tagline">
+            Accelerate Your Go-To-Market with Top-Tier GTM Operations
+          </h1>
+        </div>
+      </div>
+
+      <div className="container">
+        {/* TL;DR Section */}
+        <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>tl;dr</h2>
+          <ul style={{ lineHeight: 1.8, paddingLeft: '1.5rem' }}>
+            <li>LeanScale provides fractional GTM Operations teams for B2B tech startups</li>
+            <li>We&apos;ve supported 100+ startups across Series A through IPO</li>
+            <li>Our team combines startup operator experience with deep technical expertise</li>
+            <li>We help you build scalable revenue infrastructure, not just fix point problems</li>
+          </ul>
+        </section>
+
+        {/* Quick Links */}
+        <section style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+            {/* Why LeanScale? */}
+            <div>
+              <h3 style={{ marginBottom: '1rem', color: 'var(--ls-purple)' }}>Why LeanScale?</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <Link href="/why-leanscale/about" className="button-pill">About Us</Link>
+                <Link href="/why-leanscale/resources" className="button-pill">Key Resources</Link>
+                <Link href="/why-leanscale/references" className="button-pill">Customer References</Link>
+              </div>
+            </div>
+
+            {/* Try LeanScale */}
+            <div>
+              <h3 style={{ marginBottom: '1rem', color: 'var(--ls-purple)' }}>Try LeanScale</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <Link href="/try-leanscale/start" className="button-pill">Start Diagnostic</Link>
+                <Link href="/why-leanscale/services" className="button-pill">Services Catalog</Link>
+                <Link href="/try-leanscale/diagnostic" className="button-pill">GTM Diagnostic Demo</Link>
+              </div>
+            </div>
+
+            {/* Buy LeanScale */}
+            <div>
+              <h3 style={{ marginBottom: '1rem', color: 'var(--ls-purple)' }}>Buy LeanScale</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <Link href="/buy-leanscale/investor-perks" className="button-pill">Investor Perks</Link>
+                <Link href="/buy-leanscale/calculator" className="button-pill">Engagement Calculator</Link>
+                <Link href="/buy-leanscale/start" className="button-pill">Getting Started</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Video Section */}
+        <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>LeanScale Overview</h2>
+          <div className="video-container">
+            <iframe
+              src={`https://www.youtube.com/embed/${customerConfig.youtubeVideoId || 'dQw4w9WgXcQ'}`}
+              title="LeanScale Overview"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </section>
+
+        {/* Google Slides Embed */}
+        {customerConfig.googleSlidesEmbedUrl && (
+          <section style={{ marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>LeanScale Deck</h2>
+            <div className="video-container">
+              <iframe
+                src={customerConfig.googleSlidesEmbedUrl}
+                title="LeanScale Deck"
+                frameBorder="0"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Testimonial */}
+        <section style={{ marginBottom: '3rem' }}>
+          <div className="card" style={{ maxWidth: 600 }}>
+            <p style={{ fontStyle: 'italic', marginBottom: '1rem', lineHeight: 1.6 }}>
+              &quot;LeanScale helped us build a scalable revenue engine that supported our growth from Series A to Series C.
+              Their team became an extension of ours.&quot;
+            </p>
+            <p style={{ fontWeight: 600 }}>— VP of Revenue Operations, Series B SaaS</p>
+          </div>
+        </section>
+      </div>
+    </Layout>
+  );
+}

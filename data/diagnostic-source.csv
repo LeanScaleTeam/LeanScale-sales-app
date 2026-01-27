@@ -1,0 +1,89 @@
+Diagnostic Name,Health Status,Type MAIN,Add to Engagement?
+Activity Capture,🔴,Strategic Project,true
+Automated Inbound Data Enrichment,🔴,Strategic Project,true
+Customer Lifecycle (GTM Lifecycle),🔴,Strategic Project,true
+Forecasting Process Implementation,🔴,Strategic Project,true
+Market Map,🟡,Strategic Project,true
+Lead & Opportunity Attribution,🟡,Strategic Project,true
+Lead Lifecycle (GTM Lifecycle),🔴,Strategic Project,true
+Lead Routing,🔴,Strategic Project,true
+Marketing-to-Sales Handoff & SLA Tracking,🟡,Strategic Project,true
+Sales Lifecycle (GTM Lifecycle),⚫,Strategic Project,true
+Sales Territory Design and System Implementation,🟡,Strategic Project,true
+"ABM / ABS Process and System ",🟡,Strategic Project,false
+AI Automated Inbound,🟡,Strategic Project,false
+ARR Reporting,🟡,Strategic Project,false
+Automated Outbound Process,⚫,Strategic Project,false
+CLM Implementation,🟢,Strategic Project,false
+Commission Tool Implementation,🟡,Strategic Project,false
+Conversation Intelligence Implementation,🔴,Strategic Project,false
+CPQ Implementation,⚫,Strategic Project,false
+CRM Deduplication,⚫,Strategic Project,false
+CRM Deduplication Ongoing Tool,🟢,Strategic Project,false
+Customer Health Model,🔴,Strategic Project,false
+Customer Segmentation,🟢,Strategic Project,false
+Customer Success Platform Implementation,🟡,Strategic Project,false
+E-Signature Implementation,🟢,Strategic Project,false
+Email Operations: Nurture Program Build & Management,🟢,Strategic Project,false
+Email Operations: Subscription & Compliance Framework,🟢,Strategic Project,false
+Email Operations: Templates & Build Process,🟡,Strategic Project,false
+Event Operations: Event Platform Implementation & Registration Tracking,🔴,Strategic Project,false
+Event Operations: Lead List Intake Process,⚫,Strategic Project,false
+"Executive Reporting Suite ",🟡,Strategic Project,false
+Foundational Automations and Reporting Logic,🔴,Strategic Project,false
+Growth Model,⚫,Strategic Project,false
+GTM Lifecycle,🟢,Strategic Project,false
+Lead Scoring Model Design & Implementation (Product-Led),🔴,Strategic Project,false
+Lead Scoring Model Design & Implementation (Sales-Led),⚫,Strategic Project,false
+Marketing Automation Platform Implementation/Migration,🟢,Strategic Project,false
+Marketing Database Segmentation,🟡,Strategic Project,false
+NPS and Voice of Customer Launch,🔴,Strategic Project,false
+Physical Event Process and ROI Reporting,⚫,Strategic Project,false
+PLG GTM Design,🟡,Strategic Project,false
+Quotas and Target Setting,⚫,Strategic Project,false
+Quote to Cash,🟢,Strategic Project,false
+Renewal Management,⚫,Strategic Project,false
+"Renewal, Churn, NRR/GRR Reporting",🟢,Strategic Project,false
+Revenue Recognition,🔴,Strategic Project,false
+Sales Engagement Platform,🔴,Strategic Project,false
+Sales Qualification Methodology,🟢,Strategic Project,false
+Speed-to-Lead,🟢,Strategic Project,false
+Support AI Chatbot / Chat Platform,⚫,Tool Category (D),false
+Support System Implementation,🔴,Strategic Project,false
+Website Lead Capture & Form Configuration,🔴,Strategic Project,false
+ARR,N/A,Power10 GTM Metrics (D),false
+Bookings,N/A,Power10 GTM Metrics (D),false
+Gross churn,N/A,Power10 GTM Metrics (D),false
+Gross retention,N/A,Power10 GTM Metrics (D),false
+MQL -> Opportunity conversion rate,N/A,Power10 GTM Metrics (D),false
+MQL production,N/A,Power10 GTM Metrics (D),false
+Net retention,N/A,Power10 GTM Metrics (D),false
+Opportunity/Deal - CW cycle time,N/A,Power10 GTM Metrics (D),false
+Opportunity/Deal -> CW conversion rate,N/A,Power10 GTM Metrics (D),false
+Partnership Success Platform Implementation,⚫,Strategic Project,false
+Pipeline production,N/A,Power10 GTM Metrics (D),false
+CUSTOM P1,🟡,Custom Diagnostic Milestone,false
+CUSTOM P1,🟢,Custom Diagnostic Milestone,false
+CUSTOM P1,🟡,Custom Diagnostic Milestone,false
+CUSTOM P1,🔴,Custom Diagnostic Milestone,false
+CUSTOM P1,⚫,Custom Diagnostic Milestone,false
+CUSTOM P1,🟢,Custom Diagnostic Milestone,false
+CRM → ERP Integration,⚫,Strategic Project,false
+CLM,🟢,Tool Category (D),false
+Commission Management,🟡,Tool Category (D),false
+CPQ,🔴,Tool Category (D),false
+CRM,⚫,Tool Category (D),false
+Customer Success Platform (CSP),🟢,Tool Category (D),false
+Customer Support Platform,🟡,Tool Category (D),false
+Data Analytics,🔴,Tool Category (D),false
+Data Enrichment,⚫,Tool Category (D),false
+Lead Routing,🟢,Tool Category (D),false
+Marketing Automation Platform (MAP),🟢,Tool Category (D),false
+Partner Success Platform,🟡,Tool Category (D),false
+Revenue Intelligence,🔴,Tool Category (D),false
+Sales Enablement,⚫,Tool Category (D),false
+Sales Engagement Platform,🟢,Tool Category (D),false
+Territory Planning,🟡,Tool Category (D),false
+Data De-duplication,🟡,Tool Category Project,false
+Data Enrichment Process,🟢,Tool Category Project,false
+De-duplication Tool,🟢,Tool Category (D),false

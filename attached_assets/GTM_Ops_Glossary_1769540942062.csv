@@ -1,0 +1,41 @@
+Term,What It Means (Plain English)
+ICP (Ideal Customer Profile),The type of company you want more of — your best-fit customers.
+Persona,"The type of person you sell to inside those companies (ex: Head of Ops, CFO)."
+TAM / SAM / SOM,"How big your market is: TAM = everyone, SAM = realistic target slice, SOM = who you can win now."
+Lead,Anyone who shows interest or comes into your system. Not qualified yet.
+MQL (Marketing Qualified Lead),A lead that looks promising based on fit or engagement.
+SQL (Sales Qualified Lead),A lead that sales agrees is worth talking to — ready for a real conversation.
+SAL (Sales Accepted Lead),Sales has accepted the lead and agrees to work it.
+Pipeline,All active deals your sales team is working on.
+Inbound,"Leads that come to you (form fills, chat, trial signup, demo request)."
+Outbound,"Leads your team goes after (emails, calls, sequences, outbound SDR motion)."
+Intent Data,"Signals that a company is researching something you sell (G2, website visits, etc.)."
+Lifecycle Stages,Labels that show where someone is in your funnel (Lead → MQL → SQL → Opp → Customer).
+Opportunity,A potential deal that sales is actively working on with a real chance to close.
+Stage,"The step in your sales process (ex: Discovery, Demo, Eval, Contract Sent)."
+Conversion Rate,Percentage of leads that move from one stage to the next.
+Win Rate,Percentage of opportunities that become customers.
+Close Rate,"Same as win rate, but usually measured for a specific stage or time period."
+Deal Velocity / Sales Cycle,How long it takes to move from first touch → closed deal.
+TCV (Total Contract Value),Total revenue from the entire contract.
+ACV (Annual Contract Value),Revenue generated per year of the contract.
+ARR (Annual Recurring Revenue),Subscription revenue that repeats every year.
+Renewal,When a customer signs on for another contract period.
+Churn,When a customer leaves or stops paying.
+Expansion / Upsell,"Customer pays you more than before (more seats, products, usage, etc.)."
+Attribution,Figuring out which marketing or sales touchpoints helped create a lead.
+UTM Parameters,"Tags added to URLs so you know where traffic came from (ad, email, social, etc.)."
+Nurture,Automated emails/messages to keep leads warm until ready to buy.
+Lead Score,Point system to rank which leads are most likely to buy.
+Territory,"The grouping of accounts reps are responsible for (by region, industry, size, etc)."
+Routing,Automation that decides where a lead goes (to which rep or team).
+SLAs (Service-Level Agreements),Rules for how fast sales or success must respond.
+Enrichment,"Filling in missing info on leads/accounts using tools like Clay, Clearbit, Apollo."
+Data Hygiene,"Keeping CRM data clean, accurate, and deduped."
+RevOps,"The team that owns the systems, data, processes, automation, and reporting across marketing, sales, and CS."
+GTM Ops,"Same as RevOps, but typically broader — includes strategy + execution for the entire go-to-market."
+Playbook,"A step-by-step guide for how a team should run a specific process (ex: Lead Handoff, Qualification, Onboarding)."
+Enablement,"Training, tools, and content that help sales or CS do their jobs better."
+Forecast,A prediction of how much revenue you’ll close this month/quarter.
+MRR / ARR Movement,"Changes in recurring revenue (new, expansion, contraction, churn)."
+Usage Data,How customers are actually using your product — often tied to renewals or upsell.

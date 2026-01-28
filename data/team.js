@@ -38,7 +38,7 @@ const team = [
     id: "derek",
     name: "Derek Mogar",
     role: "Architect",
-    photo: null,
+    photo: "/images/team/derek.jpg",
     experience: [
       "3 years of B2B Ops Experience",
       "10 years of Sales Experience in a variety of different industries",

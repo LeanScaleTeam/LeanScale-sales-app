@@ -140,6 +140,8 @@ export default function GTMDiagnostic() {
   const processesByOutcome = groupBy(processes, 'outcome');
   const processesByMetric = groupBy(processes, 'metric');
 
+  const toolsByCategory = groupBy(tools, 'category');
+
   return (
     <Layout title="GTM Diagnostic">
       <div className="container">
@@ -149,21 +151,46 @@ export default function GTMDiagnostic() {
           </h1>
         </div>
 
-        <div className="card-grid" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>⚙️</span> Processes Health
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>{processes.length} Process Inspection Points</p>
+            <HealthBar data={processStats} />
+          </div>
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🔧</span> Tools Health
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem' }}>{tools.length} Tool Inspection Points</p>
+            <HealthBar data={toolStats} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center', background: '#f9fafb', padding: '1rem', borderRadius: '8px' }}>
           {views.map((view) => (
-            <div
+            <button
               key={view.id}
-              className="card"
-              style={{
-                cursor: 'pointer',
-                border: activeView === view.id ? '2px solid var(--ls-purple)' : undefined,
-                background: activeView === view.id ? '#f5f3ff' : undefined,
-              }}
               onClick={() => setActiveView(view.id)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                background: activeView === view.id ? 'var(--ls-purple)' : 'white',
+                color: activeView === view.id ? 'white' : '#374151',
+                boxShadow: activeView === view.id ? '0 2px 4px rgba(124,58,237,0.3)' : '0 1px 2px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
             >
-              <span style={{ fontSize: '1.5rem' }}>{view.icon}</span>
-              <h3 className="card-title" style={{ marginTop: '0.5rem' }}>{view.label}</h3>
-            </div>
+              <span>{view.icon}</span>
+              {view.label}
+            </button>
           ))}
         </div>
 
@@ -228,14 +255,7 @@ export default function GTMDiagnostic() {
         {activeView === 'processes' && (
           <section>
             <h2 style={{ marginBottom: '1rem' }}>Processes Overall Health</h2>
-            <p style={{ marginBottom: '1rem' }}>{processes.length} Process Inspection Points</p>
-
-            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-              <span>{processStats.healthy} ({((processStats.healthy / processes.length) * 100).toFixed(0)}%) Healthy</span>
-              <span>{processStats.careful} ({((processStats.careful / processes.length) * 100).toFixed(0)}%) Careful</span>
-              <span>{processStats.warning} ({((processStats.warning / processes.length) * 100).toFixed(0)}%) Warning</span>
-              <span>{processStats.unable} ({((processStats.unable / processes.length) * 100).toFixed(0)}%) Unable</span>
-            </div>
+            <p style={{ marginBottom: '1rem', color: '#666' }}>{processes.length} Process Inspection Points</p>
 
             <HealthBar data={processStats} />
 

@@ -1,8 +1,7 @@
-// Horizontal stacked bar chart for health status visualization
-
-export default function HealthBar({ data, showLegend = true }) {
-  // Calculate percentages
+export default function HealthBar({ data, showLegend = true, showPercentages = true }) {
   const total = data.healthy + data.careful + data.warning + data.unable;
+  if (total === 0) return null;
+
   const percentages = {
     healthy: ((data.healthy / total) * 100).toFixed(0),
     careful: ((data.careful / total) * 100).toFixed(0),
@@ -10,57 +9,60 @@ export default function HealthBar({ data, showLegend = true }) {
     unable: ((data.unable / total) * 100).toFixed(0),
   };
 
+  const segments = [
+    { key: 'healthy', label: 'Healthy', color: '#22c55e', count: data.healthy, pct: percentages.healthy },
+    { key: 'careful', label: 'Careful', color: '#eab308', count: data.careful, pct: percentages.careful },
+    { key: 'warning', label: 'Warning', color: '#ef4444', count: data.warning, pct: percentages.warning },
+    { key: 'unable', label: 'Unable', color: '#1f2937', count: data.unable, pct: percentages.unable },
+  ].filter(s => s.count > 0);
+
   return (
     <div>
-      <div className="health-bar">
-        {data.healthy > 0 && (
+      {showPercentages && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
+          {segments.map(s => (
+            <span key={s.key}>{s.count} ({s.pct}%) {s.label}</span>
+          ))}
+        </div>
+      )}
+
+      <div style={{
+        display: 'flex',
+        height: '24px',
+        borderRadius: '6px',
+        overflow: 'hidden',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
+      }}>
+        {segments.map((s, i) => (
           <div
-            className="health-bar-segment healthy"
-            style={{ width: `${percentages.healthy}%` }}
-            title={`Healthy: ${data.healthy} (${percentages.healthy}%)`}
-          />
-        )}
-        {data.careful > 0 && (
-          <div
-            className="health-bar-segment careful"
-            style={{ width: `${percentages.careful}%` }}
-            title={`Careful: ${data.careful} (${percentages.careful}%)`}
-          />
-        )}
-        {data.warning > 0 && (
-          <div
-            className="health-bar-segment warning"
-            style={{ width: `${percentages.warning}%` }}
-            title={`Warning: ${data.warning} (${percentages.warning}%)`}
-          />
-        )}
-        {data.unable > 0 && (
-          <div
-            className="health-bar-segment unable"
-            style={{ width: `${percentages.unable}%` }}
-            title={`Unable to Report: ${data.unable} (${percentages.unable}%)`}
-          />
-        )}
+            key={s.key}
+            style={{
+              width: `${s.pct}%`,
+              background: s.color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: s.key === 'careful' ? '#1f2937' : 'white',
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              minWidth: s.count > 0 ? '20px' : '0',
+              transition: 'width 0.3s ease',
+            }}
+            title={`${s.label}: ${s.count} (${s.pct}%)`}
+          >
+            {parseInt(s.pct) >= 10 && s.count}
+          </div>
+        ))}
       </div>
 
       {showLegend && (
-        <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', fontSize: '0.8rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--status-healthy)' }} />
-            <span>Healthy ({data.healthy})</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--status-careful)' }} />
-            <span>Careful ({data.careful})</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--status-warning)' }} />
-            <span>Warning ({data.warning})</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--status-unable)' }} />
-            <span>Unable ({data.unable})</span>
-          </div>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', fontSize: '0.75rem', flexWrap: 'wrap' }}>
+          {segments.map(s => (
+            <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
+              <span style={{ color: '#374151' }}>{s.label} ({s.count})</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

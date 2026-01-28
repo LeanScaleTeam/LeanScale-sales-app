@@ -671,3 +671,16 @@ a:hover {
     justify-content: center;
   }
 }
+
+/* Team grid responsive */
+@media (max-width: 768px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

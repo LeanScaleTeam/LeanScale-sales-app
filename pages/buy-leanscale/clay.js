@@ -1,5 +1,33 @@
+import { useState } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
+
+const claybooks = [
+  { id: 1, name: 'Market Map', price: 7500, hours: '40-60', prereqs: 'None', description: 'Builds your complete ICP/TAM database in Clay, enriches every account, scores for fit, assigns tiers, and pushes to CRM.', complexity: 'High', scope: 'Up to 50,000 accounts' },
+  { id: 2, name: 'Persona Mapping', price: 4000, hours: '20-30', prereqs: 'Market Map', description: 'Adds contact-level enrichment to your Market Map. Identifies key personas, enriches contacts, scores for relevance.', complexity: 'Medium', scope: 'Up to 100,000 contacts' },
+  { id: 3, name: 'Automated Inbound Enrichment', price: 5000, hours: '15-40', prereqs: 'Market Map recommended', description: 'Enriches inbound leads in real-time. Filters junk, deduplicates, scores, tiers, and routes.', complexity: 'Medium', scope: 'Unlimited inbound volume' },
+  { id: 4, name: 'Automated Outbound', price: 6000, hours: '25-35', prereqs: 'Market Map', description: 'Builds targeted outbound lists, enriches contacts, personalizes at scale, pushes to sales engagement platform.', complexity: 'Medium-High', scope: 'Up to 10,000 contacts/month' },
+  { id: 5, name: 'Lead Scoring', price: 3500, hours: '15-25', prereqs: 'ICP definition', description: 'ICP-driven lead scoring combining firmographic fit with enriched data signals, syncs to CRM/MAP.', complexity: 'Medium', scope: 'Inbound and existing database' },
+  { id: 6, name: 'ABM Target Account Enrichment', price: 5500, hours: '25-35', prereqs: 'Named account list', description: 'Deep enrichment for named accounts, buying committee mapping, intent signals, ABM-ready segments.', complexity: 'Medium-High', scope: 'Up to 500 named accounts' },
+  { id: 7, name: 'CRM Data Cleanup', price: 3000, hours: '15-20', prereqs: 'CRM access', description: 'Enriches and standardizes existing CRM data. Fills gaps, corrects errors, normalizes fields.', complexity: 'Low-Medium', scope: 'Up to 25,000 records' },
+  { id: 8, name: 'Customer Segmentation', price: 4500, hours: '20-30', prereqs: 'Customer list', description: 'Enriches customer base for CS coverage models, expansion targeting, and retention analysis.', complexity: 'Medium', scope: 'Up to 10,000 customers' },
+  { id: 9, name: 'Event Lead Enrichment', price: 2500, hours: '10-15', prereqs: 'ICP definition', description: 'Enriches event leads, scores against ICP, deduplicates, routes hot leads for follow-up.', complexity: 'Low-Medium', scope: 'Up to 5,000 leads per event' },
+  { id: 10, name: 'Signal-Based Prospecting', price: 6500, hours: '30-40', prereqs: 'Market Map', description: 'Monitors intent signals across your TAM and surfaces accounts showing buying signals.', complexity: 'High', scope: 'Up to 25,000 accounts' },
+];
+
+const bundles = [
+  { name: 'GTM Foundation Bundle', price: 15000, savings: 2500, includes: ['Market Map', 'Persona Mapping', 'Automated Inbound Enrichment'] },
+  { name: 'Full Outbound Stack Bundle', price: 20000, savings: 4000, includes: ['Market Map', 'Persona Mapping', 'Automated Outbound', 'Signal-Based Prospecting'] },
+  { name: 'Complete GTM Infrastructure', price: 35000, savings: 7500, includes: ['All 10 Claybooks', 'Unified architecture', 'Cross-table deduplication', 'Priority 8-week delivery'] },
+];
+
+const addOns = [
+  { name: 'Additional data source', price: '$500', description: 'Beyond included sources per Claybook' },
+  { name: 'Vertical-specific enrichment', price: '$1,000', description: 'iBanknet, Definitive Healthcare, Cause IQ, etc.' },
+  { name: 'Extended scope (2x records)', price: '+25%', description: 'Double the record limit' },
+  { name: 'Ongoing maintenance', price: '$750/mo', description: 'Monthly updates, credit monitoring, break/fix' },
+  { name: 'Team training session', price: '$1,000', description: '90-min hands-on Clay training for team' },
+];
 
 const stats = [
   { value: '$5.45B+', label: 'Capital Raised by Clients' },
@@ -275,6 +303,115 @@ export default function ClayPartnership() {
           >
             Get Free Clay Diagnostic →
           </a>
+        </div>
+
+        {/* Claybook Pricing Section */}
+        <div style={{ marginBottom: '4rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <p style={{ color: '#7c3aed', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+              Claybook Pricing Menu
+            </p>
+            <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+              Fixed pricing for Clay implementations
+            </h2>
+            <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
+              Each Claybook is a pre-built Clay workflow including enrichment waterfall, scoring logic, CRM mapping, integration setup, documentation, and training.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+            {claybooks.map((book) => (
+              <div key={book.id} style={{
+                background: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                padding: '1.25rem',
+                transition: 'box-shadow 0.2s',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                  <div>
+                    <span style={{ 
+                      background: '#f3f4f6', 
+                      color: '#6b7280', 
+                      padding: '0.15rem 0.5rem', 
+                      borderRadius: '4px', 
+                      fontSize: '0.7rem',
+                      marginRight: '0.5rem',
+                    }}>
+                      #{book.id}
+                    </span>
+                    <span style={{
+                      background: book.complexity === 'High' ? '#fef3c7' : book.complexity === 'Medium-High' ? '#fef3c7' : '#d1fae5',
+                      color: book.complexity === 'High' ? '#92400e' : book.complexity === 'Medium-High' ? '#92400e' : '#065f46',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                    }}>
+                      {book.complexity}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#7c3aed' }}>
+                    ${book.price.toLocaleString()}
+                  </div>
+                </div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>{book.name}</h3>
+                <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+                  {book.description}
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#9ca3af' }}>
+                  <span>{book.hours} hrs</span>
+                  <span>|</span>
+                  <span>{book.scope}</span>
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                  <strong>Prereqs:</strong> {book.prereqs}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>Bundles (Save More)</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+              {bundles.map((bundle, i) => (
+                <div key={i} style={{
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  color: 'white',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '0.25rem' }}>
+                    Save ${bundle.savings.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    ${bundle.price.toLocaleString()}
+                  </div>
+                  <h4 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>{bundle.name}</h4>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>
+                    {bundle.includes.map((item, j) => (
+                      <li key={j} style={{ marginBottom: '0.25rem' }}>✓ {item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Add-Ons</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
+              {addOns.map((addon, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 600, color: '#7c3aed', marginBottom: '0.25rem' }}>
+                    {addon.price}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.25rem' }}>{addon.name}</div>
+                  <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>{addon.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div style={{ 

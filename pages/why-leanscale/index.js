@@ -27,7 +27,7 @@ export default function WhyLeanScale() {
               Get Started
             </Link>
             <Link href="/try-leanscale" className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
-              Try GTM Diagnostic
+              Start GTM Diagnostic
             </Link>
           </div>
         </div>
@@ -365,7 +365,7 @@ export default function WhyLeanScale() {
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/try-leanscale">
               <button className="btn" style={{ background: 'white', color: '#7c3aed', border: 'none', padding: '0.75rem 1.5rem', fontWeight: 600 }}>
-                Take GTM Diagnostic
+                Start GTM Diagnostic
               </button>
             </Link>
             <Link href="/buy-leanscale">

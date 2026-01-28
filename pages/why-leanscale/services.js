@@ -332,7 +332,7 @@ export default function ServicesCatalog() {
               color: '#7c3aed',
             }}
           >
-            Take GTM Diagnostic
+            Start GTM Diagnostic
           </Link>
         </div>
       </div>

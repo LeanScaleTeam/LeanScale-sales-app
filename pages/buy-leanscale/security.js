@@ -26,9 +26,9 @@ const securityMeasures = [
 export default function Security() {
   return (
     <Layout title="Security">
-      <div className="container" style={{ maxWidth: 800 }}>
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 800, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>🔒</span> Security
           </h1>
         </div>

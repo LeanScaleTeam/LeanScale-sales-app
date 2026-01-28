@@ -100,7 +100,7 @@ export default function InvestorPerks() {
             For investors who connect with LeanScale, we provide the following complimentary GTM support to your portfolio companies.
           </p>
 
-          <div className="perks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+          <div className="perks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
             {perks.map((perk) => (
               <div key={perk.title} style={{
                 background: 'white',
@@ -156,7 +156,7 @@ export default function InvestorPerks() {
           <h2 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.5rem' }}>
             We&apos;ve scaled the fastest-growing Startups in B2B Tech
           </h2>
-          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '2rem' }}>
             {stats.map((stat) => (
               <div key={stat.label} style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stat.value}</div>
@@ -171,7 +171,7 @@ export default function InvestorPerks() {
           <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '2rem', maxWidth: 700, margin: '0 auto 2rem' }}>
             A proven GTM partner that equips your portfolio companies with diagnostics, growth modeling, and reporting systems – all handled for you at no cost.
           </p>
-          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
+          <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
             {steps.map((step) => (
               <div key={step.number} style={{
                 background: '#f9fafb',
@@ -218,7 +218,7 @@ export default function InvestorPerks() {
           padding: '3rem',
           marginBottom: '3rem',
         }}>
-          <div className="founder-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '3rem', alignItems: 'center' }}>
+          <div className="founder-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '3rem', alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
               <img 
                 src="https://leanscale.team/wp-content/uploads/2024/03/Anthony2_de13c4ccc0.jpg" 

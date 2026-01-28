@@ -87,12 +87,12 @@ export default function BuyLeanScale() {
 
   return (
     <Layout title="Buy LeanScale">
-      <div className="container" style={{ maxWidth: 900 }}>
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>🚀</span> Start Your LeanScale Engagement
           </h1>
-          <p style={{ color: '#666', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
             Configure your GTM operations engagement and get started in minutes.
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function BuyLeanScale() {
               Step 1: Choose Your Plan
             </h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
               {hourTiers.map((tier) => (
                 <div
                   key={tier.hours}

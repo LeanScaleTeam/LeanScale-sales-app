@@ -129,8 +129,8 @@ export default function EngagementOverview() {
   return (
     <Layout title="Engagement Overview">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📋</span> Engagement Overview
           </h1>
           <p className="page-subtitle">Prioritized Projects Based on Your Diagnostic Results</p>
@@ -171,7 +171,7 @@ export default function EngagementOverview() {
             See how long your engagement will take based on different monthly hour commitments
           </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             {hourTiers.map((tier) => {
               const duration = calculateDuration(tier);
               const isSelected = selectedTier.hours === tier.hours;

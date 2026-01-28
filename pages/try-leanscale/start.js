@@ -5,9 +5,9 @@ import customerConfig from '../../data/customer-config';
 export default function StartDiagnostic() {
   return (
     <Layout title="Start Diagnostic">
-      <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>🚀</span> Start Diagnostic
           </h1>
         </div>

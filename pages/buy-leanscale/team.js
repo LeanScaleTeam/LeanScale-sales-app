@@ -122,12 +122,12 @@ export default function YourTeam() {
 
   return (
     <Layout title="Your Team">
-      <div className="container" style={{ maxWidth: 1100 }}>
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>👥</span> Your Team
           </h1>
-          <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto' }}>
             Meet the LeanScale operators who will be working with you. Our team combines deep GTM expertise with technical implementation skills.
           </p>
         </div>

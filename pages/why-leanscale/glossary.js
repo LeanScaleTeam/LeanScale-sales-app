@@ -47,11 +47,11 @@ export default function Glossary() {
   return (
     <Layout title="GTM Ops Glossary">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📖</span> GTM Ops Glossary
           </h1>
-          <p style={{ fontSize: '1.1rem', color: '#666', marginTop: '0.5rem' }}>
+          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
             Plain English definitions for common GTM and RevOps terms
           </p>
         </div>

@@ -211,20 +211,20 @@ export default function OneTimeProjects() {
 
   return (
     <Layout title="One-Time Projects">
-      <div className="container" style={{ maxWidth: 1000 }}>
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📋</span> One-Time Projects
           </h1>
-          <p style={{ color: '#666', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
             Fixed-scope GTM operations projects delivered in 3 months. Each project includes discovery, 
             implementation, training, and 30-day post-launch support.
           </p>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1rem',
           marginBottom: '2rem',
         }}>

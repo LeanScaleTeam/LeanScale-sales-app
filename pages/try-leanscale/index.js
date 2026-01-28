@@ -21,7 +21,7 @@ export default function TryLeanScale() {
         </div>
 
         {/* CTA Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
           <Link href="/try-leanscale/start" style={{ textDecoration: 'none' }}>
             <div className="card" style={{
               padding: '2rem',
@@ -111,7 +111,7 @@ export default function TryLeanScale() {
           }}>
             What We Assess
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem' }}>
             {diagnosticFeatures.map((feature) => (
               <div key={feature.label} style={{ textAlign: 'center' }}>
                 <div style={{

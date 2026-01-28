@@ -152,7 +152,7 @@ export default function ClayPartnership() {
       </div>
 
       <div className="container" style={{ padding: '4rem 1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
           {stats.map((stat, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#7c3aed' }}>{stat.value}</div>
@@ -169,7 +169,7 @@ export default function ClayPartnership() {
             versus common misconceptions
           </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             <div>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', marginBottom: '1rem' }}>
                 <span style={{ fontSize: '1.25rem' }}>✕</span> What Clay is NOT
@@ -223,7 +223,7 @@ export default function ClayPartnership() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
           {useCases.map((useCase, i) => (
             <div key={i} style={{ 
               background: 'white', 
@@ -319,7 +319,7 @@ export default function ClayPartnership() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
             {claybooks.map((book) => (
               <div key={book.id} style={{
                 background: 'white',
@@ -372,7 +372,7 @@ export default function ClayPartnership() {
 
           <div style={{ marginBottom: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>Bundles (Save More)</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
               {bundles.map((bundle, i) => (
                 <div key={i} style={{
                   background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
@@ -400,7 +400,7 @@ export default function ClayPartnership() {
 
           <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1.5rem' }}>
             <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Add-Ons</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
               {addOns.map((addon, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '1rem', fontWeight: 600, color: '#7c3aed', marginBottom: '0.25rem' }}>

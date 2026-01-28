@@ -35,9 +35,9 @@ export default function EngagementCalculator() {
 
   return (
     <Layout title="Engagement Calculator">
-      <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>🧮</span> Engagement Calculator
           </h1>
         </div>

@@ -91,8 +91,8 @@ export default function KeyResources() {
   return (
     <Layout title="Key Resources">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📚</span> Key Resources
           </h1>
         </div>

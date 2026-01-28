@@ -86,11 +86,11 @@ export default function ServicesCatalog() {
   return (
     <Layout title="Services Catalog">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>🛠️</span> LeanScale Services Catalog
           </h1>
-          <p style={{ color: '#666', maxWidth: 700, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 700, margin: '0 auto', lineHeight: 1.6 }}>
             {allServicesCount} services across Strategic Projects, Managed Services, and Tool Implementations. 
             Browse by category and function to find the right solution for your GTM operations.
           </p>

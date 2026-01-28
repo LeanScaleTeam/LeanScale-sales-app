@@ -5,12 +5,12 @@ import Link from 'next/link';
 export default function Availability() {
   return (
     <Layout title="Cohort Availability">
-      <div className="container" style={{ maxWidth: 900 }}>
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📅</span> Cohort Availability
           </h1>
-          <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
             New cohorts start every 2 weeks. See real-time availability and reserve your spot.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default function Availability() {
           borderRadius: '12px',
         }}>
           <h3 style={{ marginBottom: '1rem', fontSize: '1rem' }}>How Cohorts Work</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
             <div>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🚀</div>
               <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Kickoff</div>

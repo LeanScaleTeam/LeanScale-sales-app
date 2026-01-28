@@ -29,9 +29,9 @@ export default function GettingStarted() {
 
   return (
     <Layout title="Getting Started">
-      <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>⚡</span> Getting Started
           </h1>
         </div>
@@ -123,7 +123,7 @@ export default function GettingStarted() {
             <hr style={{ margin: '1.5rem 0', border: 'none', borderTop: '1px solid var(--ls-light-gray)' }} />
 
             {/* Engagement Options */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
               {/* Monthly Hours */}
               <div className="form-group">
                 <label className="form-label">

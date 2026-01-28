@@ -194,8 +194,8 @@ export default function GTMDiagnostic() {
   return (
     <Layout title="GTM Diagnostic Results">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>📊</span> GTM Diagnostic Results
           </h1>
           <p className="page-subtitle">Comprehensive health assessment of your GTM operations</p>
@@ -230,7 +230,7 @@ export default function GTMDiagnostic() {
             Status distribution across all inspection points
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             {[
               { label: 'Power10 Metrics', stats: power10Stats, count: power10Metrics.length },
               { label: 'GTM Tools', stats: toolStats, count: tools.length },
@@ -275,7 +275,7 @@ export default function GTMDiagnostic() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '0.65rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Healthy</div>
               <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#4ade80' }}>{processStats.healthy + toolStats.healthy + power10Stats.healthy}</div>
@@ -329,7 +329,7 @@ export default function GTMDiagnostic() {
               </div>
               <div className="card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>All Power10 Metrics</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }} className="power10-grid">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }} className="power10-grid">
                   {power10Metrics.map((metric) => (
                     <div
                       key={metric.name}

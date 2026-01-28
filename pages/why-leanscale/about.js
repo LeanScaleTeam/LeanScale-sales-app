@@ -83,8 +83,8 @@ export default function AboutUs() {
   return (
     <Layout title="About Us">
       <div className="container">
-        <div className="page-header">
-          <h1 className="page-title">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
             <span>👋</span> About Us
           </h1>
         </div>
@@ -121,10 +121,10 @@ export default function AboutUs() {
         {/* What Sets Us Apart */}
         <section style={{ marginBottom: '3rem' }}>
           <h2 style={{ marginBottom: '1.5rem' }}>What Sets Us Apart</h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '1.5rem' 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1.5rem'
           }}>
             {differentiators.map((item) => (
               <div 
@@ -152,12 +152,12 @@ export default function AboutUs() {
         {/* Leadership Team */}
         <section style={{ marginBottom: '3rem' }}>
           <h2 style={{ marginBottom: '1.5rem' }}>Our Leadership Team</h2>
-          <div 
+          <div
             className="team-grid"
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 1fr)', 
-              gap: '1.5rem' 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1.5rem'
             }}
           >
             {leadershipTeam.map((member) => (
@@ -198,10 +198,10 @@ export default function AboutUs() {
             borderRadius: '12px', 
             padding: '2rem',
           }}>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '3rem' 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '3rem'
             }}>
               {/* Top Talent Column */}
               <div>

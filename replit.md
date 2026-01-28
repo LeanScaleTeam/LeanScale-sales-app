@@ -38,15 +38,29 @@ A Next.js-based sales portal for LeanScale, a company providing fractional GTM O
 - All 68 strategic projects link to detailed playbooks with full implementation procedures
 
 ## Key Data Files
+- `data/diagnostic-config.md` - **EDITABLE** Markdown file for diagnostic processes, tools, managed services
+- `data/diagnostic-data.js` - Auto-generated from diagnostic-config.md (do not edit directly)
+- `data/parse-diagnostic-config.js` - Parser that converts Markdown to JS data
 - `data/services-catalog.js` - All 148 services, 68 playbook links, function categories
 - `data/playbook-content.js` - Detailed content for 68 playbooks (1MB+, imported from GitHub)
-- `data/diagnostic-data.js` - GTM diagnostic questions and scoring
 - `data/all-playbooks.json` - Raw playbook data fetched from GitHub
 - `data/availability-calendar.js` - 26 cohorts for 2026 (every 2 weeks starting Mondays)
 - `data/team.js` - 13 team members (5 Architects, 8 Engineers)
 - `data/customer-config.js` - Customer-specific config (assignedTeam array for highlighting)
 - `scripts/fetch-playbooks.js` - Script to fetch playbooks from GitHub API
 - `scripts/generate-playbook-content.js` - Script to generate playbook-content.js from raw data
+
+## Editing Diagnostic & Engagement Data
+The diagnostic processes, tools, and managed services are configured via **Markdown tables** in `data/diagnostic-config.md`. This makes it easy to:
+- Add/remove processes, tools, managed services
+- Change health status (healthy, careful, warning, unable)
+- Toggle what appears in the engagement overview (add ✓ to Include column)
+- Set hours/month for managed services
+
+After editing the Markdown file, changes are automatically applied on the next `npm run dev` or `npm run build`. To regenerate manually:
+```bash
+npm run generate-diagnostic
+```
 
 ## Claybook Pricing (on /buy-leanscale/clay)
 - 10 fixed-price Claybook implementations ($2,500 - $7,500)

@@ -83,6 +83,13 @@ export default function EngagementOverview() {
     engagementItems.reduce((acc, item) => ({ ...acc, [item.name]: true }), {})
   );
 
+  const hourTiers = [
+    { hours: 50, label: 'Starter', price: 15000, color: '#10b981' },
+    { hours: 100, label: 'Growth', price: 25000, color: '#7c3aed' },
+    { hours: 225, label: 'Scale', price: 50000, color: '#f59e0b' },
+  ];
+  const [selectedTier, setSelectedTier] = useState(hourTiers[1]);
+
   const toggleItem = (name) => {
     setSelectedItems(prev => ({ ...prev, [name]: !prev[name] }));
   };
@@ -93,7 +100,24 @@ export default function EngagementOverview() {
 
   const totalLowHours = strategicItems.reduce((sum, p) => sum + p.lowHours, 0);
   const totalHighHours = strategicItems.reduce((sum, p) => sum + p.highHours, 0);
+  const avgProjectHours = Math.round((totalLowHours + totalHighHours) / 2);
   const monthlyManagedHours = managedItems.reduce((sum, p) => sum + p.lowHours, 0);
+
+  const calculateDuration = (tier) => {
+    const availableForProjects = tier.hours - monthlyManagedHours;
+    if (availableForProjects <= 0) return { months: '∞', weeks: '∞', note: 'Not enough hours for projects' };
+    const monthsLow = totalLowHours / availableForProjects;
+    const monthsHigh = totalHighHours / availableForProjects;
+    const avgMonths = (monthsLow + monthsHigh) / 2;
+    return {
+      monthsLow: Math.ceil(monthsLow),
+      monthsHigh: Math.ceil(monthsHigh),
+      avgMonths: Math.round(avgMonths * 10) / 10,
+      weeksLow: Math.ceil(monthsLow * 4.33),
+      weeksHigh: Math.ceil(monthsHigh * 4.33),
+      availableForProjects,
+    };
+  };
 
   const weeks = Array.from({ length: 26 }, (_, i) => i + 1);
   const getWeekLabel = (week) => {
@@ -131,12 +155,79 @@ export default function EngagementOverview() {
             </div>
           </div>
           <div className="card" style={{ textAlign: 'center', padding: '1.5rem' }}>
-            <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>Monthly Hours</div>
+            <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>Managed Svc Hours/Mo</div>
             <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#7c3aed' }}>
               {monthlyManagedHours}
             </div>
           </div>
         </div>
+
+        <section className="card" style={{ padding: '1.5rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)' }}>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>⏱️</span> Timeline Calculator
+          </h2>
+          <p style={{ color: '#c4b5fd', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+            See how long your engagement will take based on different monthly hour commitments
+          </p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+            {hourTiers.map((tier) => {
+              const duration = calculateDuration(tier);
+              const isSelected = selectedTier.hours === tier.hours;
+              return (
+                <div
+                  key={tier.hours}
+                  onClick={() => setSelectedTier(tier)}
+                  style={{
+                    padding: '1.25rem',
+                    borderRadius: '12px',
+                    background: isSelected ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                    border: isSelected ? `2px solid ${tier.color}` : '2px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: tier.color, textTransform: 'uppercase' }}>{tier.label}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#a5b4fc' }}>${tier.price.toLocaleString()}/mo</span>
+                  </div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '0.25rem' }}>
+                    {tier.hours} <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#c4b5fd' }}>hrs/mo</span>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#a5b4fc', marginTop: '0.75rem' }}>
+                    {duration.availableForProjects > 0 ? (
+                      <>
+                        <div style={{ fontWeight: 600, color: 'white', fontSize: '1.25rem' }}>
+                          {duration.monthsLow === duration.monthsHigh ? `~${duration.monthsLow}` : `${duration.monthsLow}-${duration.monthsHigh}`} months
+                        </div>
+                        <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                          {duration.availableForProjects} hrs/mo for projects
+                        </div>
+                      </>
+                    ) : (
+                      <span style={{ color: '#f87171' }}>Insufficient hours</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Total Project Hours</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{totalLowHours}-{totalHighHours}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Managed Svc (ongoing)</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{monthlyManagedHours} hrs/mo</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.75rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Selected Plan</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: selectedTier.color }}>{selectedTier.hours} hrs/mo</div>
+            </div>
+          </div>
+        </section>
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Project Timeline (H1 2026)</h2>

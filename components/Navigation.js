@@ -1,7 +1,20 @@
+import { useState } from 'react';
 import Link from 'next/link';
 import customerConfig from '../data/customer-config';
 
 export default function Navigation() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const toggleDropdown = (name) => {
+    setOpenDropdown(openDropdown === name ? null : name);
+  };
+
+  const closeMenu = () => {
+    setMobileMenuOpen(false);
+    setOpenDropdown(null);
+  };
+
   return (
     <nav className="nav">
       <div className="nav-logo">
@@ -11,57 +24,70 @@ export default function Navigation() {
             <img src={customerConfig.customerLogo} alt={customerConfig.customerName} />
           </>
         )}
-        <Link href="/">
+        <Link href="/" onClick={closeMenu}>
           {customerConfig.customerName} | LeanScale
         </Link>
       </div>
 
-      <div className="nav-links">
-        {/* Why LeanScale? */}
+      <button 
+        className="mobile-menu-btn"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? '✕' : '☰'}
+      </button>
+
+      <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
         <div className="nav-item">
-          <button className="nav-button">
+          <button 
+            className="nav-button"
+            onClick={() => toggleDropdown('why')}
+          >
             Why LeanScale? <span>▾</span>
           </button>
-          <div className="nav-dropdown">
-            <Link href="/why-leanscale">Overview</Link>
-            <Link href="/why-leanscale/about">About Us</Link>
-            <Link href="/why-leanscale/resources">Key Resources</Link>
-            <Link href="/why-leanscale/references">Customer References</Link>
-            <Link href="/why-leanscale/services">Services Catalog</Link>
-            <Link href="/why-leanscale/glossary">GTM Ops Glossary</Link>
+          <div className={`nav-dropdown ${openDropdown === 'why' ? 'nav-dropdown-open' : ''}`}>
+            <Link href="/why-leanscale" onClick={closeMenu}>Overview</Link>
+            <Link href="/why-leanscale/about" onClick={closeMenu}>About Us</Link>
+            <Link href="/why-leanscale/resources" onClick={closeMenu}>Key Resources</Link>
+            <Link href="/why-leanscale/references" onClick={closeMenu}>Customer References</Link>
+            <Link href="/why-leanscale/services" onClick={closeMenu}>Services Catalog</Link>
+            <Link href="/why-leanscale/glossary" onClick={closeMenu}>GTM Ops Glossary</Link>
           </div>
         </div>
 
-        {/* Try LeanScale */}
         <div className="nav-item">
-          <button className="nav-button">
+          <button 
+            className="nav-button"
+            onClick={() => toggleDropdown('try')}
+          >
             Try LeanScale <span>▾</span>
           </button>
-          <div className="nav-dropdown">
-            <Link href="/try-leanscale">Overview</Link>
-            <Link href="/try-leanscale/start">Start Diagnostic</Link>
-            <Link href="/try-leanscale/diagnostic">GTM Diagnostic</Link>
-            <Link href="/try-leanscale/engagement">Engagement Overview</Link>
+          <div className={`nav-dropdown ${openDropdown === 'try' ? 'nav-dropdown-open' : ''}`}>
+            <Link href="/try-leanscale" onClick={closeMenu}>Overview</Link>
+            <Link href="/try-leanscale/start" onClick={closeMenu}>Start Diagnostic</Link>
+            <Link href="/try-leanscale/diagnostic" onClick={closeMenu}>GTM Diagnostic</Link>
+            <Link href="/try-leanscale/engagement" onClick={closeMenu}>Engagement Overview</Link>
           </div>
         </div>
 
-        {/* Buy LeanScale */}
         <div className="nav-item">
-          <button className="nav-button">
+          <button 
+            className="nav-button"
+            onClick={() => toggleDropdown('buy')}
+          >
             Buy LeanScale <span>▾</span>
           </button>
-          <div className="nav-dropdown">
-            <Link href="/buy-leanscale/one-time-projects">One-Time Projects</Link>
-            <Link href="/buy-leanscale/availability">Cohort Availability</Link>
-            <Link href="/buy-leanscale/investor-perks">Investor Perks</Link>
-            <Link href="/buy-leanscale/security">Security</Link>
-            <Link href="/buy-leanscale/team">Your Team</Link>
-            <Link href="/buy-leanscale/clay">Clay x LeanScale</Link>
+          <div className={`nav-dropdown ${openDropdown === 'buy' ? 'nav-dropdown-open' : ''}`}>
+            <Link href="/buy-leanscale/one-time-projects" onClick={closeMenu}>One-Time Projects</Link>
+            <Link href="/buy-leanscale/availability" onClick={closeMenu}>Cohort Availability</Link>
+            <Link href="/buy-leanscale/investor-perks" onClick={closeMenu}>Investor Perks</Link>
+            <Link href="/buy-leanscale/security" onClick={closeMenu}>Security</Link>
+            <Link href="/buy-leanscale/team" onClick={closeMenu}>Your Team</Link>
+            <Link href="/buy-leanscale/clay" onClick={closeMenu}>Clay x LeanScale</Link>
           </div>
         </div>
 
-        {/* Get Started CTA */}
-        <Link href="/buy-leanscale" className="nav-cta">
+        <Link href="/buy-leanscale" className="nav-cta" onClick={closeMenu}>
           Get Started
         </Link>
       </div>

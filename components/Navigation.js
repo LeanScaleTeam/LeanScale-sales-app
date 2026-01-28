@@ -19,23 +19,25 @@ export default function Navigation() {
 
   return (
     <nav className="nav">
-      <Link href="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <img src="/leanscale-logo.png" alt="LeanScale" style={{ height: 28 }} />
-        {showCustomerBranding && (
+      <Link href="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {showCustomerBranding && customerConfig.customerLogo ? (
           <>
+            <img src="/leanscale-logo.png" alt="LeanScale" style={{ height: 28 }} />
             <span style={{ color: '#d1d5db', fontSize: '1.25rem', fontWeight: 300 }}>×</span>
-            {customerConfig.customerLogo ? (
-              <img 
-                src={customerConfig.customerLogo} 
-                alt={customerConfig.customerName} 
-                style={{ height: 28, maxWidth: 120, objectFit: 'contain' }} 
-              />
-            ) : (
-              <span style={{ fontWeight: 600, fontSize: '1rem', color: '#374151' }}>
-                {customerConfig.customerName}
-              </span>
-            )}
+            <img 
+              src={customerConfig.customerLogo} 
+              alt={customerConfig.customerName} 
+              style={{ height: 28, maxWidth: 120, objectFit: 'contain' }} 
+            />
           </>
+        ) : showCustomerBranding ? (
+          <>
+            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1f2937' }}>LeanScale</span>
+            <span style={{ color: '#9ca3af', fontSize: '1.1rem', fontWeight: 300 }}>×</span>
+            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1f2937' }}>{customerConfig.customerName}</span>
+          </>
+        ) : (
+          <img src="/leanscale-logo.png" alt="LeanScale" style={{ height: 28 }} />
         )}
       </Link>
 

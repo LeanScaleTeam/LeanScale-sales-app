@@ -13,7 +13,7 @@ const customerConfig = {
   // If provided, displays logo instead of text name
   // Example: "/customer-logo.png" (place file in /public folder)
   // Example: "https://example.com/logo.png" (external URL)
-  customerLogo: "/customer-logo-example.svg",
+  customerLogo: null,
 
   // Portal password (simple shared password)
   password: "demo2026",

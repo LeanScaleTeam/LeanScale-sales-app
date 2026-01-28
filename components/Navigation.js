@@ -19,39 +19,25 @@ export default function Navigation() {
 
   return (
     <nav className="nav">
-      <Link href="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <Link href="/" className="nav-logo" onClick={closeMenu}>
         {showCustomerBranding && customerConfig.customerLogo ? (
           <>
-            <img src="/leanscale-logo.png" alt="LeanScale" style={{ height: 28 }} />
-            <span style={{ color: '#d1d5db', fontSize: '1.25rem', fontWeight: 300 }}>×</span>
-            <img 
-              src={customerConfig.customerLogo} 
-              alt={customerConfig.customerName} 
-              style={{ height: 28, maxWidth: 120, objectFit: 'contain' }} 
+            <img src="/leanscale-logo.png" alt="LeanScale" />
+            <span className="nav-logo-divider">×</span>
+            <img
+              src={customerConfig.customerLogo}
+              alt={customerConfig.customerName}
+              className="nav-customer-logo"
             />
           </>
         ) : showCustomerBranding ? (
           <>
-            <span style={{ 
-              fontWeight: 800, 
-              fontSize: '1.25rem', 
-              background: 'linear-gradient(135deg, #642585 0%, #8b5cf6 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>LeanScale</span>
-            <span style={{ color: '#c4b5fd', fontSize: '1rem', fontWeight: 400, margin: '0 0.25rem' }}>×</span>
-            <span style={{ 
-              fontWeight: 800, 
-              fontSize: '1.25rem', 
-              background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>{customerConfig.customerName}</span>
+            <span className="nav-brand-text nav-brand-leanscale">LeanScale</span>
+            <span className="nav-logo-divider-small">×</span>
+            <span className="nav-brand-text nav-brand-customer">{customerConfig.customerName}</span>
           </>
         ) : (
-          <img src="/leanscale-logo.png" alt="LeanScale" style={{ height: 28 }} />
+          <img src="/leanscale-logo.png" alt="LeanScale" />
         )}
       </Link>
 

@@ -7,38 +7,38 @@ export default function SummaryCard({ title, icon, data, onClick, isActive = fal
     <div
       onClick={onClick}
       style={{
-        background: 'white',
-        border: isActive ? '2px solid var(--ls-purple, #7c3aed)' : '1px solid #e5e7eb',
-        borderRadius: '12px',
-        padding: '1.25rem',
+        background: 'var(--bg-white)',
+        border: isActive ? '2px solid var(--ls-purple-light)' : '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        padding: 'var(--space-5)',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.2s ease',
-        boxShadow: isActive ? '0 4px 12px rgba(124, 58, 237, 0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
+        transition: 'all var(--transition-base)',
+        boxShadow: isActive ? 'var(--shadow-purple)' : 'var(--shadow-sm)',
       }}
       onMouseEnter={(e) => {
         if (onClick && !isActive) {
-          e.currentTarget.style.borderColor = '#d1d5db';
-          e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.07)';
+          e.currentTarget.style.borderColor = 'var(--gray-300)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-md)';
         }
       }}
       onMouseLeave={(e) => {
         if (onClick && !isActive) {
-          e.currentTarget.style.borderColor = '#e5e7eb';
-          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+          e.currentTarget.style.borderColor = 'var(--border-color)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
         }
       }}
     >
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
-        marginBottom: '0.75rem',
+        gap: 'var(--space-2)',
+        marginBottom: 'var(--space-3)',
       }}>
-        {icon && <span style={{ fontSize: '1.25rem' }}>{icon}</span>}
+        {icon && <span style={{ fontSize: 'var(--text-xl)' }}>{icon}</span>}
         <h3 style={{
-          fontSize: '0.95rem',
-          fontWeight: 600,
-          color: '#1f2937',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--font-semibold)',
+          color: 'var(--text-primary)',
           margin: 0,
         }}>
           {title}
@@ -48,10 +48,10 @@ export default function SummaryCard({ title, icon, data, onClick, isActive = fal
       <DonutChart data={data} size={120} showLegend={true} />
 
       <div style={{
-        marginTop: '0.75rem',
+        marginTop: 'var(--space-3)',
         textAlign: 'center',
-        fontSize: '0.8rem',
-        color: '#6b7280',
+        fontSize: 'var(--text-xs)',
+        color: 'var(--text-secondary)',
       }}>
         {total} inspection {total === 1 ? 'point' : 'points'}
       </div>

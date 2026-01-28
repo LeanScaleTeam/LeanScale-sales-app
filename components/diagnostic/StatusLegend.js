@@ -1,12 +1,31 @@
+// Status configuration using CSS variable references
+// Colors are applied via getComputedStyle or inline var() references
 const STATUS_CONFIG = {
-  healthy: { color: '#22c55e', label: 'Healthy' },
-  careful: { color: '#eab308', label: 'Careful' },
-  warning: { color: '#ef4444', label: 'Warning' },
-  unable: { color: '#1f2937', label: 'Unable' },
+  healthy: { cssVar: '--status-healthy', label: 'Healthy' },
+  careful: { cssVar: '--status-careful', label: 'Careful' },
+  warning: { cssVar: '--status-warning', label: 'Warning' },
+  unable: { cssVar: '--status-unable', label: 'Unable' },
 };
 
+// For JavaScript contexts that need the actual color values
+export function getStatusColor(status) {
+  const varName = STATUS_CONFIG[status]?.cssVar || '--gray-400';
+  if (typeof window !== 'undefined') {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+  // Fallback colors for SSR
+  const fallbacks = {
+    healthy: '#22c55e',
+    careful: '#eab308',
+    warning: '#ef4444',
+    unable: '#1f2937',
+  };
+  return fallbacks[status] || '#9ca3af';
+}
+
 export function StatusDot({ status, size = 12 }) {
-  const config = STATUS_CONFIG[status] || { color: '#ccc', label: 'Unknown' };
+  const config = STATUS_CONFIG[status];
+
   return (
     <span
       style={{
@@ -14,31 +33,31 @@ export function StatusDot({ status, size = 12 }) {
         width: size,
         height: size,
         borderRadius: '50%',
-        backgroundColor: config.color,
+        backgroundColor: config ? `var(${config.cssVar})` : 'var(--gray-400)',
         flexShrink: 0,
       }}
-      title={config.label}
+      title={config?.label || 'Unknown'}
     />
   );
 }
 
 export function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status] || { color: '#ccc', label: 'Unknown' };
+  const config = STATUS_CONFIG[status];
   const isLight = status === 'careful';
 
   return (
     <span
       style={{
         display: 'inline-block',
-        padding: '0.25rem 0.75rem',
-        borderRadius: '9999px',
-        fontSize: '0.75rem',
-        fontWeight: 500,
-        backgroundColor: config.color,
-        color: isLight ? '#1f2937' : 'white',
+        padding: 'var(--space-1) var(--space-3)',
+        borderRadius: 'var(--radius-full)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--font-medium)',
+        backgroundColor: config ? `var(${config.cssVar})` : 'var(--gray-400)',
+        color: isLight ? 'var(--gray-800)' : 'white',
       }}
     >
-      {config.label}
+      {config?.label || 'Unknown'}
     </span>
   );
 }
@@ -48,14 +67,14 @@ export default function StatusLegend({ compact = false }) {
     <div style={{
       display: 'flex',
       justifyContent: 'center',
-      gap: compact ? '1rem' : '1.5rem',
-      fontSize: compact ? '0.75rem' : '0.85rem',
+      gap: compact ? 'var(--space-4)' : 'var(--space-6)',
+      fontSize: compact ? 'var(--text-xs)' : 'var(--text-sm)',
       flexWrap: 'wrap',
     }}>
-      {Object.entries(STATUS_CONFIG).map(([status, { color, label }]) => (
-        <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+      {Object.entries(STATUS_CONFIG).map(([status, { label }]) => (
+        <div key={status} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
           <StatusDot status={status} size={compact ? 10 : 12} />
-          <span style={{ color: '#4b5563' }}>{label}</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
         </div>
       ))}
     </div>

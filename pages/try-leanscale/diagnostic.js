@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 import DonutChart from '../../components/charts/DonutChart';
 import BarChart from '../../components/charts/BarChart';
-import SummaryCard from '../../components/diagnostic/SummaryCard';
 import { StatusDot, StatusBadge } from '../../components/diagnostic/StatusLegend';
 import {
   processes,
@@ -24,46 +23,47 @@ const TABS = [
   { id: 'by-outcome', label: 'By Outcome', icon: '🎯' },
 ];
 
+const statusColors = {
+  healthy: '#22c55e',
+  careful: '#eab308',
+  warning: '#ef4444',
+  unable: '#6b7280',
+};
+
 function ItemTable({ items, showFunction = false, showPriority = true }) {
   return (
     <div className="diagnostic-table">
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table className="data-table">
         <thead>
-          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-            <th style={{ textAlign: 'left', padding: '0.75rem', fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Name</th>
-            {showFunction && <th style={{ textAlign: 'left', padding: '0.75rem', fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Function</th>}
-            <th style={{ textAlign: 'center', padding: '0.75rem', fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Status</th>
-            {showPriority && <th style={{ textAlign: 'center', padding: '0.75rem', fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Priority</th>}
+          <tr>
+            <th>Name</th>
+            {showFunction && <th>Function</th>}
+            <th style={{ textAlign: 'center' }}>Status</th>
+            {showPriority && <th style={{ textAlign: 'center' }}>Priority</th>}
           </tr>
         </thead>
         <tbody>
-          {items.map((item, index) => (
-            <tr
-              key={item.name}
-              style={{
-                borderBottom: '1px solid #f3f4f6',
-                background: index % 2 === 0 ? 'white' : '#fafafa',
-              }}
-            >
-              <td style={{ padding: '0.75rem', fontSize: '0.875rem' }}>{item.name}</td>
+          {items.map((item) => (
+            <tr key={item.name}>
+              <td style={{ fontWeight: 500 }}>{item.name}</td>
               {showFunction && (
-                <td style={{ padding: '0.75rem', fontSize: '0.8rem', color: '#6b7280' }}>
+                <td style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                   {item.function || item.category || '-'}
                 </td>
               )}
-              <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+              <td style={{ textAlign: 'center' }}>
                 <StatusBadge status={item.status} />
               </td>
               {showPriority && (
-                <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                <td style={{ textAlign: 'center' }}>
                   {item.addToEngagement && (
                     <span style={{
-                      fontSize: '0.7rem',
-                      background: 'var(--ls-lime-green, #84cc16)',
-                      color: 'var(--ls-purple, #7c3aed)',
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                      fontWeight: 600,
+                      fontSize: 'var(--text-xs)',
+                      background: 'var(--ls-lime-green)',
+                      color: 'var(--ls-purple)',
+                      padding: 'var(--space-1) var(--space-2)',
+                      borderRadius: 'var(--radius-sm)',
+                      fontWeight: 'var(--font-semibold)',
                     }}>
                       Priority
                     </span>
@@ -82,7 +82,7 @@ function GroupedView({ items, groupByField, groupNames }) {
   const grouped = groupBy(items, groupByField);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       {groupNames.map((groupName) => {
         const groupItems = grouped[groupName] || [];
         if (groupItems.length === 0) return null;
@@ -93,47 +93,47 @@ function GroupedView({ items, groupByField, groupNames }) {
           <div
             key={groupName}
             style={{
-              background: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
+              background: 'var(--bg-white)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-lg)',
               overflow: 'hidden',
             }}
           >
             <div style={{
-              background: '#f9fafb',
-              padding: '0.75rem 1rem',
-              borderBottom: '1px solid #e5e7eb',
+              background: 'var(--bg-subtle)',
+              padding: 'var(--space-3) var(--space-4)',
+              borderBottom: '1px solid var(--border-color)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '0.5rem',
+              gap: 'var(--space-2)',
             }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>{groupName}</h3>
-              <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
+              <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', margin: 0 }}>{groupName}</h3>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', fontSize: 'var(--text-xs)' }}>
                 {stats.healthy > 0 && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <StatusDot status="healthy" size={10} /> {stats.healthy}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    <StatusDot status="healthy" size={8} /> {stats.healthy}
                   </span>
                 )}
                 {stats.careful > 0 && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <StatusDot status="careful" size={10} /> {stats.careful}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    <StatusDot status="careful" size={8} /> {stats.careful}
                   </span>
                 )}
                 {stats.warning > 0 && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <StatusDot status="warning" size={10} /> {stats.warning}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    <StatusDot status="warning" size={8} /> {stats.warning}
                   </span>
                 )}
                 {stats.unable > 0 && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <StatusDot status="unable" size={10} /> {stats.unable}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    <StatusDot status="unable" size={8} /> {stats.unable}
                   </span>
                 )}
               </div>
             </div>
-            <div style={{ padding: '0.5rem' }}>
+            <div style={{ padding: 'var(--space-2)' }}>
               {groupItems.map((item, index) => (
                 <div
                   key={item.name}
@@ -141,21 +141,21 @@ function GroupedView({ items, groupByField, groupNames }) {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '4px',
-                    background: index % 2 === 0 ? '#fafafa' : 'white',
+                    padding: 'var(--space-2) var(--space-3)',
+                    borderRadius: 'var(--radius-sm)',
+                    background: index % 2 === 0 ? 'var(--bg-subtle)' : 'white',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                    <span style={{ fontSize: '0.85rem' }}>{item.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1 }}>
+                    <span style={{ fontSize: 'var(--text-sm)' }}>{item.name}</span>
                     {item.addToEngagement && (
                       <span style={{
                         fontSize: '0.65rem',
-                        background: 'var(--ls-lime-green, #84cc16)',
-                        color: 'var(--ls-purple, #7c3aed)',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '4px',
-                        fontWeight: 600,
+                        background: 'var(--ls-lime-green)',
+                        color: 'var(--ls-purple)',
+                        padding: '0.1rem var(--space-1)',
+                        borderRadius: 'var(--radius-sm)',
+                        fontWeight: 'var(--font-semibold)',
                       }}>
                         Priority
                       </span>
@@ -176,7 +176,6 @@ export default function GTMDiagnostic() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('processes');
 
-  // Handle tab from URL query parameter
   useEffect(() => {
     const { tab } = router.query;
     if (tab && TABS.some(t => t.id === tab)) {
@@ -190,77 +189,119 @@ export default function GTMDiagnostic() {
     status: m.ableToReport || 'unable'
   })));
 
+  const priorityCount = processes.filter(p => p.addToEngagement).length;
+
   return (
     <Layout title="GTM Diagnostic Results">
       <div className="container">
-        <div className="page-header" style={{ marginBottom: '2rem' }}>
+        <div className="page-header">
           <h1 className="page-title">
             <span>📊</span> GTM Diagnostic Results
           </h1>
-          <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-            Comprehensive health assessment of your GTM operations
-          </p>
+          <p className="page-subtitle">Comprehensive health assessment of your GTM operations</p>
         </div>
 
-        {/* Summary Cards Row */}
-        <div className="diagnostic-summary-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1.5rem',
-          marginBottom: '2rem',
-        }}>
-          <SummaryCard
-            title="Power10 Metrics"
-            icon="📈"
-            data={power10Stats}
-            onClick={() => setActiveTab('power10')}
-            isActive={activeTab === 'power10'}
-          />
-          <SummaryCard
-            title="GTM Tools"
-            icon="🔧"
-            data={toolStats}
-            onClick={() => setActiveTab('tools')}
-            isActive={activeTab === 'tools'}
-          />
-          <SummaryCard
-            title="Processes"
-            icon="⚙️"
-            data={processStats}
-            onClick={() => setActiveTab('processes')}
-            isActive={activeTab === 'processes'}
-          />
+        {/* Summary Stats Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="card" style={{ textAlign: 'center', padding: '1.25rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Processes</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ls-purple-light)' }}>{processes.length}</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center', padding: '1.25rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Tools</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ls-purple-light)' }}>{tools.length}</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center', padding: '1.25rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Power10 Metrics</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ls-purple-light)' }}>{power10Metrics.length}</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center', padding: '1.25rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Priority Items</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#ef4444' }}>{priorityCount}</div>
+          </div>
         </div>
+
+        {/* Quick Insights Section - Dark Purple */}
+        <section className="card" style={{ padding: '1.5rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)' }}>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>🎯</span> Health Overview
+          </h2>
+          <p style={{ color: '#c4b5fd', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+            Status distribution across all inspection points
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+            {[
+              { label: 'Power10 Metrics', stats: power10Stats, count: power10Metrics.length },
+              { label: 'GTM Tools', stats: toolStats, count: tools.length },
+              { label: 'Processes', stats: processStats, count: processes.length },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  background: 'rgba(255,255,255,0.08)',
+                }}
+              >
+                <div style={{ fontSize: '0.7rem', color: '#a5b4fc', marginBottom: '0.5rem' }}>{item.label}</div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {item.stats.healthy > 0 && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#4ade80' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors.healthy }}></span>
+                      {item.stats.healthy}
+                    </span>
+                  )}
+                  {item.stats.careful > 0 && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#facc15' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors.careful }}></span>
+                      {item.stats.careful}
+                    </span>
+                  )}
+                  {item.stats.warning > 0 && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#f87171' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors.warning }}></span>
+                      {item.stats.warning}
+                    </span>
+                  )}
+                  {item.stats.unable > 0 && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#9ca3af' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors.unable }}></span>
+                      {item.stats.unable}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.65rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Healthy</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#4ade80' }}>{processStats.healthy + toolStats.healthy + power10Stats.healthy}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.65rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Careful</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#facc15' }}>{processStats.careful + toolStats.careful + power10Stats.careful}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.65rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Warning</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f87171' }}>{processStats.warning + toolStats.warning + power10Stats.warning}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '0.65rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>Unable to Report</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#9ca3af' }}>{processStats.unable + toolStats.unable + power10Stats.unable}</div>
+            </div>
+          </div>
+        </section>
 
         {/* Tab Navigation */}
-        <div className="diagnostic-tabs" style={{
-          display: 'flex',
-          gap: '0.5rem',
-          marginBottom: '2rem',
-          borderBottom: '2px solid #e5e7eb',
-          paddingBottom: '0',
-          overflowX: 'auto',
-        }}>
+        <div className="diagnostic-tabs">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '0.75rem 1.25rem',
-                border: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid var(--ls-purple, #7c3aed)' : '2px solid transparent',
-                marginBottom: '-2px',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                background: 'transparent',
-                color: activeTab === tab.id ? 'var(--ls-purple, #7c3aed)' : '#6b7280',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-              }}
+              className={`diagnostic-tab-button ${activeTab === tab.id ? 'active' : ''}`}
             >
               <span>{tab.icon}</span>
               {tab.label}
@@ -269,33 +310,14 @@ export default function GTMDiagnostic() {
         </div>
 
         {/* Tab Content */}
-        <div className="diagnostic-content">
+        <div style={{ marginTop: '2rem' }}>
           {activeTab === 'power10' && (
             <div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '300px 1fr',
-                gap: '2rem',
-                marginBottom: '2rem',
-              }} className="diagnostic-charts-row">
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                }}>
-                  <DonutChart
-                    data={power10Stats}
-                    title="Health Distribution"
-                    size={180}
-                  />
+              <div className="diagnostic-charts-row" style={{ marginBottom: '1.5rem' }}>
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <DonutChart data={power10Stats} title="Health Distribution" size={160} />
                 </div>
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                }}>
+                <div className="card" style={{ padding: '1.5rem' }}>
                   <BarChart
                     data={power10Metrics.map(m => ({
                       name: m.name,
@@ -305,14 +327,9 @@ export default function GTMDiagnostic() {
                   />
                 </div>
               </div>
-              <div style={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-              }}>
+              <div className="card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>All Power10 Metrics</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }} className="power10-grid">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }} className="power10-grid">
                   {power10Metrics.map((metric) => (
                     <div
                       key={metric.name}
@@ -321,18 +338,18 @@ export default function GTMDiagnostic() {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '0.75rem 1rem',
-                        background: '#f9fafb',
-                        borderRadius: '8px',
+                        background: 'var(--bg-subtle)',
+                        borderRadius: 'var(--radius-lg)',
                       }}
                     >
-                      <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{metric.name}</span>
+                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>{metric.name}</span>
                       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Report</div>
+                          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '2px' }}>Report</div>
                           <StatusDot status={metric.ableToReport || 'unable'} />
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Plan</div>
+                          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '2px' }}>Plan</div>
                           <StatusDot status={metric.statusAgainstPlan || 'unable'} />
                         </div>
                       </div>
@@ -345,42 +362,15 @@ export default function GTMDiagnostic() {
 
           {activeTab === 'tools' && (
             <div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '300px 1fr',
-                gap: '2rem',
-                marginBottom: '2rem',
-              }} className="diagnostic-charts-row">
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                }}>
-                  <DonutChart
-                    data={toolStats}
-                    title="Health Distribution"
-                    size={180}
-                  />
+              <div className="diagnostic-charts-row" style={{ marginBottom: '1.5rem' }}>
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <DonutChart data={toolStats} title="Health Distribution" size={160} />
                 </div>
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                }}>
-                  <BarChart
-                    data={tools}
-                    title="GTM Tools Status"
-                  />
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <BarChart data={tools} title="GTM Tools Status" />
                 </div>
               </div>
-              <div style={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-              }}>
+              <div className="card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>All GTM Tools</h3>
                 <ItemTable items={tools} showFunction={true} />
               </div>
@@ -389,44 +379,15 @@ export default function GTMDiagnostic() {
 
           {activeTab === 'processes' && (
             <div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '300px 1fr',
-                gap: '2rem',
-                marginBottom: '2rem',
-              }} className="diagnostic-charts-row">
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                }}>
-                  <DonutChart
-                    data={processStats}
-                    title="Health Distribution"
-                    size={180}
-                  />
+              <div className="diagnostic-charts-row" style={{ marginBottom: '1.5rem' }}>
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <DonutChart data={processStats} title="Health Distribution" size={160} />
                 </div>
-                <div style={{
-                  background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                  overflow: 'auto',
-                }}>
-                  <BarChart
-                    data={processes}
-                    title="Process Health Overview"
-                    maxItems={25}
-                  />
+                <div className="card" style={{ padding: '1.5rem', overflow: 'auto' }}>
+                  <BarChart data={processes} title="Process Health Overview" maxItems={25} />
                 </div>
               </div>
-              <div style={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-              }}>
+              <div className="card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>All Processes ({processes.length})</h3>
                 <ItemTable items={processes} showFunction={true} />
               </div>
@@ -434,80 +395,42 @@ export default function GTMDiagnostic() {
           )}
 
           {activeTab === 'by-function' && (
-            <div>
-              <div style={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '2rem',
-              }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Processes by GTM Function</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                  {processes.length} processes grouped by their GTM function
-                </p>
-                <GroupedView
-                  items={processes}
-                  groupByField="function"
-                  groupNames={gtmFunctions}
-                />
-              </div>
+            <div className="card" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Processes by GTM Function</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                {processes.length} processes grouped by their GTM function
+              </p>
+              <GroupedView items={processes} groupByField="function" groupNames={gtmFunctions} />
             </div>
           )}
 
           {activeTab === 'by-outcome' && (
-            <div>
-              <div style={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                marginBottom: '2rem',
-              }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Processes by GTM Outcome</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                  {processes.length} processes grouped by their desired business outcome
-                </p>
-                <GroupedView
-                  items={processes}
-                  groupByField="outcome"
-                  groupNames={gtmOutcomes}
-                />
-              </div>
+            <div className="card" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Processes by GTM Outcome</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                {processes.length} processes grouped by their desired business outcome
+              </p>
+              <GroupedView items={processes} groupByField="outcome" groupNames={gtmOutcomes} />
             </div>
           )}
         </div>
 
-        {/* Navigation */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: '2rem',
-          paddingTop: '1.5rem',
-          borderTop: '1px solid #e5e7eb',
-        }}>
-          <Link href="/try-leanscale" className="btn" style={{ background: '#f3f4f6', color: '#374151' }}>
-            ← Back to Start
-          </Link>
-          <Link href="/try-leanscale/engagement" className="btn btn-primary">
-            View Engagement Overview →
-          </Link>
+        {/* CTA Banner */}
+        <div className="cta-banner" style={{ marginTop: '2rem' }}>
+          <h3 className="cta-title">Ready to see your recommended engagement?</h3>
+          <p className="cta-subtitle">
+            View prioritized projects and timeline based on your diagnostic results.
+          </p>
+          <div className="cta-buttons">
+            <Link href="/try-leanscale/engagement" className="btn cta-btn-primary">
+              View Engagement Overview
+            </Link>
+            <Link href="/buy-leanscale" className="btn cta-btn-secondary">
+              Get Started
+            </Link>
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @media (max-width: 900px) {
-          .diagnostic-summary-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .diagnostic-charts-row {
-            grid-template-columns: 1fr !important;
-          }
-          .power10-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </Layout>
   );
 }

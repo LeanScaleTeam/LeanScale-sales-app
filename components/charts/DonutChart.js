@@ -1,11 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
-
-const STATUS_COLORS = {
-  healthy: '#22c55e',
-  careful: '#eab308',
-  warning: '#ef4444',
-  unable: '#1f2937',
-};
+import { getStatusColor, STATUS_CONFIG } from '../diagnostic/StatusLegend';
 
 const STATUS_LABELS = {
   healthy: 'Healthy',
@@ -28,15 +22,15 @@ export default function DonutChart({
       name: STATUS_LABELS[status],
       value,
       status,
-      color: STATUS_COLORS[status],
+      color: getStatusColor(status),
     }));
 
   const total = Object.values(data).reduce((a, b) => a + b, 0);
 
   if (total === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '1rem' }}>
-        <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>No data</p>
+      <div style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>No data</p>
       </div>
     );
   }
@@ -45,40 +39,40 @@ export default function DonutChart({
     <div style={{ textAlign: 'center' }}>
       {title && (
         <h4 style={{
-          fontSize: '0.9rem',
-          fontWeight: 600,
-          marginBottom: '0.5rem',
-          color: '#374151'
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--font-semibold)',
+          marginBottom: 'var(--space-2)',
+          color: 'var(--text-primary)'
         }}>
           {title}
         </h4>
       )}
       <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
         <PieChart width={size} height={size}>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={size * 0.35}
-              outerRadius={size * 0.45}
-              paddingAngle={2}
-              dataKey="value"
-              stroke="none"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value, name) => [`${value} items`, name]}
-              contentStyle={{
-                background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                fontSize: '0.8rem',
-              }}
-            />
-          </PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            innerRadius={size * 0.35}
+            outerRadius={size * 0.45}
+            paddingAngle={2}
+            dataKey="value"
+            stroke="none"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(value, name) => [`${value} items`, name]}
+            contentStyle={{
+              background: 'var(--bg-white)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-xs)',
+            }}
+          />
+        </PieChart>
         {centerLabel !== false && (
           <div style={{
             position: 'absolute',
@@ -87,10 +81,10 @@ export default function DonutChart({
             transform: 'translate(-50%, -50%)',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>
               {centerLabel || total}
             </div>
-            <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               {centerLabel ? '' : 'items'}
             </div>
           </div>
@@ -100,20 +94,20 @@ export default function DonutChart({
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '0.75rem',
-          marginTop: '0.5rem',
+          gap: 'var(--space-3)',
+          marginTop: 'var(--space-2)',
           flexWrap: 'wrap',
-          fontSize: '0.75rem'
+          fontSize: 'var(--text-xs)'
         }}>
           {chartData.map((entry) => (
-            <div key={entry.status} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <div key={entry.status} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
               <span style={{
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
                 background: entry.color,
               }} />
-              <span style={{ color: '#4b5563' }}>{entry.value}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{entry.value}</span>
             </div>
           ))}
         </div>

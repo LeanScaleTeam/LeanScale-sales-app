@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { getStatusColor, STATUS_CONFIG } from '../diagnostic/StatusLegend';
 
-const STATUS_CONFIG = {
-  healthy: { color: '#22c55e', label: 'Healthy', emoji: '🟢' },
-  careful: { color: '#eab308', label: 'Careful', emoji: '🟡' },
-  warning: { color: '#ef4444', label: 'Warning', emoji: '🔴' },
-  unable: { color: '#1f2937', label: 'Unable to Report', emoji: '⚫' },
+const STATUS_LABELS = {
+  healthy: 'Healthy',
+  careful: 'Careful',
+  warning: 'Warning',
+  unable: 'Unable to Report',
 };
 
 const STATUS_ORDER = ['warning', 'careful', 'healthy', 'unable'];
@@ -29,8 +30,8 @@ export default function BarChart({ data, title }) {
 
   if (data.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>No data to display</p>
+      <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>No data to display</p>
       </div>
     );
   }
@@ -39,19 +40,20 @@ export default function BarChart({ data, title }) {
     <div>
       {title && (
         <h4 style={{
-          fontSize: '1rem',
-          fontWeight: 600,
-          marginBottom: '1rem',
-          color: '#374151'
+          fontSize: 'var(--text-base)',
+          fontWeight: 'var(--font-semibold)',
+          marginBottom: 'var(--space-4)',
+          color: 'var(--text-primary)'
         }}>
           {title}
         </h4>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {STATUS_ORDER.map(status => {
           const items = grouped[status];
-          const config = STATUS_CONFIG[status];
+          const color = getStatusColor(status);
+          const label = STATUS_LABELS[status];
           if (items.length === 0) return null;
 
           const isExpanded = expandedGroups[status];
@@ -60,8 +62,8 @@ export default function BarChart({ data, title }) {
             <div
               key={status}
               style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
               }}
             >
@@ -73,55 +75,55 @@ export default function BarChart({ data, title }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0.75rem 1rem',
-                  background: '#f9fafb',
+                  padding: 'var(--space-3) var(--space-4)',
+                  background: 'var(--bg-subtle)',
                   border: 'none',
                   cursor: 'pointer',
                   textAlign: 'left',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <span
                     style={{
                       width: 12,
                       height: 12,
                       borderRadius: '50%',
-                      background: config.color,
+                      background: color,
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#374151' }}>
-                    {config.label}
+                  <span style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                    {label}
                   </span>
                   <span style={{
-                    background: config.color,
-                    color: status === 'careful' ? '#1f2937' : 'white',
-                    padding: '0.1rem 0.5rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
+                    background: color,
+                    color: status === 'careful' ? 'var(--gray-800)' : 'white',
+                    padding: '0.1rem var(--space-2)',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 'var(--font-semibold)',
                   }}>
                     {items.length}
                   </span>
                 </div>
-                <span style={{ color: '#9ca3af', fontSize: '1rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-base)' }}>
                   {isExpanded ? '▼' : '▶'}
                 </span>
               </button>
 
               {/* Expanded Items */}
               {isExpanded && (
-                <div style={{ padding: '0.5rem' }}>
+                <div style={{ padding: 'var(--space-2)' }}>
                   {items.map((item, index) => (
                     <div
                       key={item.name || index}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '4px',
-                        background: index % 2 === 0 ? 'white' : '#fafafa',
+                        gap: 'var(--space-2)',
+                        padding: 'var(--space-2) var(--space-3)',
+                        borderRadius: 'var(--radius-sm)',
+                        background: index % 2 === 0 ? 'white' : 'var(--bg-subtle)',
                       }}
                     >
                       <span
@@ -129,13 +131,13 @@ export default function BarChart({ data, title }) {
                           width: 8,
                           height: 8,
                           borderRadius: '50%',
-                          background: config.color,
+                          background: color,
                           flexShrink: 0,
                         }}
                       />
                       <span style={{
-                        fontSize: '0.8rem',
-                        color: '#374151',
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-primary)',
                         flex: 1,
                       }}>
                         {item.name}
@@ -143,11 +145,11 @@ export default function BarChart({ data, title }) {
                       {item.addToEngagement && (
                         <span style={{
                           fontSize: '0.65rem',
-                          background: 'var(--ls-lime-green, #84cc16)',
-                          color: 'var(--ls-purple, #7c3aed)',
-                          padding: '0.1rem 0.4rem',
-                          borderRadius: '4px',
-                          fontWeight: 600,
+                          background: 'var(--ls-lime-green)',
+                          color: 'var(--ls-purple)',
+                          padding: '0.1rem var(--space-1)',
+                          borderRadius: 'var(--radius-sm)',
+                          fontWeight: 'var(--font-semibold)',
                         }}>
                           Priority
                         </span>

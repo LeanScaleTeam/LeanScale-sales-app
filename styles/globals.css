@@ -122,6 +122,18 @@ a:hover {
   text-decoration: none;
 }
 
+.nav-badge-new {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .nav-cta {
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: white !important;

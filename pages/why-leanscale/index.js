@@ -13,43 +13,33 @@ const navLinks = [
 export default function WhyLeanScale() {
   return (
     <Layout title="Why LeanScale?">
-      <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)', color: 'white', padding: '4rem 0' }}>
-        <div className="container">
-          <div style={{ maxWidth: '800px' }}>
-            <h1 style={{ fontSize: '3rem', fontWeight: 700, marginBottom: '1rem' }}>
-              Go-to-Market Operations <span style={{ fontSize: '2.5rem' }}>🚀</span>
-            </h1>
-            <p style={{ fontSize: '1.25rem', opacity: 0.9, marginBottom: '2rem', lineHeight: 1.6 }}>
-              Accelerate Your Go-To-Market with Top-Tier GTM Operations. LeanScale provides fractional GTM Operations teams 
-              for B2B tech startups, delivering enterprise-grade revenue operations without the enterprise price tag.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <Link href="/buy-leanscale">
-                <button className="btn" style={{ background: 'white', color: '#7c3aed', padding: '0.75rem 1.5rem', fontWeight: 600 }}>
-                  Get Started
-                </button>
-              </Link>
-              <Link href="/try-leanscale">
-                <button className="btn" style={{ background: 'transparent', color: 'white', border: '2px solid white', padding: '0.75rem 1.5rem' }}>
-                  Try GTM Diagnostic
-                </button>
-              </Link>
-            </div>
+      <div className="container">
+        <div className="page-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title" style={{ justifyContent: 'center' }}>
+            <span>🚀</span> Go-to-Market Operations
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 700, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+            Accelerate Your Go-To-Market with Top-Tier GTM Operations. LeanScale provides fractional GTM Operations teams
+            for B2B tech startups, delivering enterprise-grade revenue operations without the enterprise price tag.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem' }}>
+            <Link href="/buy-leanscale" className="btn btn-primary">
+              Get Started
+            </Link>
+            <Link href="/try-leanscale" className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
+              Try GTM Diagnostic
+            </Link>
           </div>
         </div>
-      </div>
 
-      <div className="container" style={{ marginTop: '-2rem' }}>
-        <div className="card" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '1rem 1.5rem', justifyContent: 'center' }}>
+        <div className="card" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '1rem 1.5rem', justifyContent: 'center', marginBottom: '2rem' }}>
           {navLinks.map((link) => (
             <a key={link.href} href={link.href} style={{ padding: '0.5rem 1rem', color: '#7c3aed', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', borderRadius: '20px', background: '#f3f4f6' }}>
               {link.label}
             </a>
           ))}
         </div>
-      </div>
 
-      <div className="container" style={{ marginTop: '2rem' }}>
         <section id="capital-clock" style={{ marginBottom: '4rem', scrollMarginTop: '100px' }}>
           <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>⏰</span> The "Capital Clock"

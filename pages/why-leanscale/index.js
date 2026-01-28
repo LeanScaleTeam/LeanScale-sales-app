@@ -9,18 +9,11 @@ const navLinks = [
   { href: '#working-with-leanscale', label: 'Working with LeanScale' },
 ];
 
-const sections = [
-  { href: '/why-leanscale/about', icon: '👋', label: 'About Us' },
-  { href: '/why-leanscale/resources', icon: '📚', label: 'Key Resources' },
-  { href: '/why-leanscale/references', icon: '⭐', label: 'Customer References' },
-  { href: '/why-leanscale/services', icon: '🛠️', label: 'Services Catalog' },
-  { href: '/why-leanscale/glossary', icon: '📖', label: 'GTM Ops Glossary' },
-];
 
 export default function WhyLeanScale() {
   return (
     <Layout title="Why LeanScale?">
-      <div style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', color: 'white', padding: '4rem 0' }}>
+      <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)', color: 'white', padding: '4rem 0' }}>
         <div className="container">
           <div style={{ maxWidth: '800px' }}>
             <h1 style={{ fontSize: '3rem', fontWeight: 700, marginBottom: '1rem' }}>
@@ -57,14 +50,6 @@ export default function WhyLeanScale() {
       </div>
 
       <div className="container" style={{ marginTop: '2rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
-          {sections.map((section) => (
-            <Link key={section.href} href={section.href} className="button-pill">
-              <span>{section.icon}</span> {section.label}
-            </Link>
-          ))}
-        </div>
-
         <section id="capital-clock" style={{ marginBottom: '4rem', scrollMarginTop: '100px' }}>
           <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>⏰</span> The "Capital Clock"

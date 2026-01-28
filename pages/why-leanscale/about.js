@@ -2,39 +2,6 @@ import Layout from '../../components/Layout';
 
 const values = ['Integrity', 'Humility', 'Taking action', 'Challenging yourself and others'];
 
-const leadershipTeam = [
-  {
-    name: 'Anthony Enrico',
-    title: 'Co-Founder & CEO',
-    image: 'https://leanscale.team/wp-content/uploads/2024/03/Anthony2_de13c4ccc0.jpg',
-  },
-  {
-    name: 'Henrique Sakai',
-    title: 'Co-Founder & Chief Architect',
-    image: 'https://leanscale.team/wp-content/uploads/2024/03/Sakai_5983aacf1e.jpg',
-  },
-  {
-    name: 'Joseph Zaghloul',
-    title: 'Partner & COO',
-    image: 'https://leanscale.team/wp-content/uploads/2024/03/Joe_9ed3126046-1.jpg',
-  },
-  {
-    name: 'Bernardo Alves',
-    title: 'Director, Client Engagement',
-    image: 'https://leanscale.team/wp-content/uploads/2024/03/Bernardo_Side_Head_Shot_Website_5ede645cc4.jpg',
-  },
-  {
-    name: 'Jake Toepel',
-    title: 'Director, Client Engagement',
-    image: 'https://leanscale.team/wp-content/uploads/2024/04/Jake_a3ce644df1.jpg',
-  },
-  {
-    name: 'Whitney Yvette',
-    title: 'Engagement Manager',
-    image: 'https://leanscale.team/wp-content/uploads/2024/04/whitney_45ea83e8c8.jpg',
-  },
-];
-
 const differentiators = [
   {
     title: 'Startup Operator Experience',
@@ -144,47 +111,6 @@ export default function AboutUs() {
                   {item.title}
                 </h3>
                 <p style={{ lineHeight: 1.6, margin: 0 }}>{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Leadership Team */}
-        <section style={{ marginBottom: '3rem' }}>
-          <h2 style={{ marginBottom: '1.5rem' }}>Our Leadership Team</h2>
-          <div
-            className="team-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1.5rem'
-            }}
-          >
-            {leadershipTeam.map((member) => (
-              <div 
-                key={member.name}
-                style={{
-                  textAlign: 'center',
-                  padding: '1.5rem',
-                  background: 'white',
-                  borderRadius: '12px',
-                  border: '1px solid var(--ls-light-gray)',
-                }}
-              >
-                <img 
-                  src={member.image} 
-                  alt={member.name}
-                  style={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    marginBottom: '1rem',
-                    border: '3px solid var(--ls-purple)',
-                  }}
-                />
-                <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{member.name}</h3>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>{member.title}</p>
               </div>
             ))}
           </div>

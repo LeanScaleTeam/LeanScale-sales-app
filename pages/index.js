@@ -6,21 +6,68 @@ export default function Home() {
   return (
     <Layout title="LeanScale">
       {/* Hero Section */}
-      <div className="hero">
-        <div className="hero-content">
-          <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+      <div className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          right: '-10%',
+          width: '500px',
+          height: '500px',
+          background: 'radial-gradient(circle, rgba(100,37,133,0.15) 0%, transparent 70%)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }} />
+        <div className="hero-content" style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(135deg, #642585 0%, #8b5cf6 100%)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 10px 40px rgba(100,37,133,0.3)',
+            }}>
+              <span style={{ fontSize: '1.75rem' }}>🚀</span>
+            </div>
+            <h1 style={{ 
+              fontSize: '3.5rem', 
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #642585 0%, #8b5cf6 50%, #642585 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+            }}>
+              LeanScale
+            </h1>
+          </div>
+          <p style={{
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            color: '#1f2937',
             marginBottom: '0.5rem',
+            maxWidth: '600px',
           }}>
-            LeanScale
-          </h1>
-          <p className="hero-tagline">
-            Accelerate Your Go-To-Market with Top-Tier GTM Operations
+            Accelerate Your Go-To-Market
+          </p>
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#6b7280',
+            maxWidth: '500px',
+          }}>
+            Top-Tier GTM Operations for B2B Tech Companies
           </p>
         </div>
       </div>

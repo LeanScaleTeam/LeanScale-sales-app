@@ -7,7 +7,7 @@ const customerConfig = {
   // ============================================
   // Set customerName to show "LeanScale × CustomerName" in the navigation
   // Set to "Demo" or empty string to show only the LeanScale logo
-  customerName: "Clay",
+  customerName: "Parafimy",
   
   // Optional: URL to customer logo image (PNG, SVG, or JPG)
   // If provided, displays logo instead of text name

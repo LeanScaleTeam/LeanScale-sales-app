@@ -1,0 +1,464 @@
+LeanScale Claybook Pricing Menu
+Fixed pricing for Clay implementations by use case
+
+
+What's a Claybook?
+A Claybook is a pre-built Clay workflow (Table) that solves a specific GTM use case. Each Claybook includes: enrichment waterfall configuration, scoring logic, CRM field mapping, integration setup, documentation, and handoff training.
+
+
+The 10 Claybooks
+1. Market Map Claybook — $7,500
+What it does: Builds your complete ICP/TAM database in Clay, enriches every account, scores for fit, assigns tiers, and pushes to CRM with valuations.
+
+Complexity: High (foundational, everything else builds on this)
+
+What's included:
+
+ICP definition workshop (firmographic + technographic criteria)
+Master account Clay table with full enrichment waterfall
+Up to 5 data sources (Apollo, Clearbit, ZoomInfo, + 2 vertical-specific)
+ICP fit scoring with weighted criteria
+3-tier account classification (T1/T2/T3)
+Account valuation methodology
+CRM custom fields and bi-directional sync
+TAM visualization setup
+Documentation + 90-min handoff session
+
+Scope: Up to 50,000 accounts
+
+Estimated hours: 40-60
+
+Prerequisites: None (this is the foundation)
+
+Typical buyer: Series A+ building GTM infrastructure
+
+
+2. Persona Mapping Claybook — $4,000
+What it does: Adds contact-level enrichment to your Market Map. Identifies key personas at target accounts, enriches contacts, scores for relevance, and syncs to CRM.
+
+Complexity: Medium
+
+What's included:
+
+Persona definition workshop (titles, seniority, function)
+Contact Clay table linked to account table
+Contact enrichment waterfall (up to 4 sources)
+Persona fit scoring
+Contact tier assignment (aligned to account tiers)
+CRM contact field mapping and sync
+Documentation + 60-min handoff session
+
+Scope: Up to 100,000 contacts
+
+Estimated hours: 20-30
+
+Prerequisites: Market Map Claybook (or equivalent existing setup)
+
+Typical buyer: Teams ready to operationalize outbound at scale
+
+
+3. Automated Inbound Enrichment Claybook — $5,000
+What it does: Enriches inbound leads in real-time as they enter CRM. Filters junk, deduplicates against existing accounts, scores, tiers, and routes.
+
+Complexity: Medium
+
+What's included:
+
+Inbound trigger configuration (form fills, demo requests, trials)
+Pre-enrichment filters (personal emails, below-threshold companies, out-of-geo)
+Deduplication logic against existing Market Map
+Enrichment waterfall (up to 4 sources)
+ICP scoring and tier assignment
+CRM field updates and lead routing triggers
+Credit optimization (skip enrichment for known accounts)
+Documentation + 60-min handoff session
+
+Scope: Unlimited inbound volume
+
+Estimated hours: 15-25 (post-Market Map); 30-40 (standalone)
+
+Prerequisites: Market Map recommended (saves 80% build time and credits)
+
+Typical buyer: Companies with growing inbound motion
+
+
+4. Automated Outbound Claybook — $6,000
+What it does: Builds targeted outbound lists from your Market Map, enriches contacts, personalizes at scale, and pushes to sales engagement platform.
+
+Complexity: Medium-High
+
+What's included:
+
+Outbound targeting criteria definition
+Account selection logic from Market Map
+Contact discovery and enrichment
+Personalization data points (company news, tech stack, triggers)
+Sales engagement platform integration (Outreach, Salesloft, Apollo, Amplemarket)
+Sequence/cadence field mapping
+Credit monitoring and budget controls
+Documentation + 60-min handoff session
+
+Scope: Up to 10,000 contacts/month
+
+Estimated hours: 25-35
+
+Prerequisites: Market Map Claybook required
+
+Typical buyer: Teams scaling BDR outbound with Clay + SEP
+
+
+5. Lead Scoring Claybook — $3,500
+What it does: Implements ICP-driven lead scoring in Clay, combining firmographic fit with enriched data signals, then syncs scores to CRM/MAP.
+
+Complexity: Medium
+
+What's included:
+
+Scoring criteria workshop
+Fit score calculation (firmographic + technographic)
+Behavioral signal integration (if available)
+Score normalization and threshold definition
+MQL threshold configuration
+CRM/MAP score field sync
+Score decay/refresh logic
+Documentation + 45-min handoff session
+
+Scope: Applied to inbound and/or existing database
+
+Estimated hours: 15-25
+
+Prerequisites: ICP definition (can be part of this engagement)
+
+Typical buyer: Companies formalizing lead qualification
+
+
+6. ABM Target Account Enrichment Claybook — $5,500
+What it does: Takes your named account list, deeply enriches each account and contact, adds intent signals, and creates ABM-ready segments in CRM.
+
+Complexity: Medium-High
+
+What's included:
+
+Named account list ingestion (up to 500 accounts)
+Deep account enrichment (extended firmographics, technographics, news, funding)
+Buying committee mapping (identify key personas per account)
+Contact enrichment for buying committee
+Intent signal integration (if 6sense/Demandbase/Bombora available)
+Account tier and engagement priority scoring
+CRM segment creation for ABM campaigns
+Documentation + 60-min handoff session
+
+Scope: Up to 500 named accounts, 5 contacts per account
+
+Estimated hours: 25-35
+
+Prerequisites: Named account list; Market Map helpful but not required
+
+Typical buyer: Companies running target account selling motion
+
+
+7. CRM Data Cleanup Claybook — $3,000
+What it does: Enriches and standardizes existing CRM data. Fills gaps, corrects errors, normalizes fields, and flags duplicates.
+
+Complexity: Low-Medium
+
+What's included:
+
+Data audit and gap analysis
+Enrichment waterfall for missing fields
+Field standardization (industry, company size, geo)
+Duplicate flagging (not full dedup—separate project)
+Data quality scoring
+Batch update to CRM
+Before/after data quality report
+Documentation + 45-min handoff session
+
+Scope: Up to 25,000 records
+
+Estimated hours: 15-20
+
+Prerequisites: CRM access
+
+Typical buyer: Companies with dirty CRM data blocking other initiatives
+
+
+8. Customer Segmentation Claybook — $4,500
+What it does: Enriches your customer base with firmographic and technographic data, then segments for CS coverage models, expansion targeting, and retention analysis.
+
+Complexity: Medium
+
+What's included:
+
+Customer data export and enrichment
+Firmographic and technographic enrichment
+Segmentation criteria workshop (industry, size, tech stack, ARR tier)
+Segment assignment logic
+Health/expansion signal identification
+CRM customer segment fields
+CS platform integration (if applicable)
+Documentation + 60-min handoff session
+
+Scope: Up to 10,000 customers
+
+Estimated hours: 20-30
+
+Prerequisites: Customer list with company identifiers
+
+Typical buyer: CS teams building coverage models or expansion plays
+
+
+9. Event Lead Enrichment Claybook — $2,500
+What it does: Takes event lead lists, enriches and scores against ICP, deduplicates against CRM, and routes hot leads for immediate follow-up.
+
+Complexity: Low-Medium
+
+What's included:
+
+Event lead list ingestion template
+Enrichment waterfall (standard sources)
+ICP scoring and tier assignment
+Deduplication against existing CRM records
+Hot lead flagging and routing triggers
+CRM lead creation with event attribution
+Reusable for future events
+Documentation + 30-min handoff session
+
+Scope: Up to 5,000 leads per event
+
+Estimated hours: 10-15
+
+Prerequisites: Event lead list; ICP definition
+
+Typical buyer: Marketing teams running events/trade shows
+
+
+10. Signal-Based Prospecting Claybook — $6,500
+What it does: Monitors intent signals (hiring, funding, tech changes, news) across your TAM and surfaces accounts showing buying signals for prioritized outreach.
+
+Complexity: High
+
+What's included:
+
+Signal source integration (job postings, funding alerts, news, tech installs)
+Signal-to-ICP mapping (which signals matter for your buyers)
+Trigger logic configuration
+Account alerting and prioritization
+Contact discovery for triggered accounts
+Sales engagement platform push
+Weekly signal digest reporting
+Documentation + 60-min handoff session
+
+Scope: Monitoring up to 25,000 accounts
+
+Estimated hours: 30-40
+
+Prerequisites: Market Map Claybook required
+
+Typical buyer: Teams moving to intent-based outbound
+
+
+Pricing Summary Table
+#
+Claybook
+Price
+Hours
+Prerequisites
+1
+Market Map
+$7,500
+40-60
+None
+2
+Persona Mapping
+$4,000
+20-30
+Market Map
+3
+Automated Inbound Enrichment
+$5,000
+15-40
+Market Map recommended
+4
+Automated Outbound
+$6,000
+25-35
+Market Map
+5
+Lead Scoring
+$3,500
+15-25
+ICP definition
+6
+ABM Target Account Enrichment
+$5,500
+25-35
+Named account list
+7
+CRM Data Cleanup
+$3,000
+15-20
+CRM access
+8
+Customer Segmentation
+$4,500
+20-30
+Customer list
+9
+Event Lead Enrichment
+$2,500
+10-15
+ICP definition
+10
+Signal-Based Prospecting
+$6,500
+30-40
+Market Map
+
+
+
+Bundles
+GTM Foundation Bundle — $15,000 (save $2,500)
+Market Map ($7,500)
+Persona Mapping ($4,000)
+Automated Inbound Enrichment ($5,000)
+Unified architecture across all tables
+Full Outbound Stack Bundle — $20,000 (save $4,000)
+Market Map ($7,500)
+Persona Mapping ($4,000)
+Automated Outbound ($6,000)
+Signal-Based Prospecting ($6,500)
+Integrated signal-to-outbound workflow
+Complete GTM Infrastructure — $35,000 (save $7,500)
+All 10 Claybooks
+Unified architecture
+Cross-table deduplication
+Priority implementation (8-week delivery)
+
+
+Add-Ons
+Add-On
+Price
+Description
+Additional data source
+$500
+Beyond included sources per Claybook
+Vertical-specific enrichment
+$1,000
+iBanknet, Definitive Healthcare, Cause IQ, etc.
+Extended scope (2x records)
++25%
+Double the record limit
+Ongoing maintenance
+$750/mo
+Monthly updates, credit monitoring, break/fix
+Team training session
+$1,000
+90-min hands-on Clay training for team
+Optimization session
+$500
+60-min review + tuning at 30/60/90 days
+
+
+
+Scope Overages
+If a project exceeds scope limits:
+
+Additional records: +$0.10/record (accounts) or +$0.05/record (contacts)
+Additional data sources: +$500/source
+Additional CRM integrations: +$1,500/system
+
+
+Delivery Timeline
+Claybook
+Typical Delivery
+Market Map
+3-4 weeks
+Persona Mapping
+2 weeks
+Automated Inbound
+2 weeks
+Automated Outbound
+2-3 weeks
+Lead Scoring
+1-2 weeks
+ABM Target Account
+2-3 weeks
+CRM Data Cleanup
+1-2 weeks
+Customer Segmentation
+2 weeks
+Event Lead Enrichment
+1 week
+Signal-Based Prospecting
+3 weeks
+
+
+
+When to Sell Claybooks vs. Retainer
+Sell Claybooks when:
+Single, well-defined use case
+Budget under $20k
+Need delivery in 2-4 weeks
+Customer new to Clay / needs quick win
+Clay partnership referral (DQ lead)
+Sell Retainer when:
+Multiple GTM initiatives beyond Clay
+Ongoing strategic guidance needed
+Scope unclear / discovery required
+Budget supports 40+ hours/month
+Change management support needed
+
+
+Economics
+Claybook
+Price
+Est. Hours
+Effective Rate
+Market Map
+$7,500
+50 avg
+$150/hr
+Persona Mapping
+$4,000
+25 avg
+$160/hr
+Automated Inbound
+$5,000
+27.5 avg
+$182/hr
+Automated Outbound
+$6,000
+30 avg
+$200/hr
+Lead Scoring
+$3,500
+20 avg
+$175/hr
+ABM Target Account
+$5,500
+30 avg
+$183/hr
+CRM Data Cleanup
+$3,000
+17.5 avg
+$171/hr
+Customer Segmentation
+$4,500
+25 avg
+$180/hr
+Event Lead Enrichment
+$2,500
+12.5 avg
+$200/hr
+Signal-Based Prospecting
+$6,500
+35 avg
+$186/hr
+
+
+Target: As team builds efficiency and reusable templates, effective rate should increase 20-30% over time.
+
+
+
+Version 1.0 | January 2026 | LeanScale Internal
+

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
 import customerConfig from '../../data/customer-config';
+import AvailabilityCalendar from '../../components/AvailabilityCalendar';
 
 const hourTiers = [
   { hours: 50, price: 15000, label: 'Starter', description: 'Best for early-stage startups' },
@@ -286,52 +287,18 @@ export default function BuyLeanScale() {
 
         {step === 2 && (
           <div className="card" style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', textAlign: 'center' }}>
               Step 2: Select Your Start Date
             </h2>
+            <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              Cohorts start every 2 weeks. Reserve your spot before it fills up.
+            </p>
             
-            <div style={{ maxWidth: 500, margin: '0 auto' }}>
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {customerConfig.startDates.map((dateOption) => (
-                  <div
-                    key={dateOption.date}
-                    onClick={() => dateOption.status !== 'waitlist' && setFormData({ ...formData, startDate: dateOption.date })}
-                    style={{
-                      padding: '1rem 1.25rem',
-                      border: formData.startDate === dateOption.date ? '2px solid #7c3aed' : '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      cursor: dateOption.status === 'waitlist' ? 'not-allowed' : 'pointer',
-                      background: formData.startDate === dateOption.date ? '#f5f3ff' : 'white',
-                      opacity: dateOption.status === 'waitlist' ? 0.6 : 1,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600 }}>
-                        {new Date(dateOption.date).toLocaleDateString('en-US', { 
-                          weekday: 'long',
-                          month: 'long', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </div>
-                    </div>
-                    <div style={{ 
-                      padding: '0.25rem 0.75rem', 
-                      borderRadius: '9999px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      background: dateOption.status === 'waitlist' ? '#fef3c7' : '#d1fae5',
-                      color: dateOption.status === 'waitlist' ? '#92400e' : '#065f46',
-                    }}>
-                      {dateOption.status === 'waitlist' ? 'Waitlist' : `${dateOption.spotsLeft} Spots Left`}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <AvailabilityCalendar 
+              selectedDate={formData.startDate}
+              onSelect={(cohort) => setFormData({ ...formData, startDate: cohort.date })}
+              compact={false}
+            />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
               <button 

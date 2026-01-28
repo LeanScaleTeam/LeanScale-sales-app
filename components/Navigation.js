@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import customerConfig from '../data/customer-config';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,10 +15,28 @@ export default function Navigation() {
     setOpenDropdown(null);
   };
 
+  const showCustomerBranding = customerConfig.customerName && customerConfig.customerName !== "Demo";
+
   return (
     <nav className="nav">
-      <Link href="/" className="nav-logo" onClick={closeMenu}>
+      <Link href="/" className="nav-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <img src="/leanscale-logo.svg" alt="LeanScale" style={{ height: 32 }} />
+        {showCustomerBranding && (
+          <>
+            <span style={{ color: '#d1d5db', fontSize: '1.25rem', fontWeight: 300 }}>×</span>
+            {customerConfig.customerLogo ? (
+              <img 
+                src={customerConfig.customerLogo} 
+                alt={customerConfig.customerName} 
+                style={{ height: 28, maxWidth: 120, objectFit: 'contain' }} 
+              />
+            ) : (
+              <span style={{ fontWeight: 600, fontSize: '1rem', color: '#374151' }}>
+                {customerConfig.customerName}
+              </span>
+            )}
+          </>
+        )}
       </Link>
 
       <button 

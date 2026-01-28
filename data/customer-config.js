@@ -1,10 +1,19 @@
 // Customer-specific configuration
-// Duplicate this file and modify for each customer
+// Duplicate this file and modify for each customer instance
 
 const customerConfig = {
-  // Customer branding
+  // ============================================
+  // CUSTOMER BRANDING
+  // ============================================
+  // Set customerName to show "LeanScale × CustomerName" in the navigation
+  // Set to "Demo" or empty string to show only the LeanScale logo
   customerName: "Demo",
-  customerLogo: null, // URL to customer logo, or null for no logo
+  
+  // Optional: URL to customer logo image (PNG, SVG, or JPG)
+  // If provided, displays logo instead of text name
+  // Example: "/customer-logo.png" (place file in /public folder)
+  // Example: "https://example.com/logo.png" (external URL)
+  customerLogo: null,
 
   // Portal password (simple shared password)
   password: "demo2026",

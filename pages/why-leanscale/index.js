@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import Layout from '../../components/Layout';
 
 const navLinks = [
@@ -71,44 +70,21 @@ export default function WhyLeanScale() {
             <span>⏰</span> The "Capital Clock"
           </h2>
           <div className="card" style={{ padding: '2rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ color: '#7c3aed', marginBottom: '1rem' }}>Time is Your Scarcest Resource</h3>
-                <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>
-                  For every B2B startup, the clock starts ticking the moment you raise capital. You have 18-24 months to prove 
-                  product-market fit, build repeatable revenue, and set up for your next milestone. Every day without proper 
-                  GTM infrastructure is a day of lost potential.
-                </p>
-                <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>
-                  <strong>The challenge:</strong> Building an in-house RevOps team takes 6-12 months of hiring, training, and 
-                  iteration. By then, you've burned through precious runway without the systems to show for it.
-                </p>
-                <p style={{ lineHeight: 1.7 }}>
-                  <strong>The solution:</strong> LeanScale gives you a battle-tested GTM operations team from day one. 
-                  We've built these systems dozens of times — we know what works, what doesn't, and how to get you 
-                  operational in weeks, not months.
-                </p>
-                <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f3f4f6', borderRadius: '8px', borderLeft: '4px solid #7c3aed' }}>
-                  <strong style={{ color: '#7c3aed' }}>Key Insight:</strong> Companies that invest in GTM operations early 
-                  see 40% faster pipeline velocity and 30% higher conversion rates within the first year.
-                </div>
-              </div>
-              <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
-                <img 
-                  src="/images/capital-clock-screenshot.png" 
-                  alt="Capital Clock Visualization"
-                  style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div style={{ display: 'flex', height: '300px', background: 'linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%)', borderRadius: '8px', alignItems: 'center', justifyContent: 'center', color: '#7c3aed', flexDirection: 'column', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '3rem' }}>⏰</span>
-                  <span style={{ fontWeight: 500 }}>Capital Clock Screenshot</span>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Add: /public/images/capital-clock-screenshot.png</span>
-                </div>
-              </div>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7 }}>
+              For every B2B startup, the clock starts ticking the moment you raise capital. You have 18-24 months to prove 
+              product-market fit, build repeatable revenue, and set up for your next milestone. LeanScale gives you a 
+              battle-tested GTM operations team from day one.
+            </p>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden' }}>
+              <img 
+                src="/images/capital-clock-screenshot.png" 
+                alt="The Capital Clock - GTM Operations Roadmap from Seed to Series D+"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
+            </div>
+            <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f3f4f6', borderRadius: '8px', borderLeft: '4px solid #7c3aed' }}>
+              <strong style={{ color: '#7c3aed' }}>Key Insight:</strong> Companies that invest in GTM operations early 
+              see 40% faster pipeline velocity and 30% higher conversion rates within the first year.
             </div>
           </div>
         </section>
@@ -118,61 +94,57 @@ export default function WhyLeanScale() {
             <span>⚙️</span> What is GTM Operations?
           </h2>
           <div className="card" style={{ padding: '2rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'start' }}>
-              <div>
-                <h3 style={{ color: '#7c3aed', marginBottom: '1rem' }}>The Engine Behind Revenue Growth</h3>
-                <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>
-                  GTM Operations (also known as Revenue Operations or RevOps) is the operational backbone that connects 
-                  your Marketing, Sales, and Customer Success teams. It's the systems, processes, and data infrastructure 
-                  that turns strategy into execution.
-                </p>
-                
-                <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontWeight: 600 }}>Everything Data</h4>
-                <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>
-                  From lead enrichment to customer health scores, GTM Ops ensures your data is clean, connected, and actionable. 
-                  We build the pipelines that turn raw data into revenue intelligence.
-                </p>
-
-                <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontWeight: 600 }}>Processes & Workflows</h4>
-                <p style={{ marginBottom: '1rem', lineHeight: 1.7 }}>
-                  Lead routing, opportunity management, renewal tracking, and more. We design and implement the workflows 
-                  that keep your revenue engine running smoothly.
-                </p>
-
-                <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontWeight: 600 }}>Technology Stack</h4>
-                <p style={{ lineHeight: 1.7 }}>
-                  CRM, Marketing Automation, Sales Engagement, Customer Success platforms — we implement, integrate, 
-                  and optimize your entire GTM tech stack.
-                </p>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7, maxWidth: '800px' }}>
+              GTM Operations (also known as Revenue Operations or RevOps) is the operational backbone that connects 
+              your Marketing, Sales, and Customer Success teams. It covers Planning, Process, Systems, Reporting, and Enablement 
+              across all revenue functions.
+            </p>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
+              <img 
+                src="/images/gtm-ops-screenshot.png" 
+                alt="GTM Ops Matrix - The Full Stack View"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
+              <div style={{ textAlign: 'center', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#7c3aed' }}>148</div>
+                <div style={{ fontSize: '0.875rem', color: '#666' }}>Services Available</div>
               </div>
-              <div>
-                <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb', marginBottom: '1.5rem' }}>
-                  <img 
-                    src="/images/gtm-ops-screenshot.png" 
-                    alt="GTM Operations Overview"
-                    style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                  <div style={{ display: 'flex', height: '280px', background: 'linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)', borderRadius: '8px', alignItems: 'center', justifyContent: 'center', color: '#16a34a', flexDirection: 'column', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '3rem' }}>⚙️</span>
-                    <span style={{ fontWeight: 500 }}>GTM Ops Screenshot</span>
-                    <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Add: /public/images/gtm-ops-screenshot.png</span>
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#7c3aed' }}>148</div>
-                    <div style={{ fontSize: '0.875rem', color: '#666' }}>Services Available</div>
-                  </div>
-                  <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#7c3aed' }}>68</div>
-                    <div style={{ fontSize: '0.875rem', color: '#666' }}>Detailed Playbooks</div>
-                  </div>
-                </div>
+              <div style={{ textAlign: 'center', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#7c3aed' }}>68</div>
+                <div style={{ fontSize: '0.875rem', color: '#666' }}>Detailed Playbooks</div>
               </div>
+              <div style={{ textAlign: 'center', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#7c3aed' }}>5</div>
+                <div style={{ fontSize: '0.875rem', color: '#666' }}>GTM Functions</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section style={{ marginBottom: '4rem' }}>
+          <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>📋</span> LeanScale GTM Ops Projects
+          </h2>
+          <div className="card" style={{ padding: '2rem' }}>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7 }}>
+              Each project can be leveraged to improve go-to-market performance across Cross Functional, Sales, Marketing, 
+              Customer Success, and Partnerships.
+            </p>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden' }}>
+              <img 
+                src="/images/gtm-ops-projects-screenshot.png" 
+                alt="LeanScale GTM Ops Projects by Function"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
+            </div>
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <Link href="/why-leanscale/services">
+                <button className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
+                  View Full Services Catalog →
+                </button>
+              </Link>
             </div>
           </div>
         </section>
@@ -182,81 +154,23 @@ export default function WhyLeanScale() {
             <span>⚖️</span> In-House vs Partner
           </h2>
           <div className="card" style={{ padding: '2rem' }}>
-            <p style={{ marginBottom: '2rem', lineHeight: 1.7, maxWidth: '800px' }}>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7 }}>
               The build vs. buy decision is critical for startups. Here's why partnering with LeanScale gives you 
               the best of both worlds — expertise, speed, and cost efficiency.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-              <div style={{ padding: '1.5rem', background: '#fef2f2', borderRadius: '12px', border: '1px solid #fecaca' }}>
-                <h4 style={{ color: '#dc2626', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>🏠</span> Building In-House
-                </h4>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>❌</span>
-                    6-12 months to hire and ramp
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>❌</span>
-                    $200-400K+ annual fully-loaded cost
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>❌</span>
-                    Single point of failure risk
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>❌</span>
-                    Limited cross-company experience
-                  </li>
-                  <li style={{ paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>❌</span>
-                    Scaling requires more hiring
-                  </li>
-                </ul>
-              </div>
-              <div style={{ padding: '1.5rem', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #86efac' }}>
-                <h4 style={{ color: '#16a34a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>🤝</span> Partnering with LeanScale
-                </h4>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>✅</span>
-                    Operational in 2-4 weeks
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>✅</span>
-                    Predictable monthly investment
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>✅</span>
-                    Full team with built-in redundancy
-                  </li>
-                  <li style={{ marginBottom: '0.75rem', paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>✅</span>
-                    100+ company implementations
-                  </li>
-                  <li style={{ paddingLeft: '1.5rem', position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 0 }}>✅</span>
-                    Flex capacity up or down instantly
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
+            <div style={{ background: '#e9d8f4', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
               <img 
                 src="/images/in-house-vs-partner-screenshot.png" 
-                alt="In-House vs Partner Comparison"
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
+                alt="In-House vs LeanScale Comparison - Playbooks, Adaptability, Talent, Speed, Focus, Cost"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
               />
-              <div style={{ display: 'flex', height: '200px', background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', borderRadius: '8px', alignItems: 'center', justifyContent: 'center', color: '#b45309', flexDirection: 'column', gap: '0.5rem' }}>
-                <span style={{ fontSize: '3rem' }}>⚖️</span>
-                <span style={{ fontWeight: 500 }}>Comparison Chart Screenshot</span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Add: /public/images/in-house-vs-partner-screenshot.png</span>
-              </div>
+            </div>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden' }}>
+              <img 
+                src="/images/grow-efficiently-screenshot.png" 
+                alt="Grow quickly and efficiently through each stage - The Old Way vs The New Way"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
             </div>
           </div>
         </section>
@@ -266,61 +180,17 @@ export default function WhyLeanScale() {
             <span>👥</span> LeanScale GTM Pod Structure
           </h2>
           <div className="card" style={{ padding: '2rem' }}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <h3 style={{ color: '#7c3aed', marginBottom: '0.5rem' }}>Build The Best B2B GTM Ops Org</h3>
-              <p style={{ color: '#666', maxWidth: '600px', margin: '0 auto' }}>
-                Every LeanScale engagement includes a dedicated pod of specialists, not generalists.
-              </p>
-            </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f3f4f6', borderRadius: '12px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎯</div>
-                <h4 style={{ marginBottom: '0.5rem', color: '#7c3aed' }}>GTM Architect</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  Strategic leadership, roadmap planning, and executive alignment
-                </p>
-              </div>
-              <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f3f4f6', borderRadius: '12px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>⚙️</div>
-                <h4 style={{ marginBottom: '0.5rem', color: '#7c3aed' }}>GTM Engineer</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  System implementation, integrations, and technical execution
-                </p>
-              </div>
-              <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f3f4f6', borderRadius: '12px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
-                <h4 style={{ marginBottom: '0.5rem', color: '#7c3aed' }}>Data Analyst</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  Reporting, analytics, and data quality management
-                </p>
-              </div>
-              <div style={{ textAlign: 'center', padding: '1.5rem', background: '#f3f4f6', borderRadius: '12px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🛠️</div>
-                <h4 style={{ marginBottom: '0.5rem', color: '#7c3aed' }}>Ops Specialist</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  Day-to-day operations, admin, and process optimization
-                </p>
-              </div>
-            </div>
-
-            <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb' }}>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7, textAlign: 'center', maxWidth: '700px', margin: '0 auto 1.5rem' }}>
+              Build the best 0 FTE GTM Ops Org. Your dedicated team is backed by our Center of Excellence with specialists 
+              across RevOps, CS Ops, Sales Ops, Marketing Ops, Partner Ops, and Pipeline Ops.
+            </p>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden' }}>
               <img 
                 src="/images/pod-structure-screenshot.png" 
-                alt="LeanScale Pod Structure"
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
+                alt="Build The Best 0 FTE GTM Ops Org - Your Dedicated Team backed by Center of Excellence"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
               />
-              <div style={{ display: 'flex', height: '250px', background: 'linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)', borderRadius: '8px', alignItems: 'center', justifyContent: 'center', color: '#7c3aed', flexDirection: 'column', gap: '0.5rem' }}>
-                <span style={{ fontSize: '3rem' }}>👥</span>
-                <span style={{ fontWeight: 500 }}>Pod Structure Diagram</span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Add: /public/images/pod-structure-screenshot.png</span>
-              </div>
             </div>
-
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
               <Link href="/buy-leanscale/team">
                 <button className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
@@ -336,49 +206,25 @@ export default function WhyLeanScale() {
             <span>🤝</span> Working with LeanScale
           </h2>
           <div className="card" style={{ padding: '2rem' }}>
-            <h3 style={{ color: '#7c3aed', marginBottom: '1.5rem', textAlign: 'center' }}>
-              A Week in the Life with your LeanScale Team
-            </h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div style={{ padding: '1.25rem', borderLeft: '4px solid #7c3aed', background: '#faf5ff' }}>
-                <h4 style={{ marginBottom: '0.5rem', color: '#7c3aed' }}>📅 Monday: Kickoff & Planning</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  Weekly sync with your GTM Architect to review priorities, blockers, and align on the week's goals.
-                </p>
-              </div>
-              <div style={{ padding: '1.25rem', borderLeft: '4px solid #22c55e', background: '#f0fdf4' }}>
-                <h4 style={{ marginBottom: '0.5rem', color: '#16a34a' }}>🔧 Tues-Thurs: Execution</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  Engineers and specialists execute on projects, with async updates via Slack and your project board.
-                </p>
-              </div>
-              <div style={{ padding: '1.25rem', borderLeft: '4px solid #eab308', background: '#fefce8' }}>
-                <h4 style={{ marginBottom: '0.5rem', color: '#ca8a04' }}>📊 Friday: Review & Report</h4>
-                <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-                  End-of-week summary with completed work, metrics updates, and next week's preview.
-                </p>
-              </div>
-            </div>
-
-            <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '1px solid #e5e7eb', marginBottom: '2rem' }}>
+            <p style={{ marginBottom: '1.5rem', lineHeight: 1.7, textAlign: 'center', maxWidth: '700px', margin: '0 auto 1.5rem' }}>
+              A Week in the Life with your LeanScale Team. See how our dedicated partners, architects, and engineers 
+              work together throughout the week to deliver results.
+            </p>
+            <div style={{ background: '#1a1a2e', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden', marginBottom: '1.5rem' }}>
               <img 
                 src="/images/working-with-leanscale-screenshot.png" 
-                alt="Working with LeanScale"
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
+                alt="A Week in the Life with your LeanScale Team - Series A Example"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
               />
-              <div style={{ display: 'flex', height: '200px', background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', borderRadius: '8px', alignItems: 'center', justifyContent: 'center', color: '#4f46e5', flexDirection: 'column', gap: '0.5rem' }}>
-                <span style={{ fontSize: '3rem' }}>🤝</span>
-                <span style={{ fontWeight: 500 }}>Weekly Workflow Screenshot</span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>Add: /public/images/working-with-leanscale-screenshot.png</span>
-              </div>
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+            <div style={{ background: '#f3f4f6', borderRadius: '12px', padding: '0.5rem', overflow: 'hidden' }}>
+              <img 
+                src="/images/highest-value-projects-screenshot.png" 
+                alt="Quickly Address Poor Performance With The Highest Value Projects"
+                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '8px' }}
+              />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
               <div style={{ textAlign: 'center', padding: '1rem' }}>
                 <div style={{ fontSize: '0.875rem', color: '#666' }}>Response Time</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#7c3aed' }}>&lt; 4 hours</div>

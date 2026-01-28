@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import customerConfig from '../data/customer-config';
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,17 +16,9 @@ export default function Navigation() {
 
   return (
     <nav className="nav">
-      <div className="nav-logo">
-        {customerConfig.customerLogo && (
-          <>
-            <span>←</span>
-            <img src={customerConfig.customerLogo} alt={customerConfig.customerName} />
-          </>
-        )}
-        <Link href="/" onClick={closeMenu}>
-          {customerConfig.customerName} | LeanScale
-        </Link>
-      </div>
+      <Link href="/" className="nav-logo" onClick={closeMenu}>
+        <img src="/leanscale-logo.svg" alt="LeanScale" style={{ height: 32 }} />
+      </Link>
 
       <button 
         className="mobile-menu-btn"

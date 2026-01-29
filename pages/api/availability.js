@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     // Cache for 1 minute (availability changes more frequently)
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
 
-    return res.status(200).json(availability);
+    return res.status(200).json({ dates: availability });
   } catch (err) {
     console.error('Error in /api/availability:', err);
     return res.status(500).json({ error: 'Internal server error' });

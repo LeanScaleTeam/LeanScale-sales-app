@@ -31,3 +31,6 @@ next-env.d.ts
 # Replit
 .replit
 replit.nix
+
+# Local Netlify folder
+.netlify

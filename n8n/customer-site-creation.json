@@ -1,0 +1,295 @@
+{
+  "name": "Customer Site Creation",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-ready",
+              "leftValue": "={{ $json.Sales_Portal_Ready__c }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-ready",
+      "name": "Check Portal Ready",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clay.com/v3/sources/webhook/{{ $env.CLAY_WEBHOOK_ID }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.CLAY_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $json.Account.Website }}"
+            },
+            {
+              "name": "company_name",
+              "value": "={{ $json.Account.Name }}"
+            },
+            {
+              "name": "sfdc_account_id",
+              "value": "={{ $json.Account.Id }}"
+            }
+          ]
+        }
+      },
+      "id": "clay-enrich",
+      "name": "Enrich with Clay",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [820, 200],
+      "notes": "Send company domain to Clay for enrichment. Clay will return logo_url, description, industry, etc."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate URL-safe slug from company name\nconst accountName = $input.first().json.Account?.Name || 'unknown';\n\nconst slug = accountName\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, '-')  // Replace non-alphanumeric with dashes\n  .replace(/^-|-$/g, '')        // Trim leading/trailing dashes\n  .substring(0, 50);            // Max length\n\n// Check for existing slug and add suffix if needed\nconst baseSlug = slug;\nlet finalSlug = slug;\nlet suffix = 1;\n\n// This would normally check Supabase - for now just use base slug\n// In production, you'd query Supabase to check for duplicates\n\nreturn {\n  slug: finalSlug,\n  accountName: accountName,\n  accountId: $input.first().json.Account?.Id,\n  oppId: $input.first().json.Id,\n  oppName: $input.first().json.Name,\n  ownerEmail: $input.first().json.Owner?.Email,\n  ownerName: $input.first().json.Owner?.Name,\n  website: $input.first().json.Account?.Website,\n  // From Clay enrichment (if available)\n  logoUrl: $input.first().json.clay_logo_url || `https://logo.clearbit.com/${$input.first().json.Account?.Website?.replace(/^https?:\\/\\//, '').split('/')[0]}`,\n  industry: $input.first().json.clay_industry || $input.first().json.Account?.Industry,\n  description: $input.first().json.clay_description || ''\n};"
+      },
+      "id": "generate-slug",
+      "name": "Generate Slug & Prepare Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1020, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{ $env.SUPABASE_URL }}/rest/v1/customers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"slug\": \"{{ $json.slug }}\",\n  \"name\": \"{{ $json.accountName }}\",\n  \"logo_url\": \"{{ $json.logoUrl }}\",\n  \"password\": \"ls{{ $now.format('yyyyMMdd') }}\",\n  \"nda_link\": \"https://powerforms.docusign.net/0758efed-0a42-4275-b5d9-f26875d64ae6?env=na4&acct=9287b4d2-50a6-4309-b7e8-7f0b785470c0&accountId=9287b4d2-50a6-4309-b7e8-7f0b785470c0\",\n  \"intake_form_link\": \"https://forms.fillout.com/t/nqEbrHoL5Eus\",\n  \"youtube_video_id\": \"M7oECb8xsy0\",\n  \"google_slides_embed_url\": \"https://docs.google.com/presentation/d/e/2PACX-1vSGSLvHvPn9Cus6N3BpGnK6AkZsUiEdh8cARVVBiZ4w54uUCjHHJ-lHfymW8wfPPraAXMfgXtePxIwf/pubembed?start=true&loop=true&delayms=3000\",\n  \"assigned_team\": [\"izzy\", \"brian\", \"dave\", \"kavean\"],\n  \"is_demo\": false\n}"
+      },
+      "id": "create-customer",
+      "name": "Create Customer in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1220, 200]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://leanscale3.my.salesforce.com/services/data/v59.0/sobjects/Opportunity/{{ $('Generate Slug & Prepare Data').item.json.oppId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "salesforceOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Sales_Portal_URL__c\": \"https://clients.leanscale.team/c/{{ $('Generate Slug & Prepare Data').item.json.slug }}\",\n  \"Sales_Portal_Created__c\": true\n}"
+      },
+      "id": "update-sfdc",
+      "name": "Update SFDC Opp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1420, 200],
+      "notes": "Update Opportunity with portal URL"
+    },
+    {
+      "parameters": {
+        "channel": "#sales-notifications",
+        "text": "=:rocket: *New Sales Portal Created*\n\n*Company:* {{ $('Generate Slug & Prepare Data').item.json.accountName }}\n*Portal URL:* https://clients.leanscale.team/c/{{ $('Generate Slug & Prepare Data').item.json.slug }}\n*Admin:* https://clients.leanscale.team/admin\n\n*Opportunity:* {{ $('Generate Slug & Prepare Data').item.json.oppName }}\n*Owner:* {{ $('Generate Slug & Prepare Data').item.json.ownerName }}\n\n_Share the portal link with your prospect!_",
+        "otherOptions": {}
+      },
+      "id": "slack-notify",
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [1620, 200],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ScaleMate",
+          "name": "ScaleMate"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "When Webhook Received",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "customer-site-create"
+    },
+    {
+      "parameters": {
+        "channel": "#sales-notifications",
+        "text": "=:x: *Portal Not Ready*\n\n*Company:* {{ $json.Account.Name }}\n*Missing:* Sales_Portal_Ready__c is not checked\n\nEnsure the account is enriched with logo before creating the portal.",
+        "otherOptions": {}
+      },
+      "id": "slack-not-ready",
+      "name": "Slack - Not Ready",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [820, 400],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ScaleMate",
+          "name": "ScaleMate"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-logo",
+              "leftValue": "={{ $json.Account.Logo_URL__c }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-logo",
+      "name": "Has Logo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1020, 300],
+      "notes": "Check if Clay enrichment already populated the logo"
+    }
+  ],
+  "connections": {
+    "When Webhook Received": {
+      "main": [
+        [
+          {
+            "node": "Check Portal Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Portal Ready": {
+      "main": [
+        [
+          {
+            "node": "Enrich with Clay",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack - Not Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich with Clay": {
+      "main": [
+        [
+          {
+            "node": "Generate Slug & Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Slug & Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Create Customer in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Customer in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Update SFDC Opp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update SFDC Opp": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "leanscaledev"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "Sales Automation"
+    }
+  ]
+}

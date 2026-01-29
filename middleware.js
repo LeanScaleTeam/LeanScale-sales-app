@@ -1,15 +1,44 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Next.js Middleware for subdomain-based customer routing
+ * Next.js Middleware for customer routing
  *
- * Production: Extracts customer slug from subdomain (customer.clients.leanscale.team)
- * Development: Uses ?customer=slug query parameter for testing
+ * Supports multiple routing patterns (in priority order):
+ * 1. Subdomain: customer.clients.leanscale.team/page
+ * 2. Path-based: clients.leanscale.team/c/customer/page
+ * 3. Query param: localhost:3000/page?customer=slug (development)
  *
  * Injects customer slug into request via header and cookie for downstream access
  */
 export async function middleware(request) {
-  const { hostname, searchParams } = request.nextUrl;
+  const { hostname, pathname, searchParams } = request.nextUrl;
+
+  // Check for path-based routing: /c/customer-slug/rest-of-path
+  const pathMatch = pathname.match(/^\/c\/([a-z0-9-]+)(\/.*)?$/i);
+
+  if (pathMatch) {
+    // Path-based routing detected - rewrite URL and set customer context
+    const customerSlug = pathMatch[1].toLowerCase();
+    const remainingPath = pathMatch[2] || '/';
+
+    // Rewrite the URL to remove /c/customer-slug prefix
+    const url = request.nextUrl.clone();
+    url.pathname = remainingPath;
+
+    const response = NextResponse.rewrite(url);
+
+    // Set customer slug in header and cookie
+    response.headers.set('x-customer-slug', customerSlug);
+    response.cookies.set('customer-slug', customerSlug, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24,
+      path: '/',
+    });
+
+    return response;
+  }
 
   // Extract customer slug from subdomain or query param
   let customerSlug = extractCustomerSlug(hostname, searchParams);
@@ -41,7 +70,7 @@ export async function middleware(request) {
  * Extract customer slug from hostname or query parameters
  *
  * Supports:
- * - parafimy.clients.leanscale.team → "parafimy" (primary)
+ * - parafimy.clients.leanscale.team → "parafimy" (subdomain)
  * - localhost:3000?customer=parafimy → "parafimy" (development)
  */
 function extractCustomerSlug(hostname, searchParams) {
@@ -78,6 +107,11 @@ function extractCustomerSlug(hostname, searchParams) {
   // For Netlify preview deploys (deploy-preview-123--site.netlify.app)
   // or branch deploys, default to demo
   if (hostname.includes('netlify')) {
+    return null;
+  }
+
+  // For Vercel preview deploys
+  if (hostname.includes('vercel')) {
     return null;
   }
 

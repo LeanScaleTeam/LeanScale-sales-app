@@ -36,8 +36,43 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const signUp = async (email, password) => {
+    // Validate @leanscale.team email domain
+    if (!email.toLowerCase().endsWith('@leanscale.team')) {
+      throw new Error('Registration is only available for @leanscale.team email addresses');
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
+
+  const resetPassword = async (email) => {
+    if (!email.toLowerCase().endsWith('@leanscale.team')) {
+      throw new Error('Password reset is only available for @leanscale.team email addresses');
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin/reset-password`,
+    });
+    if (error) throw error;
+  };
+
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
     if (error) throw error;
   };
 
@@ -45,7 +80,10 @@ export function AuthProvider({ children }) {
     user,
     loading,
     signIn,
+    signUp,
     signOut,
+    resetPassword,
+    updatePassword,
     isAuthenticated: !!user,
   };
 

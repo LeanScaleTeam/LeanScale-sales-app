@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Build identifier to force new chunk hashes when CDN caches stale 404s
+  generateBuildId: async () => `build-${Date.now()}`,
   images: {
     domains: ['leanscale.team'],
   },

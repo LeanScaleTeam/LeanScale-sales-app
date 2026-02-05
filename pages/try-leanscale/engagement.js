@@ -12,6 +12,14 @@ const allStrategicProjects = [
   ...strategicProjects.partnerships,
 ];
 
+const allManagedServices = [
+  ...(managedServices.crossFunctional || []),
+  ...(managedServices.marketing || []),
+  ...(managedServices.sales || []),
+  ...(managedServices.customerSuccess || []),
+  ...(managedServices.partnerships || []),
+];
+
 const functionColors = {
   'Cross Functional': { bg: '#e0e7ff', border: '#818cf8' },
   'Marketing': { bg: '#dcfce7', border: '#4ade80' },
@@ -33,7 +41,7 @@ function getServiceDetails(serviceId, serviceType) {
     return allStrategicProjects.find(s => s.id === serviceId);
   }
   if (serviceType === 'managed') {
-    return managedServices.find(s => s.id === serviceId);
+    return allManagedServices.find(s => s.id === serviceId);
   }
   return null;
 }
@@ -61,7 +69,7 @@ export default function EngagementOverview() {
     const priorityManaged = managedServicesHealth
       .filter(m => m.addToEngagement)
       .map((m, idx) => {
-        const service = managedServices.find(s => s.id === m.serviceId);
+        const service = allManagedServices.find(s => s.id === m.serviceId);
         const hoursPerMonth = m.hoursPerMonth || 8;
         return {
           ...m,

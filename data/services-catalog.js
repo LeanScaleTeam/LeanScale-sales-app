@@ -79,21 +79,7 @@ export const strategicProjects = {
   ],
 };
 
-export const managedServices = [
-  { id: 'crm-admin', name: 'CRM Admin', icon: '🛠️', description: 'Ongoing CRM administration, user management, and configuration updates.' },
-  { id: 'enrichment-tools-admin', name: 'Enrichment Tools Admin', icon: '🧬', description: 'Manage and optimize data enrichment tools and integrations.' },
-  { id: 'ongoing-reporting', name: 'Ongoing Reporting', icon: '📊', description: 'Regular report creation, maintenance, and dashboard updates.' },
-  { id: 'core-revops', name: 'Core RevOps', icon: '🌍', description: 'Comprehensive revenue operations support across the GTM stack.' },
-  { id: 'marketing-tools-admin', name: 'Marketing Tools Admin', icon: '⚙️', description: 'Administration of marketing automation and related tools.' },
-  { id: 'marketing-ops-maintenance', name: 'Marketing Ops Maintenance', icon: '🎯', description: 'Ongoing marketing operations support and campaign maintenance.' },
-  { id: 'marketing-ops', name: 'Marketing Ops', icon: '📈', description: 'Full-service marketing operations including campaigns and automation.' },
-  { id: 'sales-ops', name: 'Sales Ops', icon: '📊', description: 'Sales operations support including pipeline management and reporting.' },
-  { id: 'cs-ops', name: 'CS Ops', icon: '🧑‍💼', description: 'Customer success operations including health monitoring and renewals.' },
-  { id: 'deal-desk', name: 'Deal Desk', icon: '📝', description: 'Quote review, approval workflows, and deal structuring support.' },
-  { id: 'gtm-systems-admin', name: 'GTM Systems Admin', icon: '💻', description: 'Administration across your full GTM technology stack.' },
-];
-
-export const toolImplementations = {
+export const managedServices = {
   crossFunctional: [
     { id: 'salesforce-impl', name: 'Salesforce', icon: '☁️', description: 'Full Salesforce CRM implementation and configuration.' },
     { id: 'hubspot-impl', name: 'Hubspot', icon: '🟠', description: 'HubSpot CRM and marketing hub implementation.' },

@@ -4,21 +4,18 @@ import Layout from '../../components/Layout';
 import { 
   strategicProjects, 
   managedServices, 
-  toolImplementations, 
   playbooks,
   functionLabels,
   categoryLabels 
 } from '../../data/services-catalog';
 
 const strategicCount = Object.values(strategicProjects).flat().length;
-const managedCount = managedServices.length;
-const toolsCount = Object.values(toolImplementations).flat().length;
-const allServicesCount = strategicCount + managedCount + toolsCount;
+const managedCount = Object.values(managedServices).flat().length;
+const allServicesCount = strategicCount + managedCount;
 
 const tabs = [
   { id: 'strategic', label: 'One-Time Projects', count: strategicCount },
   { id: 'managed', label: 'Managed Services', count: managedCount },
-  { id: 'tools', label: 'Tool Implementations', count: toolsCount },
 ];
 
 const functionOptions = ['all', 'crossFunctional', 'marketing', 'sales', 'customerSuccess', 'partnerships'];
@@ -34,8 +31,6 @@ export default function ServicesCatalog() {
         return strategicProjects;
       case 'managed':
         return managedServices;
-      case 'tools':
-        return toolImplementations;
       default:
         return {};
     }
@@ -43,13 +38,6 @@ export default function ServicesCatalog() {
 
   const filteredServices = useMemo(() => {
     const services = getServicesForTab(activeTab);
-    
-    if (activeTab === 'managed') {
-      return services.filter(service => 
-        searchQuery === '' || 
-        service.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
 
     let result = [];
     const functionsToShow = functionFilter === 'all' 
@@ -73,11 +61,8 @@ export default function ServicesCatalog() {
   }, [activeTab, functionFilter, searchQuery]);
 
   const totalCount = useMemo(() => {
-    if (activeTab === 'managed') {
-      return filteredServices.length;
-    }
     return filteredServices.reduce((sum, group) => sum + group.services.length, 0);
-  }, [filteredServices, activeTab]);
+  }, [filteredServices]);
 
   const getPlaybookForService = (serviceId) => {
     return playbooks.find(p => p.id === serviceId);
@@ -158,57 +143,26 @@ export default function ServicesCatalog() {
             />
           </div>
           
-          {activeTab !== 'managed' && (
-            <div>
-              <label style={{ fontWeight: 500, display: 'block', marginBottom: '0.5rem', color: '#374151' }}>
-                Function
-              </label>
-              <select
-                value={functionFilter}
-                onChange={(e) => setFunctionFilter(e.target.value)}
-                className="form-input"
-                style={{ width: 200 }}
-              >
-                <option value="all">All Functions</option>
-                {functionOptions.slice(1).map((fn) => (
-                  <option key={fn} value={fn}>{functionLabels[fn]}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label style={{ fontWeight: 500, display: 'block', marginBottom: '0.5rem', color: '#374151' }}>
+              Function
+            </label>
+            <select
+              value={functionFilter}
+              onChange={(e) => setFunctionFilter(e.target.value)}
+              className="form-input"
+              style={{ width: 200 }}
+            >
+              <option value="all">All Functions</option>
+              {functionOptions.slice(1).map((fn) => (
+                <option key={fn} value={fn}>{functionLabels[fn]}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {activeTab === 'managed' ? (
-          <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-            {filteredServices.map((service) => (
-              <div key={service.id} className="card" style={{ 
-                padding: '1.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1.5rem' }}>{service.icon}</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>{service.name}</h3>
-                  <span style={{
-                    display: 'inline-block',
-                    marginTop: '0.25rem',
-                    padding: '0.15rem 0.5rem',
-                    background: '#d1fae5',
-                    color: '#065f46',
-                    borderRadius: '4px',
-                    fontSize: '0.65rem',
-                    fontWeight: 500,
-                  }}>
-                    Ongoing Support
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>
-            {filteredServices.map((group) => (
+        <div>
+          {filteredServices.map((group) => (
               <div key={group.function} style={{ marginBottom: '2rem' }}>
                 <h2 style={{ 
                   fontSize: '1.1rem', 
@@ -304,7 +258,6 @@ export default function ServicesCatalog() {
               </div>
             ))}
           </div>
-        )}
 
         <p style={{ marginTop: '2rem', color: '#666', textAlign: 'center' }}>
           Showing {totalCount} services

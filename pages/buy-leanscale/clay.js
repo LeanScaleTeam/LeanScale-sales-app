@@ -3,30 +3,22 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 
 const claybooks = [
-  { id: 1, name: 'Market Map', price: 45000, hours: '40-60', prereqs: 'None', description: 'Builds your complete ICP/TAM database in Clay, enriches every account, scores for fit, assigns tiers, and pushes to CRM.', complexity: 'High', scope: 'Up to 50,000 accounts' },
-  { id: 2, name: 'Persona Mapping', price: 4500, hours: '20-30', prereqs: 'Market Map', description: 'Adds contact-level enrichment to your Market Map. Identifies key personas, enriches contacts, scores for relevance.', complexity: 'Medium', scope: 'Up to 100,000 contacts' },
-  { id: 3, name: 'Automated Inbound Enrichment', price: 6000, hours: '15-40', prereqs: 'Market Map recommended', description: 'Enriches inbound leads in real-time. Filters junk, deduplicates, scores, tiers, and routes.', complexity: 'Medium', scope: 'Unlimited inbound volume' },
-  { id: 4, name: 'Automated Outbound', price: 7000, hours: '25-35', prereqs: 'Market Map', description: 'Builds targeted outbound lists, enriches contacts, personalizes at scale, pushes to sales engagement platform.', complexity: 'Medium-High', scope: 'Up to 10,000 contacts/month' },
-  { id: 5, name: 'Lead Scoring', price: 4000, hours: '15-25', prereqs: 'ICP definition', description: 'ICP-driven lead scoring combining firmographic fit with enriched data signals, syncs to CRM/MAP.', complexity: 'Medium', scope: 'Inbound and existing database' },
-  { id: 6, name: 'ABM Target Account Enrichment', price: 6500, hours: '25-35', prereqs: 'Named account list', description: 'Deep enrichment for named accounts, buying committee mapping, intent signals, ABM-ready segments.', complexity: 'Medium-High', scope: 'Up to 500 named accounts' },
-  { id: 7, name: 'CRM Data Cleanup', price: 3500, hours: '15-20', prereqs: 'CRM access', description: 'Enriches and standardizes existing CRM data. Fills gaps, corrects errors, normalizes fields.', complexity: 'Low-Medium', scope: 'Up to 25,000 records' },
-  { id: 8, name: 'Customer Segmentation', price: 5000, hours: '20-30', prereqs: 'Customer list', description: 'Enriches customer base for CS coverage models, expansion targeting, and retention analysis.', complexity: 'Medium', scope: 'Up to 10,000 customers' },
-  { id: 9, name: 'Event Lead Enrichment', price: 3000, hours: '10-15', prereqs: 'ICP definition', description: 'Enriches event leads, scores against ICP, deduplicates, routes hot leads for follow-up.', complexity: 'Low-Medium', scope: 'Up to 5,000 leads per event' },
-  { id: 10, name: 'Signal-Based Prospecting', price: 7500, hours: '30-40', prereqs: 'Market Map', description: 'Monitors intent signals across your TAM and surfaces accounts showing buying signals.', complexity: 'High', scope: 'Up to 25,000 accounts' },
+  { id: 1, name: 'Market Map', price: 45000, prereqs: 'None', description: 'Builds your complete ICP/TAM database in Clay, enriches every account, scores for fit, assigns tiers, and pushes to CRM.', complexity: 'High', scope: 'Up to 50,000 accounts' },
+  { id: 2, name: 'Persona Mapping', price: 6250, prereqs: 'Market Map', description: 'Adds contact-level enrichment to your Market Map. Identifies key personas, enriches contacts, scores for relevance.', complexity: 'Medium', scope: 'Up to 100,000 contacts' },
+  { id: 3, name: 'Automated Inbound Enrichment', price: 6875, prereqs: 'Market Map recommended', description: 'Enriches inbound leads in real-time. Filters junk, deduplicates, scores, tiers, and routes.', complexity: 'Medium', scope: 'Unlimited inbound volume' },
+  { id: 4, name: 'Automated Outbound', price: 7500, prereqs: 'Market Map', description: 'Builds targeted outbound lists, enriches contacts, personalizes at scale, pushes to sales engagement platform.', complexity: 'Medium-High', scope: 'Up to 10,000 contacts/month' },
+  { id: 5, name: 'Lead Scoring', price: 5000, prereqs: 'ICP definition', description: 'ICP-driven lead scoring combining firmographic fit with enriched data signals, syncs to CRM/MAP.', complexity: 'Medium', scope: 'Inbound and existing database' },
+  { id: 6, name: 'ABM Target Account Enrichment', price: 7500, prereqs: 'Named account list', description: 'Deep enrichment for named accounts, buying committee mapping, intent signals, ABM-ready segments.', complexity: 'Medium-High', scope: 'Up to 500 named accounts' },
+  { id: 7, name: 'CRM Data Cleanup', price: 4375, prereqs: 'CRM access', description: 'Enriches and standardizes existing CRM data. Fills gaps, corrects errors, normalizes fields.', complexity: 'Low-Medium', scope: 'Up to 25,000 records' },
+  { id: 8, name: 'Customer Segmentation', price: 6250, prereqs: 'Customer list', description: 'Enriches customer base for CS coverage models, expansion targeting, and retention analysis.', complexity: 'Medium', scope: 'Up to 10,000 customers' },
+  { id: 9, name: 'Event Lead Enrichment', price: 3125, prereqs: 'ICP definition', description: 'Enriches event leads, scores against ICP, deduplicates, routes hot leads for follow-up.', complexity: 'Low-Medium', scope: 'Up to 5,000 leads per event' },
+  { id: 10, name: 'Signal-Based Prospecting', price: 8750, prereqs: 'Market Map', description: 'Monitors intent signals across your TAM and surfaces accounts showing buying signals.', complexity: 'High', scope: 'Up to 25,000 accounts' },
 ];
 
 const bundles = [
-  { name: 'GTM Foundation Bundle', price: 18000, savings: 3000, includes: ['Market Map', 'Persona Mapping', 'Automated Inbound Enrichment'] },
-  { name: 'Full Outbound Stack Bundle', price: 24000, savings: 4800, includes: ['Market Map', 'Persona Mapping', 'Automated Outbound', 'Signal-Based Prospecting'] },
-  { name: 'Complete GTM Infrastructure', price: 42000, savings: 9000, includes: ['All 10 Claybooks', 'Unified architecture', 'Cross-table deduplication', 'Priority 8-week delivery'] },
-];
-
-const addOns = [
-  { name: 'Additional data source', price: '$600', description: 'Beyond included sources per Claybook' },
-  { name: 'Vertical-specific enrichment', price: '$1,200', description: 'iBanknet, Definitive Healthcare, Cause IQ, etc.' },
-  { name: 'Extended scope (2x records)', price: '+25%', description: 'Double the record limit' },
-  { name: 'Ongoing maintenance', price: '$900/mo', description: 'Monthly updates, credit monitoring, break/fix' },
-  { name: 'Team training session', price: '$1,200', description: '90-min hands-on Clay training for team' },
+  { name: 'GTM Foundation Bundle', price: 23000, savings: 2625, includes: ['Market Map', 'Persona Mapping', 'Automated Inbound Enrichment'] },
+  { name: 'Full Outbound Stack Bundle', price: 30000, savings: 5000, includes: ['Market Map', 'Persona Mapping', 'Automated Outbound', 'Signal-Based Prospecting'] },
+  { name: 'Complete GTM Infrastructure', price: 55000, savings: 13125, includes: ['All 10 Claybooks', 'Unified architecture', 'Cross-table deduplication', 'Priority 8-week delivery'] },
 ];
 
 const stats = [
@@ -358,9 +350,7 @@ export default function ClayPartnership() {
                 <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.5, marginBottom: '0.75rem' }}>
                   {book.description}
                 </p>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#9ca3af' }}>
-                  <span>{book.hours} hrs</span>
-                  <span>|</span>
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
                   <span>{book.scope}</span>
                 </div>
                 <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
@@ -393,21 +383,6 @@ export default function ClayPartnership() {
                       <li key={j} style={{ marginBottom: '0.25rem' }}>✓ {item}</li>
                     ))}
                   </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Add-Ons</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              {addOns.map((addon, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, color: '#7c3aed', marginBottom: '0.25rem' }}>
-                    {addon.price}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.25rem' }}>{addon.name}</div>
-                  <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>{addon.description}</div>
                 </div>
               ))}
             </div>

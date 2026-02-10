@@ -319,16 +319,19 @@ export default function YourTeam() {
                 gap: '0.5rem',
               }}>
                 <span style={{
-                  width: 20,
-                  height: 20,
+                  width: 22,
+                  height: 22,
                   borderRadius: '50%',
                   border: '2px solid #d1d5db',
+                  background: '#f9fafb',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.7rem',
                 }}>
-                  +
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
                 </span>
                 Click to add to your team
               </div>

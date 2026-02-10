@@ -28,7 +28,8 @@ export default function BuyLeanScale() {
   const [payment, setPayment] = useState(paymentOptions[1]);
   const [total, setTotal] = useState(0);
   const [diagnosticRecommendation, setDiagnosticRecommendation] = useState(null);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     yourName: '',
     companyName: '',
@@ -70,8 +71,10 @@ export default function BuyLeanScale() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const submission = {
       ...formData,
       plan: selectedHours.label,
@@ -80,8 +83,27 @@ export default function BuyLeanScale() {
       cancellationTerms: cancellation.label,
       paymentTerms: payment.label,
     };
-    console.log('Engagement submitted:', submission);
-    alert('Your engagement request has been submitted! Our team will be in touch within 24 hours.');
+
+    try {
+      const response = await fetch('/api/submit-engagement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submission),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit');
+      }
+
+      alert('Your engagement request has been submitted! Our team will be in touch within 24 hours.');
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Your request was received, but there was an issue sending the notification. Our team will still follow up within 24 hours.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -326,18 +348,24 @@ export default function BuyLeanScale() {
                 Step 3: Your Details
               </h2>
 
-              <div style={{ 
-                padding: '1rem 1.25rem', 
-                background: '#f5f3ff', 
-                borderRadius: '8px', 
+              <div style={{
+                padding: '1rem 1.25rem',
+                background: '#f5f3ff',
+                borderRadius: '8px',
                 marginBottom: '1.5rem',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem',
               }}>
                 <div>
                   <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Your Plan</div>
                   <div style={{ fontWeight: 600 }}>{selectedHours.label} - {selectedHours.hours} hours/month</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Start Date</div>
+                  <div style={{ fontWeight: 600 }}>{formData.startDate ? new Date(formData.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '—'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Monthly Investment</div>
@@ -423,12 +451,13 @@ export default function BuyLeanScale() {
                 >
                   ← Back
                 </button>
-                <button 
+                <button
                   type="submit"
-                  className="btn btn-primary" 
-                  style={{ padding: '0.875rem 2rem' }}
+                  className="btn btn-primary"
+                  style={{ padding: '0.875rem 2rem', opacity: isSubmitting ? 0.7 : 1 }}
+                  disabled={isSubmitting}
                 >
-                  Submit Engagement Request
+                  {isSubmitting ? 'Submitting...' : 'Submit Engagement Request'}
                 </button>
               </div>
             </div>
@@ -448,7 +477,6 @@ export default function BuyLeanScale() {
               { href: '/buy-leanscale/security', label: 'Security' },
               { href: '/buy-leanscale/team', label: 'Your Team' },
               { href: '/buy-leanscale/clay', label: 'Clay x LeanScale' },
-              { href: '/try-leanscale', label: 'Take Diagnostic' },
             ].map((link) => (
               <Link 
                 key={link.href} 

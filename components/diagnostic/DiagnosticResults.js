@@ -18,6 +18,11 @@ import ScopeBuilderMode from './ScopeBuilderMode';
 import ItemDetailEditor from './ItemDetailEditor';
 import { strategicProjects } from '../../data/services-catalog';
 import SowPreviewPanel from './SowPreviewPanel';
+import BenchmarkOverlay from './BenchmarkOverlay';
+import DiagnosticComparison from './DiagnosticComparison';
+import ScoreBreakdown from './ScoreBreakdown';
+import { benchmarkPresets, compareToBenchmark } from '../../data/benchmark-data';
+import PresentationMode from './PresentationMode';
 
 /**
  * ItemTable — tabular view of diagnostic items with optional function/category column
@@ -348,6 +353,7 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   const [exportingPdf, setExportingPdf] = useState(false);
   const [showSowPreview, setShowSowPreview] = useState(false);
   const [scopeBuilderActive, setScopeBuilderActive] = useState(false);
+  const [showPresentation, setShowPresentation] = useState(false);
   const [filters, setFilters] = useState({
     search: '', status: 'all', function: 'all', outcome: 'all', priorityOnly: false,
   });

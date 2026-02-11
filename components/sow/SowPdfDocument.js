@@ -10,6 +10,7 @@
  *   diagnosticResult - Linked diagnostic result (optional)
  *   customerName     - Customer name for header
  *   versionNumber    - Version number (for watermark)
+ *   scenarios        - Array of scenario objects (optional, for multi-scenario PDF)
  */
 
 import {
@@ -390,6 +391,7 @@ export default function SowPdfDocument({
   diagnosticResult,
   customerName = '',
   versionNumber,
+  scenarios = [],
 }) {
   const content = sow.content || {};
   const diagnosticProcesses = diagnosticResult?.processes || [];
@@ -708,6 +710,123 @@ export default function SowPdfDocument({
                 </Text>
               </View>
             </View>
+          </View>
+        )}
+
+        {/* ===== SCENARIO COMPARISON PAGE ===== */}
+        {scenarios.length > 1 && (
+          <View wrap={false} style={{ marginTop: 20 }} minPresenceAhead={100}>
+            <Text style={styles.sectionHeading}>Options Comparison</Text>
+            <View style={styles.table}>
+              {/* Header */}
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderCell, { width: '25%' }]}>Metric</Text>
+                {scenarios.map(s => (
+                  <Text key={s.id} style={[styles.tableHeaderCell, { width: `${75 / scenarios.length}%`, textAlign: 'center' }]}>
+                    {s.name}{s.isDefault ? ' ★' : ''}
+                  </Text>
+                ))}
+              </View>
+              {/* Rows */}
+              {['Sections', 'Total Hours', 'Investment', 'Duration'].map((metric, mIdx) => (
+                <View key={metric} style={[styles.tableRow, mIdx % 2 === 1 ? styles.tableRowAlt : {}]}>
+                  <Text style={[styles.tableCellBold, { width: '25%' }]}>{metric}</Text>
+                  {scenarios.map(s => {
+                    const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
+                    let value = '—';
+                    if (metric === 'Sections') value = String(scenarioSections.length);
+                    if (metric === 'Total Hours') {
+                      const h = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0), 0);
+                      value = h > 0 ? String(h) : '—';
+                    }
+                    if (metric === 'Investment') {
+                      const inv = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0) * (parseFloat(sec.rate) || 0), 0);
+                      value = inv > 0 ? `$${inv.toLocaleString()}` : '—';
+                    }
+                    if (metric === 'Duration') {
+                      const dates = scenarioSections.filter(sec => sec.start_date && sec.end_date);
+                      if (dates.length > 0) {
+                        const min = dates.reduce((m, sec) => sec.start_date < m ? sec.start_date : m, dates[0].start_date);
+                        const max = dates.reduce((m, sec) => sec.end_date > m ? sec.end_date : m, dates[0].end_date);
+                        const weeks = Math.ceil((new Date(max) - new Date(min)) / (7 * 24 * 60 * 60 * 1000));
+                        value = `${weeks} weeks`;
+                      }
+                    }
+                    return (
+                      <Text key={s.id} style={[styles.tableCell, { width: `${75 / scenarios.length}%`, textAlign: 'center' }]}>
+                        {value}
+                      </Text>
+                    );
+                  })}
+                </View>
+              ))}
+              {/* Key sections row */}
+              <View style={[styles.tableRow]}>
+                <Text style={[styles.tableCellBold, { width: '25%' }]}>Includes</Text>
+                {scenarios.map(s => {
+                  const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
+                  return (
+                    <Text key={s.id} style={[styles.tableCell, { width: `${75 / scenarios.length}%`, textAlign: 'center', fontSize: 7 }]}>
+                      {scenarioSections.map(sec => sec.title).join(', ') || '—'}
+                    </Text>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Per-scenario investment tables */}
+            {scenarios.map(s => {
+              const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
+              if (scenarioSections.length === 0) return null;
+              const sTotalHours = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0), 0);
+              const sTotalInv = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0) * (parseFloat(sec.rate) || 0), 0);
+
+              return (
+                <View key={s.id} wrap={false} style={{ marginTop: 14 }} minPresenceAhead={60}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <Text style={[styles.sectionHeading, { marginTop: 0, marginBottom: 0, fontSize: 12 }]}>
+                      {s.name}
+                    </Text>
+                    {s.isDefault && (
+                      <View style={{ backgroundColor: COLORS.primary, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                        <Text style={{ fontSize: 7, color: 'white', fontFamily: 'Helvetica-Bold' }}>RECOMMENDED</Text>
+                      </View>
+                    )}
+                  </View>
+                  {s.description && (
+                    <Text style={{ fontSize: 9, color: COLORS.textLight, marginBottom: 6 }}>{s.description}</Text>
+                  )}
+                  <View style={styles.table}>
+                    <View style={styles.tableHeader}>
+                      <Text style={[styles.tableHeaderCell, styles.colSection]}>Section</Text>
+                      <Text style={[styles.tableHeaderCell, styles.colHours]}>Hours</Text>
+                      <Text style={[styles.tableHeaderCell, styles.colRate]}>Rate</Text>
+                      <Text style={[styles.tableHeaderCell, styles.colSubtotal]}>Subtotal</Text>
+                    </View>
+                    {scenarioSections.map((sec, idx) => {
+                      const h = parseFloat(sec.hours) || 0;
+                      const r = parseFloat(sec.rate) || 0;
+                      return (
+                        <View key={sec.id} style={[styles.tableRow, idx % 2 === 1 ? styles.tableRowAlt : {}]}>
+                          <Text style={[styles.tableCellBold, styles.colSection]}>{sec.title}</Text>
+                          <Text style={[styles.tableCell, styles.colHours]}>{h > 0 ? String(h) : '—'}</Text>
+                          <Text style={[styles.tableCell, styles.colRate]}>{r > 0 ? `$${r.toLocaleString()}` : '—'}</Text>
+                          <Text style={[styles.tableCellBold, styles.colSubtotal, { color: COLORS.green }]}>
+                            {h * r > 0 ? `$${(h * r).toLocaleString()}` : '—'}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                    <View style={styles.tableFooter}>
+                      <Text style={[styles.tableFooterCell, styles.colSection]}>Total</Text>
+                      <Text style={[styles.tableFooterCell, styles.colHours]}>{sTotalHours > 0 ? String(sTotalHours) : ''}</Text>
+                      <Text style={[styles.tableFooterCell, styles.colRate]}></Text>
+                      <Text style={[styles.tableFooterCell, styles.colSubtotal]}>${sTotalInv.toLocaleString()}</Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
           </View>
         )}
 

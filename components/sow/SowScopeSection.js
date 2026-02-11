@@ -28,6 +28,9 @@ export default function SowScopeSection({
   diagnosticResult,
   customerSlug,
   onDeleteSection,
+  onMoveSection,
+  isFirst = false,
+  isLast = false,
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newDeliverable, setNewDeliverable] = useState('');
@@ -180,6 +183,52 @@ export default function SowScopeSection({
               {subtotal > 0 ? `$${subtotal.toLocaleString()}` : '-'}
             </span>
           </div>
+
+          {/* Reorder buttons */}
+          {!readOnly && onMoveSection && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+              <button
+                onClick={() => onMoveSection(section.id, 'up')}
+                disabled={isFirst}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: isFirst ? '#CBD5E0' : '#6C5CE7',
+                  cursor: isFirst ? 'not-allowed' : 'pointer',
+                  fontSize: '0.75rem',
+                  padding: '0.1rem 0.25rem',
+                  lineHeight: 1,
+                  opacity: isFirst ? 0.4 : 0.7,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => { if (!isFirst) e.currentTarget.style.opacity = '1'; }}
+                onMouseLeave={(e) => { if (!isFirst) e.currentTarget.style.opacity = '0.7'; }}
+                title="Move section up"
+              >
+                ▲
+              </button>
+              <button
+                onClick={() => onMoveSection(section.id, 'down')}
+                disabled={isLast}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: isLast ? '#CBD5E0' : '#6C5CE7',
+                  cursor: isLast ? 'not-allowed' : 'pointer',
+                  fontSize: '0.75rem',
+                  padding: '0.1rem 0.25rem',
+                  lineHeight: 1,
+                  opacity: isLast ? 0.4 : 0.7,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => { if (!isLast) e.currentTarget.style.opacity = '1'; }}
+                onMouseLeave={(e) => { if (!isLast) e.currentTarget.style.opacity = '0.7'; }}
+                title="Move section down"
+              >
+                ▼
+              </button>
+            </div>
+          )}
 
           {/* Delete button */}
           {!readOnly && onDeleteSection && (

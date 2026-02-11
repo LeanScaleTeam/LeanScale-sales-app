@@ -177,6 +177,7 @@ export default function SowDetail() {
             onExport={handleExport}
             onSowUpdate={(updatedSow) => setSow(updatedSow)}
             customerSlug={customer?.slug}
+            customerPath={customerPath}
             customerName={customer?.customerName}
           />
         )}

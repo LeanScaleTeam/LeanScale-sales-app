@@ -354,6 +354,7 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   const [showSowPreview, setShowSowPreview] = useState(false);
   const [scopeBuilderActive, setScopeBuilderActive] = useState(false);
   const [showPresentation, setShowPresentation] = useState(false);
+  const [benchmarkPreset, setBenchmarkPreset] = useState('Series B');
   const [filters, setFilters] = useState({
     search: '', status: 'all', function: 'all', outcome: 'all', priorityOnly: false,
   });
@@ -554,6 +555,7 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   if (outcomes && outcomes.length > 0) {
     tabs.push({ id: 'by-outcome', label: 'By Outcome', icon: '\uD83C\uDFAF' });
   }
+  tabs.push({ id: 'benchmark', label: 'Benchmark', icon: '📏' });
 
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -625,8 +627,29 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   const groupField = 'function'; // All types use 'function' as the field name in the data
   const categoryLabel = diagnosticType === 'gtm' ? 'Function' : 'Category';
 
+  // F5 to launch presentation mode
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'F5' && !showPresentation) {
+        e.preventDefault();
+        setShowPresentation(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [showPresentation]);
+
   return (
     <Layout title={config.title}>
+      {showPresentation && (
+        <PresentationMode
+          processes={allProcesses}
+          companyName={customer?.customerName || 'Company'}
+          categories={categories}
+          notes={notes}
+          onExit={() => setShowPresentation(false)}
+        />
+      )}
       <div className="container">
         <div className="page-header" style={{ textAlign: 'center' }}>
           <h1 className="page-title" style={{ justifyContent: 'center' }}>
@@ -718,6 +741,22 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
                   {exportingPdf ? '⏳ Generating...' : '📄 Export PDF'}
                 </button>
               )}
+              <button
+                onClick={() => setShowPresentation(true)}
+                style={{
+                  padding: 'var(--space-2) var(--space-4)',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--font-semibold)',
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                }}
+                title="Present (F5)"
+              >
+                🖥️ Present
+              </button>
               <button
                 onClick={() => setShowSowPreview(!showSowPreview)}
                 style={{

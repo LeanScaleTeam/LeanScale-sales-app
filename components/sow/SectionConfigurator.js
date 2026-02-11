@@ -1,23 +1,19 @@
 /**
  * SectionConfigurator - Enhanced section editor with inline editing for all fields
  *
- * Replaces basic SectionEditor cards with full configurability:
- * title, description, hours, rate, investment, dates, deliverables, discount, billing
+ * Retainer-based model: no per-section rates or pricing.
+ * Hours are the key metric — catalog provides "suggested" hours,
+ * rep sets "actual" hours. Pricing is handled globally by TierSelector.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-
-const RATE_PRESETS = [200, 225, 250, 275, 300];
-const BILLING_OPTIONS = ['Monthly', 'Quarterly', 'Milestone-based', 'On completion'];
 
 export default function SectionConfigurator({
   section,
   onUpdate,
   onDelete,
   diagnosticItems = {},
-  defaultRate,
   velocity = 40, // hours per week
-  currency = 'USD',
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -27,12 +23,8 @@ export default function SectionConfigurator({
   const debounceRef = useRef(null);
 
   const h = parseFloat(section.hours) || 0;
-  const r = parseFloat(section.rate) || parseFloat(defaultRate) || 0;
-  const discount = parseFloat(section.discount) || 0;
-  const subtotal = h * r;
-  const discountedTotal = subtotal * (1 - discount / 100);
+  const suggestedHours = parseFloat(section.suggested_hours) || null;
   const deliverables = section.deliverables || [];
-  const billingSchedule = section.billing_schedule || 'Monthly';
 
   // Sync title/desc from parent
   useEffect(() => { setTitleDraft(section.title || ''); }, [section.title]);
@@ -65,21 +57,8 @@ export default function SectionConfigurator({
     immediateUpdate({ hours: newHours });
   }
 
-  function handleRateChange(val) {
-    immediateUpdate({ rate: parseFloat(val) || 0 });
-  }
-
-  function handleDiscountChange(val) {
-    const d = Math.min(100, Math.max(0, parseFloat(val) || 0));
-    immediateUpdate({ discount: d });
-  }
-
   function handleDateChange(field, value) {
     immediateUpdate({ [field]: value || null });
-  }
-
-  function handleBillingChange(val) {
-    immediateUpdate({ billingSchedule: val });
   }
 
   // Auto-calculate end date from hours + velocity + start date
@@ -104,7 +83,6 @@ export default function SectionConfigurator({
   }
 
   function toggleDeliverable(idx) {
-    // Toggle by prefixing with [EXCLUDED] marker
     const updated = [...deliverables];
     if (updated[idx].startsWith('[EXCLUDED] ')) {
       updated[idx] = updated[idx].replace('[EXCLUDED] ', '');
@@ -122,7 +100,8 @@ export default function SectionConfigurator({
     immediateUpdate({ deliverables: updated });
   }
 
-  const currencySymbol = { USD: '$', EUR: '€', GBP: '£' }[currency] || '$';
+  // Hours delta indicator
+  const hoursDelta = suggestedHours && h ? h - suggestedHours : null;
 
   return (
     <div style={{
@@ -185,15 +164,14 @@ export default function SectionConfigurator({
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexShrink: 0 }}>
-          {h > 0 && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{h}h</span>}
-          {discountedTotal > 0 && (
-            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--status-healthy-text)' }}>
-              {currencySymbol}{discountedTotal.toLocaleString()}
-              {discount > 0 && (
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textDecoration: 'line-through', marginLeft: 4 }}>
-                  {currencySymbol}{subtotal.toLocaleString()}
-                </span>
-              )}
+          {h > 0 && (
+            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--ls-purple-light)' }}>
+              {h}h
+            </span>
+          )}
+          {deliverables.length > 0 && (
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              {deliverables.filter(d => !d.startsWith('[EXCLUDED] ')).length}/{deliverables.length} deliverables
             </span>
           )}
           <button
@@ -237,11 +215,11 @@ export default function SectionConfigurator({
             />
           </div>
 
-          {/* Hours + Rate + Investment row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-            {/* Hours */}
+          {/* Hours row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            {/* Actual Hours */}
             <div>
-              <label style={labelStyle}>Hours</label>
+              <label style={labelStyle}>Hours (Actual)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <button onClick={() => handleHoursChange(h - 5)} style={stepBtnStyle}>−</button>
                 <input
@@ -253,94 +231,50 @@ export default function SectionConfigurator({
                 />
                 <button onClick={() => handleHoursChange(h + 5)} style={stepBtnStyle}>+</button>
               </div>
-            </div>
-
-            {/* Rate */}
-            <div>
-              <label style={labelStyle}>Rate (per hour)</label>
-              <input
-                type="number"
-                value={r || ''}
-                onChange={(e) => handleRateChange(e.target.value)}
-                placeholder={defaultRate ? `${defaultRate} (default)` : '250'}
-                style={{ ...numInputStyle, width: '100%' }}
-              />
-              <div style={{ display: 'flex', gap: 2, marginTop: 4, flexWrap: 'wrap' }}>
-                {RATE_PRESETS.map(preset => (
-                  <button
-                    key={preset}
-                    onClick={() => handleRateChange(preset)}
-                    style={{
-                      padding: '1px 6px',
-                      background: r === preset ? '#6C5CE7' : '#F7FAFC',
-                      color: r === preset ? 'white' : 'var(--text-secondary)',
-                      border: `1px solid ${r === preset ? '#6C5CE7' : '#E2E8F0'}`,
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '10px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {currencySymbol}{preset}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Investment (calculated) */}
-            <div>
-              <label style={labelStyle}>Investment</label>
-              <div style={{
-                padding: 'var(--space-2) var(--space-3)',
-                background: '#F0FDF4',
-                border: '1px solid #C6F6D5',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-base)',
-                fontWeight: 'var(--font-semibold)',
-                color: '#276749',
-                textAlign: 'center',
-              }}>
-                {currencySymbol}{discountedTotal.toLocaleString()}
-              </div>
-              {discount > 0 && (
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textAlign: 'center', marginTop: 2 }}>
-                  Before discount: {currencySymbol}{subtotal.toLocaleString()}
+              {hoursDelta !== null && (
+                <div style={{
+                  fontSize: 'var(--text-xs)',
+                  color: hoursDelta > 0 ? '#E53E3E' : hoursDelta < 0 ? '#276749' : 'var(--text-muted)',
+                  marginTop: 4,
+                  textAlign: 'center',
+                }}>
+                  {hoursDelta > 0 ? `+${hoursDelta}h over suggested` : hoursDelta < 0 ? `${hoursDelta}h under suggested` : 'Matches suggested'}
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Discount + Billing row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            {/* Suggested Hours (from catalog, read-only) */}
             <div>
-              <label style={labelStyle}>Discount (%)</label>
-              <input
-                type="number"
-                value={discount || ''}
-                onChange={(e) => handleDiscountChange(e.target.value)}
-                placeholder="0"
-                min="0"
-                max="100"
-                style={{ ...numInputStyle, width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Billing Schedule</label>
-              <select
-                value={billingSchedule}
-                onChange={(e) => handleBillingChange(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 'var(--space-2) var(--space-3)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--text-sm)',
-                  background: 'var(--bg-white)',
-                }}
-              >
-                {BILLING_OPTIONS.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
+              <label style={labelStyle}>Hours (Suggested)</label>
+              <div style={{
+                padding: 'var(--space-2) var(--space-3)',
+                background: suggestedHours ? '#EDF2F7' : '#F7FAFC',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--text-sm)',
+                textAlign: 'center',
+                color: suggestedHours ? 'var(--text-primary)' : 'var(--text-muted)',
+              }}>
+                {suggestedHours ? `${suggestedHours}h (catalog)` : 'No catalog estimate'}
+              </div>
+              {suggestedHours && h === 0 && (
+                <button
+                  onClick={() => handleHoursChange(suggestedHours)}
+                  style={{
+                    marginTop: 4,
+                    width: '100%',
+                    padding: '2px 0',
+                    background: 'none',
+                    border: '1px solid #6C5CE7',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '10px',
+                    color: '#6C5CE7',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Use suggested
+                </button>
+              )}
             </div>
           </div>
 

@@ -1,13 +1,14 @@
 /**
- * InvestmentConfigurator - Global SOW pricing controls
+ * InvestmentConfigurator - Retainer-based tier pricing controls
  *
- * Controls: default rate, global discount, payment terms, currency, tax,
- * pricing mode, and live summary calculations.
+ * PRICING MODEL: Retainer tiers (not rate × hours)
+ * Shows tier selector, total hours, "Fits in [Tier]" indicator,
+ * duration estimate, and optional custom tier for non-standard deals.
  */
 
 import { useState } from 'react';
+import { TIERS } from '../../lib/engagement-engine';
 
-const PRICING_MODES = ['Fixed Price', 'Time & Materials', 'Retainer'];
 const PAYMENT_TERMS = ['Net 15', 'Net 30', 'Net 45', 'Net 60'];
 const CURRENCIES = [
   { code: 'USD', symbol: '$', label: 'USD ($)' },
@@ -15,43 +16,59 @@ const CURRENCIES = [
   { code: 'GBP', symbol: '£', label: 'GBP (£)' },
 ];
 
+function recommendTier(totalHours) {
+  return TIERS.find(t => totalHours / t.hours <= 6) || TIERS[TIERS.length - 1];
+}
+
 export default function InvestmentConfigurator({
   sections = [],
-  config = {},
-  onConfigChange,
-  onApplyRateToAll,
+  tierConfig = {},
+  onTierConfigChange,
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showCustom, setShowCustom] = useState(!!tierConfig.customTier);
 
   const {
-    defaultRate = 250,
-    globalDiscount = 0,
+    selectedTierId = null,
+    customTier = null,
     paymentTerms = 'Net 30',
     currency = 'USD',
-    taxRate = 0,
-    pricingMode = 'Fixed Price',
-  } = config;
+  } = tierConfig;
 
   const currencyObj = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
   const sym = currencyObj.symbol;
 
-  // Calculate totals from sections
-  const subtotal = sections.reduce((sum, s) => {
-    const h = parseFloat(s.hours) || 0;
-    const r = parseFloat(s.rate) || parseFloat(defaultRate) || 0;
-    const sectionDiscount = parseFloat(s.discount) || 0;
-    const sectionTotal = h * r * (1 - sectionDiscount / 100);
-    return sum + sectionTotal;
-  }, 0);
-
+  // Calculate total hours from sections
   const totalHours = sections.reduce((sum, s) => sum + (parseFloat(s.hours) || 0), 0);
-  const globalDiscountAmount = subtotal * (globalDiscount / 100);
-  const afterDiscount = subtotal - globalDiscountAmount;
-  const taxAmount = afterDiscount * (taxRate / 100);
-  const grandTotal = afterDiscount + taxAmount;
+
+  // Determine active tier
+  const autoTier = recommendTier(totalHours);
+  const activeTier = customTier
+    || (selectedTierId ? TIERS.find(t => t.id === selectedTierId) : null)
+    || autoTier;
+
+  const monthlyPrice = activeTier.price;
+  const estimatedDuration = activeTier.hours > 0 ? Math.ceil(totalHours / activeTier.hours) : 0;
+  const totalEngagementValue = monthlyPrice * estimatedDuration;
+
+  // Does the total hours fit in each tier within 6 months?
+  function fitsInTier(tier) {
+    return totalHours / tier.hours <= 6;
+  }
 
   function update(key, value) {
-    onConfigChange?.({ ...config, [key]: value });
+    onTierConfigChange?.({ ...tierConfig, [key]: value });
+  }
+
+  function selectTier(tierId) {
+    setShowCustom(false);
+    onTierConfigChange?.({ ...tierConfig, selectedTierId: tierId, customTier: null });
+  }
+
+  function updateCustomTier(field, value) {
+    const current = customTier || { hours: 150, price: 35000, label: 'Custom' };
+    const updated = { ...current, [field]: value };
+    onTierConfigChange?.({ ...tierConfig, customTier: updated, selectedTierId: null });
   }
 
   return (
@@ -78,7 +95,7 @@ export default function InvestmentConfigurator({
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <span style={{ fontSize: 'var(--text-lg)' }}>💰</span>
           <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', color: 'var(--gray-900)', margin: 0 }}>
-            Investment Configuration
+            Investment — Retainer Tier
           </h3>
           <span style={{
             padding: '1px 8px',
@@ -87,12 +104,12 @@ export default function InvestmentConfigurator({
             fontSize: 'var(--text-xs)',
             color: 'var(--text-secondary)',
           }}>
-            {pricingMode}
+            {activeTier.label}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
           <span style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: '#276749' }}>
-            {sym}{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            {sym}{monthlyPrice.toLocaleString()}/mo
           </span>
           <span style={{ color: 'var(--text-muted)' }}>{collapsed ? '▸' : '▾'}</span>
         </div>
@@ -100,113 +117,121 @@ export default function InvestmentConfigurator({
 
       {!collapsed && (
         <div style={{ padding: 'var(--space-5)' }}>
-          {/* Pricing Mode */}
-          <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label style={labelStyle}>Pricing Mode</label>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              {PRICING_MODES.map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => update('pricingMode', mode)}
-                  style={{
-                    flex: 1,
-                    padding: 'var(--space-2) var(--space-3)',
-                    background: pricingMode === mode ? '#6C5CE7' : '#F7FAFC',
-                    color: pricingMode === mode ? 'white' : 'var(--text-primary)',
-                    border: `1px solid ${pricingMode === mode ? '#6C5CE7' : '#E2E8F0'}`,
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: pricingMode === mode ? 'var(--font-semibold)' : 'normal',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {mode}
-                </button>
-              ))}
+          {/* Tier selector */}
+          <div style={{ marginBottom: 'var(--space-5)' }}>
+            <label style={labelStyle}>Select Tier</label>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              {TIERS.map(tier => {
+                const isActive = !customTier && activeTier.id === tier.id;
+                const fits = fitsInTier(tier);
+                return (
+                  <button
+                    key={tier.id}
+                    onClick={() => selectTier(tier.id)}
+                    style={{
+                      flex: 1,
+                      padding: 'var(--space-3) var(--space-4)',
+                      background: isActive ? '#6C5CE7' : '#F7FAFC',
+                      color: isActive ? 'white' : 'var(--text-primary)',
+                      border: `2px solid ${isActive ? '#6C5CE7' : fits ? '#48BB78' : '#E2E8F0'}`,
+                      borderRadius: 'var(--radius-lg)',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-base)' }}>
+                      {tier.label}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-sm)', opacity: 0.9 }}>
+                      {tier.hours}h/mo — {sym}{tier.price.toLocaleString()}/mo
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', marginTop: 4, opacity: 0.7 }}>
+                      {fits ? `✅ Fits (${Math.ceil(totalHours / tier.hours)} mo)` : `⚠️ ${Math.ceil(totalHours / tier.hours)} months needed`}
+                    </div>
+                  </button>
+                );
+              })}
+              {/* Custom tier toggle */}
+              <button
+                onClick={() => {
+                  setShowCustom(!showCustom);
+                  if (!showCustom && !customTier) {
+                    updateCustomTier('label', 'Custom');
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: 'var(--space-3) var(--space-4)',
+                  background: customTier ? '#6C5CE7' : '#F7FAFC',
+                  color: customTier ? 'white' : 'var(--text-primary)',
+                  border: `2px solid ${customTier ? '#6C5CE7' : '#E2E8F0'}`,
+                  borderRadius: 'var(--radius-lg)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-base)' }}>Custom</div>
+                <div style={{ fontSize: 'var(--text-sm)', opacity: 0.9 }}>Non-standard deal</div>
+              </button>
             </div>
           </div>
 
-          {/* Controls grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-            {/* Default Rate */}
-            <div>
-              <label style={labelStyle}>Default Rate</label>
-              <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+          {/* Custom tier inputs */}
+          {showCustom && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr 1fr',
+              gap: 'var(--space-4)',
+              marginBottom: 'var(--space-4)',
+              padding: 'var(--space-4)',
+              background: '#F7FAFC',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-color)',
+            }}>
+              <div>
+                <label style={labelStyle}>Label</label>
                 <input
-                  type="number"
-                  value={defaultRate}
-                  onChange={(e) => update('defaultRate', parseFloat(e.target.value) || 0)}
+                  type="text"
+                  value={customTier?.label || 'Custom'}
+                  onChange={(e) => updateCustomTier('label', e.target.value)}
                   style={inputStyle}
                 />
-                <button
-                  onClick={() => onApplyRateToAll?.(defaultRate)}
-                  style={{
-                    padding: '0 var(--space-2)',
-                    background: '#6C5CE7',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '10px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title="Apply this rate to all sections"
-                >
-                  Apply All
-                </button>
+              </div>
+              <div>
+                <label style={labelStyle}>Hours/Month</label>
+                <input
+                  type="number"
+                  value={customTier?.hours || 150}
+                  onChange={(e) => updateCustomTier('hours', parseInt(e.target.value) || 0)}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Monthly Price ({sym})</label>
+                <input
+                  type="number"
+                  value={customTier?.price || 35000}
+                  onChange={(e) => updateCustomTier('price', parseInt(e.target.value) || 0)}
+                  style={inputStyle}
+                />
               </div>
             </div>
+          )}
 
-            {/* Global Discount */}
-            <div>
-              <label style={labelStyle}>Global Discount (%)</label>
-              <input
-                type="number"
-                value={globalDiscount || ''}
-                onChange={(e) => update('globalDiscount', Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
-                placeholder="0"
-                min="0"
-                max="100"
-                style={inputStyle}
-              />
-            </div>
-
-            {/* Payment Terms */}
+          {/* Payment terms / currency */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
             <div>
               <label style={labelStyle}>Payment Terms</label>
-              <select
-                value={paymentTerms}
-                onChange={(e) => update('paymentTerms', e.target.value)}
-                style={inputStyle}
-              >
+              <select value={paymentTerms} onChange={(e) => update('paymentTerms', e.target.value)} style={inputStyle}>
                 {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-
-            {/* Currency */}
             <div>
               <label style={labelStyle}>Currency</label>
-              <select
-                value={currency}
-                onChange={(e) => update('currency', e.target.value)}
-                style={inputStyle}
-              >
+              <select value={currency} onChange={(e) => update('currency', e.target.value)} style={inputStyle}>
                 {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
               </select>
             </div>
-          </div>
-
-          {/* Tax Rate */}
-          <div style={{ marginBottom: 'var(--space-5)' }}>
-            <label style={labelStyle}>Tax Rate (%)</label>
-            <input
-              type="number"
-              value={taxRate || ''}
-              onChange={(e) => update('taxRate', Math.max(0, parseFloat(e.target.value) || 0))}
-              placeholder="0 (optional)"
-              min="0"
-              style={{ ...inputStyle, maxWidth: 200 }}
-            />
           </div>
 
           {/* Summary */}
@@ -216,26 +241,10 @@ export default function InvestmentConfigurator({
             borderRadius: 'var(--radius-lg)',
             padding: 'var(--space-4)',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-              <span>Total Hours</span>
-              <span style={{ fontWeight: 'var(--font-semibold)' }}>{totalHours.toLocaleString()}h</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-              <span>Subtotal</span>
-              <span>{sym}{subtotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-            </div>
-            {globalDiscount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)', color: '#E53E3E' }}>
-                <span>Global Discount ({globalDiscount}%)</span>
-                <span>−{sym}{globalDiscountAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-              </div>
-            )}
-            {taxRate > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                <span>Tax ({taxRate}%)</span>
-                <span>+{sym}{taxAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-              </div>
-            )}
+            <SummaryRow label="Total Project Hours" value={`${totalHours.toLocaleString()}h`} />
+            <SummaryRow label={`Selected Tier`} value={`${activeTier.label} (${activeTier.hours}h/mo)`} bold />
+            <SummaryRow label="Monthly Investment" value={`${sym}${monthlyPrice.toLocaleString()}/mo`} />
+            <SummaryRow label="Estimated Duration" value={`${estimatedDuration} month${estimatedDuration !== 1 ? 's' : ''}`} />
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -245,12 +254,27 @@ export default function InvestmentConfigurator({
               fontWeight: 'var(--font-bold)',
               color: '#276749',
             }}>
-              <span>Grand Total</span>
-              <span>{sym}{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+              <span>Total Engagement Value</span>
+              <span>{sym}{totalEngagementValue.toLocaleString()}</span>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SummaryRow({ label, value, bold }) {
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: 'var(--space-2)',
+      fontSize: 'var(--text-sm)',
+      color: 'var(--text-secondary)',
+    }}>
+      <span>{label}</span>
+      <span style={{ fontWeight: bold ? 'var(--font-semibold)' : 'normal' }}>{value}</span>
     </div>
   );
 }

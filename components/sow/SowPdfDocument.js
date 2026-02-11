@@ -1,16 +1,9 @@
 /**
  * SowPdfDocument - React PDF template for SOW export
  *
- * Uses @react-pdf/renderer primitives (Document, Page, View, Text)
- * to generate a branded, print-ready PDF.
- *
- * Props:
- *   sow              - The SOW object
- *   sections         - Array of sow_sections
- *   diagnosticResult - Linked diagnostic result (optional)
- *   customerName     - Customer name for header
- *   versionNumber    - Version number (for watermark)
- *   scenarios        - Array of scenario objects (optional, for multi-scenario PDF)
+ * PRICING MODEL: Retainer-based tiers (not rate × hours)
+ * Investment table shows section hours breakdown, selected tier,
+ * monthly price, estimated duration, and total engagement value.
  */
 
 import {
@@ -21,7 +14,6 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 
-// Color palette matching LeanScale brand
 const COLORS = {
   primary: '#6C5CE7',
   primaryLight: '#EDE9FE',
@@ -45,6 +37,12 @@ const STATUS_COLORS = {
   unable: '#1f2937',
 };
 
+const TIERS = [
+  { id: 'starter', hours: 50, price: 15000, label: 'Starter' },
+  { id: 'growth', hours: 100, price: 25000, label: 'Growth' },
+  { id: 'scale', hours: 225, price: 50000, label: 'Scale' },
+];
+
 const styles = StyleSheet.create({
   page: {
     padding: 50,
@@ -53,8 +51,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     color: COLORS.text,
   },
-
-  // Watermark
   watermark: {
     position: 'absolute',
     top: '35%',
@@ -65,8 +61,6 @@ const styles = StyleSheet.create({
     transform: 'rotate(-35deg)',
     opacity: 1,
   },
-
-  // Header
   header: {
     marginBottom: 30,
     borderBottom: `2px solid ${COLORS.primary}`,
@@ -96,8 +90,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: COLORS.text,
   },
-
-  // Generation date / validity bar
   validityBar: {
     marginTop: 6,
     paddingTop: 6,
@@ -107,8 +99,6 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: COLORS.textMuted,
   },
-
-  // Table of Contents
   tocContainer: {
     marginBottom: 20,
     padding: 14,
@@ -132,13 +122,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: COLORS.text,
   },
-  tocItemPage: {
-    fontSize: 9,
-    color: COLORS.primary,
-    fontFamily: 'Helvetica-Bold',
-  },
-
-  // Section headings
   sectionHeading: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -147,8 +130,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 20,
   },
-
-  // Executive summary
   execSummaryContainer: {
     marginBottom: 20,
     minPresenceAhead: 100,
@@ -172,8 +153,6 @@ const styles = StyleSheet.create({
     lineHeight: 1.6,
     color: COLORS.text,
   },
-
-  // Scope sections
   scopeCard: {
     marginBottom: 14,
     border: `1px solid ${COLORS.border}`,
@@ -211,8 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: COLORS.textLight,
   },
-
-  // Deliverables
   deliverablesHeading: {
     fontSize: 9,
     fontFamily: 'Helvetica-Bold',
@@ -237,8 +214,6 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
   },
-
-  // Diagnostic items
   diagItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -255,8 +230,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: COLORS.textLight,
   },
-
-  // Investment table
+  // Investment table — hours breakdown only (no rate column)
   table: {
     marginTop: 10,
     border: `1px solid ${COLORS.border}`,
@@ -292,7 +266,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: COLORS.dark,
   },
-  // Subtotal row per function group
   subtotalRow: {
     flexDirection: 'row',
     padding: '6 10',
@@ -309,13 +282,37 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: 'white',
   },
-
-  // Column widths for table
-  colSection: { width: '40%' },
-  colHours: { width: '15%', textAlign: 'right' },
-  colRate: { width: '20%', textAlign: 'right' },
-  colSubtotal: { width: '25%', textAlign: 'right' },
-
+  // Two-column layout for hours breakdown
+  colSection: { width: '60%' },
+  colHours: { width: '20%', textAlign: 'right' },
+  colPercent: { width: '20%', textAlign: 'right' },
+  // Tier summary box
+  tierBox: {
+    marginTop: 12,
+    padding: 14,
+    backgroundColor: COLORS.greenBg,
+    borderRadius: 4,
+    border: `1px solid ${COLORS.green}`,
+  },
+  tierRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  tierLabel: {
+    fontSize: 9,
+    color: COLORS.text,
+  },
+  tierValue: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: COLORS.dark,
+  },
+  tierTotal: {
+    fontSize: 12,
+    fontFamily: 'Helvetica-Bold',
+    color: COLORS.green,
+  },
   // Timeline
   timelineRow: {
     flexDirection: 'row',
@@ -338,8 +335,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     minWidth: 20,
   },
-
-  // Footer (fixed on every page)
   footer: {
     position: 'absolute',
     bottom: 30,
@@ -368,113 +363,68 @@ const styles = StyleSheet.create({
 
 const BAR_COLORS = ['#6C5CE7', '#00B894', '#FDCB6E', '#E17055', '#0984E3', '#A29BFE'];
 
-/**
- * Group sections by their `function_area` (or 'General') and compute subtotals.
- */
-function groupSectionsByFunction(sections) {
-  const groups = {};
-  for (const section of sections) {
-    const key = section.function_area || 'General';
-    if (!groups[key]) groups[key] = { label: key, sections: [], totalHours: 0, totalCost: 0 };
-    const h = parseFloat(section.hours) || 0;
-    const r = parseFloat(section.rate) || 0;
-    groups[key].sections.push(section);
-    groups[key].totalHours += h;
-    groups[key].totalCost += h * r;
-  }
-  return Object.values(groups);
-}
-
 export default function SowPdfDocument({
   sow,
   sections = [],
   diagnosticResult,
   customerName = '',
   versionNumber,
-  scenarios = [],
 }) {
   const content = sow.content || {};
   const diagnosticProcesses = diagnosticResult?.processes || [];
   const isDraft = sow.status === 'draft';
 
-  // Calculate totals
+  // Calculate total hours
   const totalHours = sow.total_hours
     ? parseFloat(sow.total_hours)
     : sections.reduce((sum, s) => sum + (parseFloat(s.hours) || 0), 0);
-  const totalInvestment = sow.total_investment
-    ? parseFloat(sow.total_investment)
-    : sections.reduce((sum, s) => {
-        return sum + (parseFloat(s.hours) || 0) * (parseFloat(s.rate) || 0);
-      }, 0);
+
+  // Determine tier from SOW content or auto-recommend
+  const tierConfig = content.tier_config || {};
+  const selectedTier = tierConfig.customTier
+    || (tierConfig.selectedTierId ? TIERS.find(t => t.id === tierConfig.selectedTierId) : null)
+    || TIERS.find(t => totalHours / t.hours <= 6)
+    || TIERS[TIERS.length - 1];
+
+  const monthlyPrice = selectedTier.price;
+  const estimatedDuration = selectedTier.hours > 0 ? Math.ceil(totalHours / selectedTier.hours) : 0;
+  const totalEngagementValue = monthlyPrice * estimatedDuration;
 
   // Dates
   const now = new Date();
-  const formattedDate = now.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formattedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const validUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const formattedValidUntil = validUntil.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formattedValidUntil = validUntil.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  // Watermark text
   const watermarkText = isDraft ? 'DRAFT' : versionNumber ? `v${versionNumber}` : null;
 
-  // Build TOC entries
+  // TOC
   const tocEntries = [];
   if (content.executive_summary) tocEntries.push('Executive Summary');
   if (sections.length > 0) tocEntries.push('Scope of Work');
   if (sections.some(s => s.start_date && s.end_date)) tocEntries.push('Timeline');
   if (sections.length > 0) tocEntries.push('Investment Summary');
 
-  // Group sections for investment table
-  const functionGroups = groupSectionsByFunction(sections);
-  const hasMultipleGroups = functionGroups.length > 1;
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* ===== WATERMARK ===== */}
-        {watermarkText && (
-          <Text style={styles.watermark} fixed>
-            {watermarkText}
-          </Text>
-        )}
+        {/* WATERMARK */}
+        {watermarkText && <Text style={styles.watermark} fixed>{watermarkText}</Text>}
 
-        {/* ===== HEADER ===== */}
+        {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{sow.title}</Text>
           <Text style={styles.headerSubtitle}>
             {customerName ? `Prepared for ${customerName}` : 'Statement of Work'}
           </Text>
           <View style={styles.headerMeta}>
-            <Text style={styles.metaItem}>
-              Date: <Text style={styles.metaValue}>{formattedDate}</Text>
-            </Text>
-            <Text style={styles.metaItem}>
-              Type: <Text style={styles.metaValue}>{sow.sow_type}</Text>
-            </Text>
-            {versionNumber && (
-              <Text style={styles.metaItem}>
-                Version: <Text style={styles.metaValue}>v{versionNumber}</Text>
-              </Text>
-            )}
-            {totalHours > 0 && (
-              <Text style={styles.metaItem}>
-                Total Hours: <Text style={styles.metaValue}>{totalHours}</Text>
-              </Text>
-            )}
-            {totalInvestment > 0 && (
-              <Text style={styles.metaItem}>
-                Investment: <Text style={styles.metaValue}>${totalInvestment.toLocaleString()}</Text>
-              </Text>
-            )}
+            <Text style={styles.metaItem}>Date: <Text style={styles.metaValue}>{formattedDate}</Text></Text>
+            <Text style={styles.metaItem}>Type: <Text style={styles.metaValue}>{sow.sow_type}</Text></Text>
+            {versionNumber && <Text style={styles.metaItem}>Version: <Text style={styles.metaValue}>v{versionNumber}</Text></Text>}
+            {totalHours > 0 && <Text style={styles.metaItem}>Total Hours: <Text style={styles.metaValue}>{totalHours}</Text></Text>}
+            <Text style={styles.metaItem}>Tier: <Text style={styles.metaValue}>{selectedTier.label}</Text></Text>
+            <Text style={styles.metaItem}>Monthly: <Text style={styles.metaValue}>${monthlyPrice.toLocaleString()}/mo</Text></Text>
           </View>
-          {/* Generation date and validity */}
           <View style={styles.validityBar}>
             <Text style={styles.validityText}>
               Generated: {formattedDate} | Valid for 30 days (until {formattedValidUntil})
@@ -483,18 +433,15 @@ export default function SowPdfDocument({
           </View>
         </View>
 
-        {/* ===== TABLE OF CONTENTS ===== */}
+        {/* TOC */}
         {tocEntries.length > 0 && (
           <View style={styles.tocContainer} wrap={false}>
             <Text style={styles.tocTitle}>Table of Contents</Text>
             {tocEntries.map((entry, idx) => (
               <View key={idx} style={styles.tocItem}>
-                <Text style={styles.tocItemText}>
-                  {idx + 1}. {entry}
-                </Text>
+                <Text style={styles.tocItemText}>{idx + 1}. {entry}</Text>
               </View>
             ))}
-            {/* Scope subsections */}
             {sections.map((section, idx) => (
               <View key={`sub-${idx}`} style={[styles.tocItem, { paddingLeft: 16 }]}>
                 <Text style={[styles.tocItemText, { color: COLORS.textLight, fontSize: 8 }]}>
@@ -505,7 +452,7 @@ export default function SowPdfDocument({
           </View>
         )}
 
-        {/* ===== EXECUTIVE SUMMARY ===== */}
+        {/* EXECUTIVE SUMMARY */}
         {content.executive_summary && (
           <View style={styles.execSummaryContainer} minPresenceAhead={100}>
             <Text style={styles.sectionHeading}>Executive Summary</Text>
@@ -516,58 +463,32 @@ export default function SowPdfDocument({
           </View>
         )}
 
-        {/* ===== SCOPE OF WORK ===== */}
+        {/* SCOPE OF WORK */}
         {sections.length > 0 && (
           <View>
             <Text style={styles.sectionHeading}>Scope of Work</Text>
             {sections.map((section, idx) => {
               const h = parseFloat(section.hours) || 0;
-              const r = parseFloat(section.rate) || 0;
-              const subtotal = h * r;
               const deliverables = section.deliverables || [];
               const linkedItems = section.diagnostic_items || [];
 
               return (
-                <View
-                  key={section.id || idx}
-                  style={styles.scopeCard}
-                  wrap={false}
-                  minPresenceAhead={80}
-                >
+                <View key={section.id || idx} style={styles.scopeCard} wrap={false} minPresenceAhead={80}>
                   <View style={styles.scopeHeader}>
-                    <Text style={styles.scopeTitle}>
-                      {idx + 1}. {section.title}
-                    </Text>
-                    {subtotal > 0 && (
-                      <Text style={[styles.tableCell, { color: COLORS.green, fontFamily: 'Helvetica-Bold' }]}>
-                        ${subtotal.toLocaleString()}
+                    <Text style={styles.scopeTitle}>{idx + 1}. {section.title}</Text>
+                    {h > 0 && (
+                      <Text style={[styles.tableCell, { color: COLORS.primary, fontFamily: 'Helvetica-Bold' }]}>
+                        {h}h
                       </Text>
                     )}
                   </View>
                   <View style={styles.scopeBody}>
-                    {section.description && (
-                      <Text style={styles.scopeDescription}>{section.description}</Text>
-                    )}
-
+                    {section.description && <Text style={styles.scopeDescription}>{section.description}</Text>}
                     <View style={styles.scopeMeta}>
-                      {h > 0 && (
-                        <Text style={styles.scopeMetaItem}>Hours: {h}</Text>
-                      )}
-                      {r > 0 && (
-                        <Text style={styles.scopeMetaItem}>Rate: ${r.toLocaleString()}/hr</Text>
-                      )}
-                      {section.start_date && (
-                        <Text style={styles.scopeMetaItem}>
-                          Start: {new Date(section.start_date).toLocaleDateString()}
-                        </Text>
-                      )}
-                      {section.end_date && (
-                        <Text style={styles.scopeMetaItem}>
-                          End: {new Date(section.end_date).toLocaleDateString()}
-                        </Text>
-                      )}
+                      {h > 0 && <Text style={styles.scopeMetaItem}>Estimated Hours: {h}</Text>}
+                      {section.start_date && <Text style={styles.scopeMetaItem}>Start: {new Date(section.start_date).toLocaleDateString()}</Text>}
+                      {section.end_date && <Text style={styles.scopeMetaItem}>End: {new Date(section.end_date).toLocaleDateString()}</Text>}
                     </View>
-
                     {deliverables.length > 0 && (
                       <View style={{ marginTop: 8 }}>
                         <Text style={styles.deliverablesHeading}>Deliverables</Text>
@@ -579,16 +500,13 @@ export default function SowPdfDocument({
                         ))}
                       </View>
                     )}
-
                     {linkedItems.length > 0 && diagnosticProcesses.length > 0 && (
                       <View style={{ marginTop: 8 }}>
                         <Text style={styles.deliverablesHeading}>Addresses Diagnostic Findings</Text>
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                           {linkedItems.map((name, nIdx) => {
                             const proc = diagnosticProcesses.find(p => p.name === name);
-                            const statusColor = proc
-                              ? STATUS_COLORS[proc.status] || '#9ca3af'
-                              : '#9ca3af';
+                            const statusColor = proc ? STATUS_COLORS[proc.status] || '#9ca3af' : '#9ca3af';
                             return (
                               <View key={nIdx} style={styles.diagItem}>
                                 <View style={[styles.diagDot, { backgroundColor: statusColor }]} />
@@ -606,7 +524,7 @@ export default function SowPdfDocument({
           </View>
         )}
 
-        {/* ===== TIMELINE ===== */}
+        {/* TIMELINE */}
         {sections.some(s => s.start_date && s.end_date) && (
           <View wrap={false} style={{ marginTop: 10 }} minPresenceAhead={60}>
             <Text style={styles.sectionHeading}>Timeline</Text>
@@ -616,229 +534,74 @@ export default function SowPdfDocument({
                 const startStr = new Date(section.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 const endStr = new Date(section.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const color = BAR_COLORS[idx % BAR_COLORS.length];
-
                 return (
                   <View key={section.id || idx} style={styles.timelineRow}>
                     <Text style={styles.timelineLabel}>{section.title}</Text>
                     <View style={[styles.timelineBar, { backgroundColor: color, width: 100 }]} />
-                    <Text style={[styles.timelineDates, { marginLeft: 6 }]}>
-                      {startStr} — {endStr}
-                    </Text>
+                    <Text style={[styles.timelineDates, { marginLeft: 6 }]}>{startStr} — {endStr}</Text>
                   </View>
                 );
               })}
           </View>
         )}
 
-        {/* ===== INVESTMENT TABLE ===== */}
+        {/* INVESTMENT SUMMARY — Retainer Model */}
         {sections.length > 0 && (
           <View wrap={false} style={{ marginTop: 10 }} minPresenceAhead={80}>
             <Text style={styles.sectionHeading}>Investment Summary</Text>
+
+            {/* Hours Breakdown Table */}
             <View style={styles.table}>
-              {/* Header */}
               <View style={styles.tableHeader}>
                 <Text style={[styles.tableHeaderCell, styles.colSection]}>Section</Text>
                 <Text style={[styles.tableHeaderCell, styles.colHours]}>Hours</Text>
-                <Text style={[styles.tableHeaderCell, styles.colRate]}>Rate</Text>
-                <Text style={[styles.tableHeaderCell, styles.colSubtotal]}>Subtotal</Text>
+                <Text style={[styles.tableHeaderCell, styles.colPercent]}>% of Total</Text>
               </View>
-
-              {/* Rows grouped by function */}
-              {functionGroups.map((group, gIdx) => {
-                let rowIndex = 0;
+              {sections.map((section, idx) => {
+                const h = parseFloat(section.hours) || 0;
+                const pct = totalHours > 0 ? Math.round((h / totalHours) * 100) : 0;
+                const isAlt = idx % 2 === 1;
                 return (
-                  <View key={gIdx}>
-                    {/* Group label if multiple groups */}
-                    {hasMultipleGroups && (
-                      <View style={[styles.tableRow, { backgroundColor: COLORS.primaryLight }]}>
-                        <Text style={[styles.tableCellBold, { color: COLORS.primary, fontSize: 8, textTransform: 'uppercase', letterSpacing: 0.5 }]}>
-                          {group.label}
-                        </Text>
-                      </View>
-                    )}
-
-                    {group.sections.map((section, idx) => {
-                      const h = parseFloat(section.hours) || 0;
-                      const r = parseFloat(section.rate) || 0;
-                      const subtotal = h * r;
-                      const isAlt = rowIndex % 2 === 1;
-                      rowIndex++;
-
-                      return (
-                        <View
-                          key={section.id || idx}
-                          style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}
-                        >
-                          <Text style={[styles.tableCellBold, styles.colSection]}>
-                            {hasMultipleGroups ? '  ' : ''}{section.title}
-                          </Text>
-                          <Text style={[styles.tableCell, styles.colHours]}>{h > 0 ? String(h) : '—'}</Text>
-                          <Text style={[styles.tableCell, styles.colRate]}>{r > 0 ? `$${r.toLocaleString()}` : '—'}</Text>
-                          <Text style={[styles.tableCellBold, styles.colSubtotal, { color: COLORS.green }]}>
-                            {subtotal > 0 ? `$${subtotal.toLocaleString()}` : '—'}
-                          </Text>
-                        </View>
-                      );
-                    })}
-
-                    {/* Subtotal row per group (only if multiple groups) */}
-                    {hasMultipleGroups && (
-                      <View style={styles.subtotalRow}>
-                        <Text style={[styles.tableCellBold, styles.colSection, { fontSize: 8, color: COLORS.primary }]}>
-                          {group.label} Subtotal
-                        </Text>
-                        <Text style={[styles.tableCellBold, styles.colHours, { fontSize: 8, color: COLORS.primary }]}>
-                          {group.totalHours > 0 ? String(group.totalHours) : ''}
-                        </Text>
-                        <Text style={[styles.tableCell, styles.colRate]}></Text>
-                        <Text style={[styles.tableCellBold, styles.colSubtotal, { fontSize: 9, color: COLORS.primary }]}>
-                          ${group.totalCost.toLocaleString()}
-                        </Text>
-                      </View>
-                    )}
+                  <View key={section.id || idx} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
+                    <Text style={[styles.tableCellBold, styles.colSection]}>{section.title}</Text>
+                    <Text style={[styles.tableCell, styles.colHours]}>{h > 0 ? String(h) : '—'}</Text>
+                    <Text style={[styles.tableCell, styles.colPercent]}>{h > 0 ? `${pct}%` : '—'}</Text>
                   </View>
                 );
               })}
-
-              {/* Grand Total Footer */}
               <View style={styles.tableFooter}>
-                <Text style={[styles.tableFooterCell, styles.colSection]}>Grand Total</Text>
-                <Text style={[styles.tableFooterCell, styles.colHours]}>{totalHours > 0 ? String(totalHours) : ''}</Text>
-                <Text style={[styles.tableFooterCell, styles.colRate]}></Text>
-                <Text style={[styles.tableFooterCell, styles.colSubtotal, { fontSize: 12 }]}>
-                  ${totalInvestment.toLocaleString()}
-                </Text>
+                <Text style={[styles.tableFooterCell, styles.colSection]}>Total Hours</Text>
+                <Text style={[styles.tableFooterCell, styles.colHours]}>{totalHours}</Text>
+                <Text style={[styles.tableFooterCell, styles.colPercent]}>100%</Text>
+              </View>
+            </View>
+
+            {/* Tier & Investment Summary */}
+            <View style={styles.tierBox}>
+              <View style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Selected Tier</Text>
+                <Text style={styles.tierValue}>{selectedTier.label} ({selectedTier.hours}h/month)</Text>
+              </View>
+              <View style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Monthly Investment</Text>
+                <Text style={styles.tierValue}>${monthlyPrice.toLocaleString()}/month</Text>
+              </View>
+              <View style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Estimated Engagement Duration</Text>
+                <Text style={styles.tierValue}>{estimatedDuration} month{estimatedDuration !== 1 ? 's' : ''}</Text>
+              </View>
+              <View style={[styles.tierRow, { marginTop: 6, paddingTop: 6, borderTop: `1px solid ${COLORS.green}` }]}>
+                <Text style={styles.tierTotal}>Total Engagement Value</Text>
+                <Text style={styles.tierTotal}>${totalEngagementValue.toLocaleString()}</Text>
               </View>
             </View>
           </View>
         )}
 
-        {/* ===== SCENARIO COMPARISON PAGE ===== */}
-        {scenarios.length > 1 && (
-          <View wrap={false} style={{ marginTop: 20 }} minPresenceAhead={100}>
-            <Text style={styles.sectionHeading}>Options Comparison</Text>
-            <View style={styles.table}>
-              {/* Header */}
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, { width: '25%' }]}>Metric</Text>
-                {scenarios.map(s => (
-                  <Text key={s.id} style={[styles.tableHeaderCell, { width: `${75 / scenarios.length}%`, textAlign: 'center' }]}>
-                    {s.name}{s.isDefault ? ' ★' : ''}
-                  </Text>
-                ))}
-              </View>
-              {/* Rows */}
-              {['Sections', 'Total Hours', 'Investment', 'Duration'].map((metric, mIdx) => (
-                <View key={metric} style={[styles.tableRow, mIdx % 2 === 1 ? styles.tableRowAlt : {}]}>
-                  <Text style={[styles.tableCellBold, { width: '25%' }]}>{metric}</Text>
-                  {scenarios.map(s => {
-                    const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
-                    let value = '—';
-                    if (metric === 'Sections') value = String(scenarioSections.length);
-                    if (metric === 'Total Hours') {
-                      const h = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0), 0);
-                      value = h > 0 ? String(h) : '—';
-                    }
-                    if (metric === 'Investment') {
-                      const inv = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0) * (parseFloat(sec.rate) || 0), 0);
-                      value = inv > 0 ? `$${inv.toLocaleString()}` : '—';
-                    }
-                    if (metric === 'Duration') {
-                      const dates = scenarioSections.filter(sec => sec.start_date && sec.end_date);
-                      if (dates.length > 0) {
-                        const min = dates.reduce((m, sec) => sec.start_date < m ? sec.start_date : m, dates[0].start_date);
-                        const max = dates.reduce((m, sec) => sec.end_date > m ? sec.end_date : m, dates[0].end_date);
-                        const weeks = Math.ceil((new Date(max) - new Date(min)) / (7 * 24 * 60 * 60 * 1000));
-                        value = `${weeks} weeks`;
-                      }
-                    }
-                    return (
-                      <Text key={s.id} style={[styles.tableCell, { width: `${75 / scenarios.length}%`, textAlign: 'center' }]}>
-                        {value}
-                      </Text>
-                    );
-                  })}
-                </View>
-              ))}
-              {/* Key sections row */}
-              <View style={[styles.tableRow]}>
-                <Text style={[styles.tableCellBold, { width: '25%' }]}>Includes</Text>
-                {scenarios.map(s => {
-                  const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
-                  return (
-                    <Text key={s.id} style={[styles.tableCell, { width: `${75 / scenarios.length}%`, textAlign: 'center', fontSize: 7 }]}>
-                      {scenarioSections.map(sec => sec.title).join(', ') || '—'}
-                    </Text>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Per-scenario investment tables */}
-            {scenarios.map(s => {
-              const scenarioSections = sections.filter(sec => (s.sectionIds || []).includes(sec.id));
-              if (scenarioSections.length === 0) return null;
-              const sTotalHours = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0), 0);
-              const sTotalInv = scenarioSections.reduce((sum, sec) => sum + (parseFloat(sec.hours) || 0) * (parseFloat(sec.rate) || 0), 0);
-
-              return (
-                <View key={s.id} wrap={false} style={{ marginTop: 14 }} minPresenceAhead={60}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <Text style={[styles.sectionHeading, { marginTop: 0, marginBottom: 0, fontSize: 12 }]}>
-                      {s.name}
-                    </Text>
-                    {s.isDefault && (
-                      <View style={{ backgroundColor: COLORS.primary, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                        <Text style={{ fontSize: 7, color: 'white', fontFamily: 'Helvetica-Bold' }}>RECOMMENDED</Text>
-                      </View>
-                    )}
-                  </View>
-                  {s.description && (
-                    <Text style={{ fontSize: 9, color: COLORS.textLight, marginBottom: 6 }}>{s.description}</Text>
-                  )}
-                  <View style={styles.table}>
-                    <View style={styles.tableHeader}>
-                      <Text style={[styles.tableHeaderCell, styles.colSection]}>Section</Text>
-                      <Text style={[styles.tableHeaderCell, styles.colHours]}>Hours</Text>
-                      <Text style={[styles.tableHeaderCell, styles.colRate]}>Rate</Text>
-                      <Text style={[styles.tableHeaderCell, styles.colSubtotal]}>Subtotal</Text>
-                    </View>
-                    {scenarioSections.map((sec, idx) => {
-                      const h = parseFloat(sec.hours) || 0;
-                      const r = parseFloat(sec.rate) || 0;
-                      return (
-                        <View key={sec.id} style={[styles.tableRow, idx % 2 === 1 ? styles.tableRowAlt : {}]}>
-                          <Text style={[styles.tableCellBold, styles.colSection]}>{sec.title}</Text>
-                          <Text style={[styles.tableCell, styles.colHours]}>{h > 0 ? String(h) : '—'}</Text>
-                          <Text style={[styles.tableCell, styles.colRate]}>{r > 0 ? `$${r.toLocaleString()}` : '—'}</Text>
-                          <Text style={[styles.tableCellBold, styles.colSubtotal, { color: COLORS.green }]}>
-                            {h * r > 0 ? `$${(h * r).toLocaleString()}` : '—'}
-                          </Text>
-                        </View>
-                      );
-                    })}
-                    <View style={styles.tableFooter}>
-                      <Text style={[styles.tableFooterCell, styles.colSection]}>Total</Text>
-                      <Text style={[styles.tableFooterCell, styles.colHours]}>{sTotalHours > 0 ? String(sTotalHours) : ''}</Text>
-                      <Text style={[styles.tableFooterCell, styles.colRate]}></Text>
-                      <Text style={[styles.tableFooterCell, styles.colSubtotal]}>${sTotalInv.toLocaleString()}</Text>
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* ===== FOOTER (fixed on every page) ===== */}
+        {/* FOOTER */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>
-            {customerName ? `${customerName} — ` : ''}{sow.title}
-          </Text>
-          <Text
-            style={styles.footerPageNumber}
-            render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
-          />
+          <Text style={styles.footerText}>{customerName ? `${customerName} — ` : ''}{sow.title}</Text>
+          <Text style={styles.footerPageNumber} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
           <Text style={styles.footerBrand}>LeanScale</Text>
         </View>
       </Page>

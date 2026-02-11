@@ -141,6 +141,39 @@ export default function SowPage({
     }
   }
 
+  // --- Move section (reorder) ---
+  async function handleMoveSection(sectionId, direction) {
+    const idx = localSections.findIndex(s => s.id === sectionId);
+    if (idx === -1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= localSections.length) return;
+
+    const newSections = [...localSections];
+    [newSections[idx], newSections[swapIdx]] = [newSections[swapIdx], newSections[idx]];
+    // Update sort_order values
+    const reordered = newSections.map((s, i) => ({ ...s, sort_order: i }));
+    setLocalSections(reordered);
+
+    // Save immediately via PUT /api/sow/{id}/sections
+    try {
+      const ordering = reordered.map(s => ({ id: s.id, sortOrder: s.sort_order }));
+      const res = await fetch(`/api/sow/${localSow.id}/sections`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ordering }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          serverSectionsRef.current = json.data;
+        }
+      }
+    } catch (err) {
+      console.error('Error reordering sections:', err);
+      setErrorMsg('Failed to reorder sections');
+    }
+  }
+
   // --- Calculate projected totals ---
   const projectedHours = localSections.reduce((sum, s) => sum + (parseFloat(s.hours) || 0), 0);
   const projectedInvestment = localSections.reduce((sum, s) => {
@@ -287,6 +320,7 @@ export default function SowPage({
         onFieldChange={handleSowFieldChange}
         onStatusUpdate={handleStatusUpdate}
         customerSlug={customerSlug}
+        customerPath={customerPath}
         onPushToTeamwork={handlePushToTeamwork}
         teamworkLoading={teamworkLoading}
       />
@@ -366,6 +400,7 @@ export default function SowPage({
             diagnosticItems={linkedDiagnosticItems.length > 0 ? linkedDiagnosticItems : diagnosticProcesses}
             diagnosticType={diagnosticResult?.diagnostic_type || 'gtm'}
             customerSlug={customerSlug}
+            customerPath={customerPath}
             overallRating={localSow.overall_rating || 'moderate'}
           />
         )}
@@ -390,6 +425,7 @@ export default function SowPage({
                 diagnosticProcesses={diagnosticProcesses}
                 diagnosticResult={diagnosticResult}
                 customerSlug={customerSlug}
+                customerPath={customerPath}
                 onDeleteSection={readOnly ? undefined : handleDeleteSection}
               />
             ))}
@@ -554,19 +590,12 @@ export default function SowPage({
                 padding: '1.5rem',
               }}>
                 <h2 style={sectionHeadingStyle}>Acceptance Criteria</h2>
-                {Array.isArray(content.acceptance_criteria) ? (
-                  <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
-                    {content.acceptance_criteria.map((item, idx) => (
-                      <li key={idx} style={{ fontSize: '0.875rem', color: '#4A5568', marginBottom: '0.35rem', lineHeight: 1.5 }}>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontSize: '0.875rem', color: '#4A5568', lineHeight: 1.7, margin: 0 }}>
-                    {content.acceptance_criteria}
-                  </p>
-                )}
+                <EditableList
+                  items={Array.isArray(content.acceptance_criteria) ? content.acceptance_criteria : [content.acceptance_criteria]}
+                  onCommit={(val) => handleContentFieldChange('acceptance_criteria', val)}
+                  readOnly={readOnly}
+                  placeholder="Add acceptance criterion..."
+                />
               </div>
             )}
           </div>

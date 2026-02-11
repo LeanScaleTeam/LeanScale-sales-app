@@ -131,10 +131,10 @@ export default function DiagnosticItemCard({
             className="diagnostic-item-card-sow-link"
             style={{
               fontSize: '0.7rem',
-              color: '#6C5CE7',
+              color: '#9F8FEF',
               textDecoration: 'none',
-              opacity: 0,
-              transition: 'opacity 0.15s',
+              opacity: 1,
+              transition: 'color 0.15s',
             }}
           >
             View in SOW

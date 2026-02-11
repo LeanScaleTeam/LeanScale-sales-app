@@ -1,0 +1,153 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import SowPage from '../../../components/sow/SowPage';
+import { useCustomer } from '../../../context/CustomerContext';
+
+/**
+ * Customer-facing SOW review page — read-only view with accept/decline workflow.
+ *
+ * Route: /sow/[id]/review
+ * Uses SowPage with readOnly=true, wrapped in a clean customer-branded layout.
+ */
+export default function SowReviewPage() {
+  const router = useRouter();
+  const { id } = router.query;
+  const { customer, isDemo, customerPath } = useCustomer();
+
+  const [sow, setSow] = useState(null);
+  const [diagnosticResult, setDiagnosticResult] = useState(null);
+  const [versions, setVersions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    async function loadSow() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/sow/${id}`);
+        if (!res.ok) {
+          setError('Unable to load this proposal.');
+          return;
+        }
+        const json = await res.json();
+        if (json.success && json.data) {
+          setSow(json.data);
+          setVersions(json.versions || []);
+
+          // Load linked diagnostic if available
+          if (json.data.diagnostic_result_id) {
+            try {
+              const diagRes = await fetch(`/api/diagnostics/by-id?id=${json.data.diagnostic_result_id}`);
+              if (diagRes.ok) {
+                const diagJson = await diagRes.json();
+                if (diagJson.success) setDiagnosticResult(diagJson.data);
+              }
+            } catch (_) { /* optional */ }
+          }
+        } else {
+          setError('Proposal not found.');
+        }
+      } catch (err) {
+        setError('Unable to load this proposal.');
+        console.error('Error loading SOW:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSow();
+  }, [id]);
+
+  async function handleExport() {
+    if (!sow) return;
+    try {
+      const res = await fetch(`/api/sow/${sow.id}/export`, { method: 'POST' });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${sow.title || 'SOW'}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ color: '#718096', fontSize: '1rem' }}>Loading proposal...</p>
+      </div>
+    );
+  }
+
+  if (error || !sow) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ color: '#9B2C2C', fontSize: '1rem', marginBottom: '1rem' }}>{error || 'Proposal not found.'}</p>
+          <a href="/" style={{ color: '#6c5ce7', textDecoration: 'underline' }}>Return home</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", minHeight: '100vh', background: '#f8fafc' }}>
+      {/* Customer branded header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+        padding: '2.5rem 1.5rem 1.5rem',
+        color: 'white',
+        textAlign: 'center',
+      }}>
+        {customer?.customerLogo ? (
+          <img
+            src={customer.customerLogo}
+            alt={customer.customerName}
+            style={{ height: '40px', marginBottom: '1rem', objectFit: 'contain' }}
+          />
+        ) : (
+          <p style={{ fontSize: '0.85rem', color: '#c4b5fd', marginBottom: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            {customer?.customerName || 'Proposal Review'}
+          </p>
+        )}
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+          {sow.title}
+        </h1>
+        <p style={{ fontSize: '0.9rem', color: '#c4b5fd' }}>
+          Statement of Work &bull; {sow.sow_type} &bull; {new Date(sow.created_at).toLocaleDateString()}
+        </p>
+      </div>
+
+      {/* SOW Content — read-only */}
+      <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '0 1.5rem 3rem' }}>
+        <SowPage
+          sow={sow}
+          diagnosticResult={diagnosticResult}
+          versions={versions}
+          readOnly={true}
+          onExport={handleExport}
+          customerSlug={customer?.slug}
+          customerName={customer?.customerName}
+        />
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        textAlign: 'center',
+        padding: '2rem 1rem',
+        borderTop: '1px solid #e2e8f0',
+        color: '#a0aec0',
+        fontSize: '0.8rem',
+      }}>
+        Powered by LeanScale &bull; {new Date().getFullYear()}
+      </div>
+    </div>
+  );
+}

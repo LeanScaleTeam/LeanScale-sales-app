@@ -511,6 +511,198 @@ export default function SowPage({
 }
 
 /**
+ * CustomerWorkflowPanel — Accept/Decline workflow for customer-facing SOW review
+ */
+function CustomerWorkflowPanel({ sowId, sowStatus, onExport }) {
+  const [action, setAction] = useState(null); // 'accept' | 'changes'
+  const [comments, setComments] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    try {
+      await fetch(`/api/sow/${sowId}/customer-response`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: action === 'accept' ? 'accepted' : 'changes_requested',
+          comments,
+        }),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Error submitting response:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div style={{
+        background: action === 'accept' ? '#F0FDF4' : '#FFF7ED',
+        border: `1px solid ${action === 'accept' ? '#BBF7D0' : '#FED7AA'}`,
+        borderRadius: '0.75rem',
+        padding: '2rem',
+        textAlign: 'center',
+        marginBottom: '2rem',
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{action === 'accept' ? '✅' : '📝'}</div>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1a2e', marginBottom: '0.5rem' }}>
+          {action === 'accept' ? 'Proposal Accepted' : 'Change Request Submitted'}
+        </h3>
+        <p style={{ fontSize: '0.875rem', color: '#718096' }}>
+          {action === 'accept'
+            ? 'Thank you! Your LeanScale team will be in touch to kick things off.'
+            : 'Your feedback has been sent to the LeanScale team. They\'ll follow up shortly.'}
+        </p>
+      </div>
+    );
+  }
+
+  if (sowStatus === 'accepted') {
+    return (
+      <div style={{
+        background: '#F0FDF4',
+        border: '1px solid #BBF7D0',
+        borderRadius: '0.75rem',
+        padding: '1.5rem',
+        textAlign: 'center',
+        marginBottom: '2rem',
+      }}>
+        <p style={{ fontSize: '0.95rem', fontWeight: 600, color: '#276749' }}>
+          ✅ This proposal has been accepted.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      background: 'white',
+      border: '1px solid #E2E8F0',
+      borderRadius: '0.75rem',
+      padding: '1.5rem 2rem',
+      marginBottom: '2rem',
+    }}>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1a1a2e', marginBottom: '1rem' }}>
+        Your Response
+      </h2>
+
+      {!action ? (
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setAction('accept')}
+            style={{
+              padding: '0.75rem 2rem',
+              background: '#22c55e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ✓ Accept Proposal
+          </button>
+          <button
+            onClick={() => setAction('changes')}
+            style={{
+              padding: '0.75rem 2rem',
+              background: 'white',
+              color: '#975A16',
+              border: '2px solid #F59E0B',
+              borderRadius: '0.5rem',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Request Changes
+          </button>
+          {onExport && (
+            <button
+              onClick={onExport}
+              style={{
+                padding: '0.75rem 2rem',
+                background: '#F7FAFC',
+                color: '#4A5568',
+                border: '1px solid #E2E8F0',
+                borderRadius: '0.5rem',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              📄 Download PDF
+            </button>
+          )}
+        </div>
+      ) : (
+        <div>
+          <p style={{ fontSize: '0.875rem', color: '#4A5568', marginBottom: '0.75rem' }}>
+            {action === 'accept'
+              ? 'Great! Add any optional comments before confirming.'
+              : 'Please describe the changes you\'d like:'}
+          </p>
+          <textarea
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            placeholder={action === 'accept' ? 'Optional comments...' : 'Describe requested changes...'}
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #E2E8F0',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              resize: 'vertical',
+              marginBottom: '1rem',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || (action === 'changes' && !comments.trim())}
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: action === 'accept' ? '#22c55e' : '#F59E0B',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                cursor: submitting ? 'wait' : 'pointer',
+                opacity: (submitting || (action === 'changes' && !comments.trim())) ? 0.5 : 1,
+              }}
+            >
+              {submitting ? 'Submitting...' : action === 'accept' ? 'Confirm Acceptance' : 'Submit Changes'}
+            </button>
+            <button
+              onClick={() => { setAction(null); setComments(''); }}
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: '#F7FAFC',
+                color: '#4A5568',
+                border: '1px solid #E2E8F0',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * ScopeCard - Expandable card for a single SOW section
  */
 function ScopeCard({ section, diagnosticProcesses = [], diagnosticResult, customerSlug }) {

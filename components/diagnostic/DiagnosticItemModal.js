@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { motion, AnimatePresence } from 'framer-motion';
 import { StatusBadge } from './StatusLegend';
 import { getPlaybookForService } from '../../data/services-catalog';
 

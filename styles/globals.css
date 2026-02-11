@@ -58,6 +58,10 @@
   --status-unable-bg: #f3f4f6;
   --status-unable-text: #374151;
 
+  --status-na: #d1d5db;
+  --status-na-bg: #f3f4f6;
+  --status-na-text: #6b7280;
+
   /* ----------------------------------------
      Typography Scale
      ---------------------------------------- */

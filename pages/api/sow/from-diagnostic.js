@@ -8,15 +8,24 @@
  *   diagnosticType: 'gtm' | 'clay' | 'cpq',
  *   customerName: string (for auto-generating title),
  *   sowType: 'clay' | 'q2c' | 'embedded' | 'custom',
- *   createdBy: string
+ *   createdBy: string,
+ *   autoGenerate: boolean (default true) — auto-create sections from diagnostic,
+ *   groupBy: 'function' | 'outcome' (default 'function'),
+ *   defaultRate: number (default 200),
+ *   startDate: string (ISO date, optional),
  * }
  *
- * Creates a new SOW linked to the diagnostic result with status 'draft',
- * then returns the SOW so the user can be redirected to /sow/[id]/build.
+ * Creates a new SOW linked to the diagnostic result with status 'draft'.
+ * When autoGenerate is true, also creates sections from priority diagnostic items.
  */
 
-import { createSow } from '../../../lib/sow';
+import { createSow, updateSow } from '../../../lib/sow';
 import { getDiagnosticResult } from '../../../lib/diagnostics';
+import { bulkCreateSections } from '../../../lib/sow-sections';
+import {
+  autoGenerateSow,
+  selectPriorityItems,
+} from '../../../lib/sow-auto-builder';
 
 const VALID_SOW_TYPES = ['clay', 'q2c', 'embedded', 'custom'];
 
@@ -33,6 +42,10 @@ export default async function handler(req, res) {
       customerName,
       sowType,
       createdBy,
+      autoGenerate = true,
+      groupBy = 'function',
+      defaultRate = 200,
+      startDate,
     } = req.body;
 
     if (!customerId) {
@@ -58,8 +71,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Compute an overall rating from the diagnostic processes
     const processes = diagnosticResult.processes || [];
+
+    // Compute an overall rating from the diagnostic processes
     const statusCounts = { warning: 0, unable: 0, careful: 0, healthy: 0 };
     processes.forEach(p => {
       if (statusCounts[p.status] !== undefined) {
@@ -73,6 +87,25 @@ export default async function handler(req, res) {
     else if (criticalPct > 0.3) overallRating = 'warning';
     else if (criticalPct > 0.1) overallRating = 'moderate';
 
+    // Generate executive summary if auto-generating
+    let executiveSummary = '';
+    let sectionDefs = [];
+    let priorityItems = [];
+
+    if (autoGenerate) {
+      const result = await autoGenerateSow({
+        processes,
+        groupBy,
+        defaultRate,
+        sowStartDate: startDate,
+        customerName,
+        diagnosticType: diagnosticType || 'gtm',
+      });
+      executiveSummary = result.executiveSummary;
+      sectionDefs = result.sections;
+      priorityItems = result.priorityItems;
+    }
+
     // Auto-generate title
     const title = customerName
       ? `${customerName} Statement of Work`
@@ -84,15 +117,22 @@ export default async function handler(req, res) {
       title,
       sowType,
       content: {
-        executive_summary: '',
+        executive_summary: executiveSummary,
         client_info: customerName ? { company: customerName } : {},
         scope: [],
         deliverables_table: [],
         timeline: [],
         investment: { total: 0, payment_terms: '', breakdown: [] },
         team: [],
-        assumptions: [],
-        acceptance_criteria: [],
+        assumptions: autoGenerate ? [
+          'Client will provide timely access to required systems and stakeholders.',
+          'Scope changes will be managed through a change request process.',
+          'All work will be performed remotely unless otherwise agreed.',
+        ] : [],
+        acceptance_criteria: autoGenerate ? [
+          'Deliverables reviewed and approved by client stakeholder.',
+          'Knowledge transfer session completed for each section.',
+        ] : [],
       },
       createdBy,
     });
@@ -101,9 +141,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, error: 'Failed to create SOW' });
     }
 
-    // Now update the SOW with the new diagnostic-linked fields
-    // (createSow doesn't support these yet, so we update after creation)
-    const { updateSow } = await import('../../../lib/sow');
+    // Update the SOW with diagnostic-linked fields
     await updateSow(sow.id, {
       diagnostic_result_ids: [diagnosticResultId],
       overall_rating: overallRating,
@@ -112,10 +150,39 @@ export default async function handler(req, res) {
           name: p.name,
           status: p.status,
           addToEngagement: p.addToEngagement,
+          function: p.function,
+          outcome: p.outcome,
+          serviceId: p.serviceId,
+          serviceType: p.serviceType,
         })),
         snapshotAt: new Date().toISOString(),
       },
     });
+
+    // Auto-generate sections
+    let generatedSections = [];
+    if (autoGenerate && sectionDefs.length > 0) {
+      generatedSections = await bulkCreateSections(sow.id, sectionDefs);
+
+      // Update SOW totals
+      let totalHours = 0, totalInvestment = 0;
+      let minDate = null, maxDate = null;
+      generatedSections.forEach(s => {
+        const h = parseFloat(s.hours) || 0;
+        const r = parseFloat(s.rate) || 0;
+        totalHours += h;
+        totalInvestment += h * r;
+        if (s.start_date && (!minDate || s.start_date < minDate)) minDate = s.start_date;
+        if (s.end_date && (!maxDate || s.end_date > maxDate)) maxDate = s.end_date;
+      });
+
+      await updateSow(sow.id, {
+        total_hours: totalHours,
+        total_investment: totalInvestment,
+        start_date: minDate,
+        end_date: maxDate,
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -123,8 +190,14 @@ export default async function handler(req, res) {
         ...sow,
         diagnostic_result_ids: [diagnosticResultId],
         overall_rating: overallRating,
+        sections: generatedSections,
       },
       diagnosticProcesses: processes,
+      meta: {
+        autoGenerated: autoGenerate,
+        sectionsCreated: generatedSections.length,
+        priorityItemCount: priorityItems.length,
+      },
     });
   } catch (error) {
     console.error('Error creating SOW from diagnostic:', error);

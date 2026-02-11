@@ -42,7 +42,8 @@ export const processes = [
     "outcome": "Improve Data Quality",
     "metric": "Pipeline production",
     "serviceId": "activity-capture",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Automated Inbound Data Enrichment",
@@ -52,7 +53,8 @@ export const processes = [
     "outcome": "Improve Data Quality",
     "metric": "MQL production",
     "serviceId": "automated-inbound-data-enrichment",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Customer Lifecycle (GTM Lifecycle)",
@@ -62,7 +64,8 @@ export const processes = [
     "outcome": "Reduce Churn",
     "metric": "Gross retention",
     "serviceId": "customer-lifecycle",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Forecasting Process Implementation",
@@ -72,7 +75,8 @@ export const processes = [
     "outcome": "Optimize Reporting",
     "metric": "Bookings",
     "serviceId": "forecasting-process-implementation",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Market Map",
@@ -82,7 +86,8 @@ export const processes = [
     "outcome": "Increase Pipeline",
     "metric": "MQL production",
     "serviceId": "market-map",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Lead & Opportunity Attribution",
@@ -92,7 +97,8 @@ export const processes = [
     "outcome": "Optimize Reporting",
     "metric": "MQL -> Opportunity conversion rate",
     "serviceId": "lead-and-opportunity-attribution",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Lead Lifecycle (GTM Lifecycle)",
@@ -102,7 +108,8 @@ export const processes = [
     "outcome": "Increase Pipeline",
     "metric": "MQL -> Opportunity conversion rate",
     "serviceId": "lead-lifecycle",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Lead Routing",
@@ -112,7 +119,8 @@ export const processes = [
     "outcome": "Improve Sales Efficiency",
     "metric": "Opportunity/Deal - CW cycle time",
     "serviceId": "lead-routing",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Marketing-to-Sales Handoff & SLA Tracking",
@@ -122,7 +130,8 @@ export const processes = [
     "outcome": "Improve Sales Efficiency",
     "metric": "Opportunity/Deal - CW cycle time",
     "serviceId": "marketing-to-sales-handoff-and-sla-tracking",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Sales Lifecycle (GTM Lifecycle)",
@@ -132,7 +141,8 @@ export const processes = [
     "outcome": "Increase Pipeline",
     "metric": "Pipeline production",
     "serviceId": "sales-lifecycle",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Sales Territory Design and System Implementation",
@@ -142,7 +152,8 @@ export const processes = [
     "outcome": "Improve Sales Efficiency",
     "metric": "Bookings",
     "serviceId": "sales-territory-design",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "ABM / ABS Process and System",
@@ -182,7 +193,8 @@ export const processes = [
     "outcome": "Increase Pipeline",
     "metric": "Pipeline production",
     "serviceId": "automated-outbound-process",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "CLM Implementation",
@@ -212,7 +224,8 @@ export const processes = [
     "outcome": "Improve Sales Efficiency",
     "metric": "Opportunity/Deal -> CW conversion rate",
     "serviceId": "conversation-intelligence-platform-implementation",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "CPQ Implementation",
@@ -232,7 +245,8 @@ export const processes = [
     "outcome": "Improve Data Quality",
     "metric": "Pipeline production",
     "serviceId": "crm-deduplication",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "CRM Deduplication Ongoing Tool",
@@ -252,7 +266,8 @@ export const processes = [
     "outcome": "Reduce Churn",
     "metric": "Gross churn",
     "serviceId": "customer-health-model",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Customer Segmentation",
@@ -352,7 +367,8 @@ export const processes = [
     "outcome": "Scale Operations",
     "metric": "Pipeline production",
     "serviceId": "foundational-automations-and-reporting-logic",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Growth Model",
@@ -362,7 +378,8 @@ export const processes = [
     "outcome": "Optimize Reporting",
     "metric": "ARR",
     "serviceId": "growth-model",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "GTM Lifecycle",
@@ -392,7 +409,8 @@ export const processes = [
     "outcome": "Increase Pipeline",
     "metric": "MQL -> Opportunity conversion rate",
     "serviceId": "lead-scoring-model-sales-led",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Marketing Automation Platform Implementation",
@@ -652,7 +670,8 @@ export const processes = [
     "outcome": "Improve Sales Efficiency",
     "metric": "MQL -> Opportunity conversion rate",
     "serviceId": "speed-to-lead",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Sales Qualification Methodology",
@@ -732,7 +751,8 @@ export const processes = [
     "outcome": "Reduce Churn",
     "metric": "Gross retention",
     "serviceId": "onboarding-and-process-improvement",
-    "serviceType": "strategic"
+    "serviceType": "strategic",
+    "quickAssessment": true
   },
   {
     "name": "Sales to CS Handoff Process",
@@ -977,10 +997,11 @@ export function countStatuses(items) {
       if (item.status === 'healthy') acc.healthy++;
       else if (item.status === 'careful') acc.careful++;
       else if (item.status === 'warning') acc.warning++;
-      else if (item.status === 'unable' || item.status === 'na') acc.unable++;
+      else if (item.status === 'unable') acc.unable++;
+      else if (item.status === 'na') acc.na++;
       return acc;
     },
-    { healthy: 0, careful: 0, warning: 0, unable: 0 }
+    { healthy: 0, careful: 0, warning: 0, unable: 0, na: 0 }
   );
 }
 

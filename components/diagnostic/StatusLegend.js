@@ -5,6 +5,7 @@ const STATUS_CONFIG = {
   careful: { cssVar: '--status-careful', label: 'Careful' },
   warning: { cssVar: '--status-warning', label: 'Warning' },
   unable: { cssVar: '--status-unable', label: 'Unable' },
+  na: { cssVar: '--status-na', label: 'N/A' },
 };
 
 // For JavaScript contexts that need the actual color values
@@ -19,6 +20,7 @@ export function getStatusColor(status) {
     careful: '#eab308',
     warning: '#ef4444',
     unable: '#1f2937',
+    na: '#d1d5db',
   };
   return fallbacks[status] || '#9ca3af';
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../Layout';
@@ -9,8 +9,8 @@ import { diagnosticRegistry, countStatuses, groupBy } from '../../data/diagnosti
 import { useCustomer } from '../../context/CustomerContext';
 import NoteDrawer from './NoteDrawer';
 import MarkdownImport from './MarkdownImport';
-
-const STATUS_CYCLE = ['healthy', 'careful', 'warning', 'unable'];
+import FilterBar from './FilterBar';
+import StatusPicker from './StatusPicker';
 
 /**
  * ItemTable — tabular view of diagnostic items with optional function/category column
@@ -57,23 +57,10 @@ function ItemTable({
                 )}
                 <td style={{ textAlign: 'center' }}>
                   {editMode && onStatusChange ? (
-                    <button
-                      onClick={() => {
-                        const currentIdx = STATUS_CYCLE.indexOf(item.status);
-                        const nextStatus = STATUS_CYCLE[(currentIdx + 1) % STATUS_CYCLE.length];
-                        onStatusChange(item.name, nextStatus);
-                      }}
-                      style={{
-                        background: 'none',
-                        border: '1px dashed var(--border-color)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '0.2rem 0.4rem',
-                        cursor: 'pointer',
-                      }}
-                      title="Click to cycle status"
-                    >
-                      <StatusBadge status={item.status} />
-                    </button>
+                    <StatusPicker
+                      currentStatus={item.status}
+                      onChange={(newStatus) => onStatusChange(item.name, newStatus)}
+                    />
                   ) : (
                     <StatusBadge status={item.status} />
                   )}
@@ -312,6 +299,10 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [diagnosticResultId, setDiagnosticResultId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
+  const [quickMode, setQuickMode] = useState(false);
+  const [filters, setFilters] = useState({
+    search: '', status: 'all', function: 'all', outcome: 'all', priorityOnly: false,
+  });
   const saveTimerRef = useRef(null);
 
   if (!config) {

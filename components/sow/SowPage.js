@@ -383,7 +383,7 @@ export default function SowPage({
       )}
 
       {/* ===== TOP GRID: Executive Summary + Diagnostic Score ===== */}
-      <div style={{
+      <div className="sow-top-grid" style={{
         display: 'grid',
         gridTemplateColumns: diagnosticProcesses.length > 0 ? '1fr 280px' : '1fr',
         gap: '1.5rem',
@@ -526,13 +526,15 @@ export default function SowPage({
       {hasSections && (
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={sectionHeadingStyle}>Investment</h2>
-          <InvestmentTable
-            sections={localSections}
-            totalHours={localSow.total_hours ? parseFloat(localSow.total_hours) : undefined}
-            totalInvestment={localSow.total_investment ? parseFloat(localSow.total_investment) : undefined}
-            readOnly={readOnly}
-            onSectionChange={readOnly ? undefined : handleSectionChange}
-          />
+          <div className="sow-investment-wrapper">
+            <InvestmentTable
+              sections={localSections}
+              totalHours={localSow.total_hours ? parseFloat(localSow.total_hours) : undefined}
+              totalInvestment={localSow.total_investment ? parseFloat(localSow.total_investment) : undefined}
+              readOnly={readOnly}
+              onSectionChange={readOnly ? undefined : handleSectionChange}
+            />
+          </div>
         </div>
       )}
 

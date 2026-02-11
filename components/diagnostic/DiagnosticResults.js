@@ -6,11 +6,15 @@ import DonutChart from '../charts/DonutChart';
 import BarChart from '../charts/BarChart';
 import { StatusDot, StatusBadge, getStatusColor } from './StatusLegend';
 import { diagnosticRegistry, countStatuses, groupBy } from '../../data/diagnostic-registry';
+import HealthDashboard from './HealthDashboard';
+import FunctionHeatmap from './FunctionHeatmap';
+import PriorityMatrix from './PriorityMatrix';
 import { useCustomer } from '../../context/CustomerContext';
 import NoteDrawer from './NoteDrawer';
 import MarkdownImport from './MarkdownImport';
 import FilterBar from './FilterBar';
 import StatusPicker from './StatusPicker';
+import ScopeBuilderMode from './ScopeBuilderMode';
 import ItemDetailEditor from './ItemDetailEditor';
 import { strategicProjects } from '../../data/services-catalog';
 import SowPreviewPanel from './SowPreviewPanel';
@@ -343,6 +347,7 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   const [quickMode, setQuickMode] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [showSowPreview, setShowSowPreview] = useState(false);
+  const [scopeBuilderActive, setScopeBuilderActive] = useState(false);
   const [filters, setFilters] = useState({
     search: '', status: 'all', function: 'all', outcome: 'all', priorityOnly: false,
   });
@@ -523,6 +528,9 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
 
   // Build tabs dynamically based on what data is available
   const tabs = [];
+  tabs.push({ id: 'dashboard', label: 'Dashboard', icon: '📊' });
+  tabs.push({ id: 'heatmap', label: 'Heatmap', icon: '🗺️' });
+  tabs.push({ id: 'priority', label: 'Priority Matrix', icon: '🎯' });
   if (power10Data) {
     tabs.push({ id: 'power10', label: 'Power10 Metrics', icon: '\uD83D\uDCC8' });
   }
@@ -541,7 +549,7 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
     tabs.push({ id: 'by-outcome', label: 'By Outcome', icon: '\uD83C\uDFAF' });
   }
 
-  const [activeTab, setActiveTab] = useState('processes');
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
     const { tab } = router.query;
@@ -757,6 +765,23 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
                   Build SOW
                 </button>
               )}
+              {diagnosticResultId && (
+                <button
+                  onClick={() => setScopeBuilderActive(!scopeBuilderActive)}
+                  style={{
+                    padding: 'var(--space-2) var(--space-4)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    background: scopeBuilderActive ? '#f59e0b' : 'var(--ls-lime-green)',
+                    color: scopeBuilderActive ? 'white' : 'var(--ls-purple)',
+                    border: 'none',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {scopeBuilderActive ? 'Close Scope Builder' : '🔧 Build Scope'}
+                </button>
+              )}
               {saving && (
                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', alignSelf: 'center' }}>
                   Saving...
@@ -775,6 +800,16 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
               onCancel={() => setShowImport(false)}
             />
           </div>
+        )}
+
+        {/* Scope Builder Mode */}
+        {scopeBuilderActive && diagnosticResultId && (
+          <ScopeBuilderMode
+            processes={allProcesses}
+            diagnosticResultId={diagnosticResultId}
+            diagnosticType={diagnosticType}
+            onClose={() => setScopeBuilderActive(false)}
+          />
         )}
 
         {/* Loading indicator for customer data */}
@@ -878,6 +913,46 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
           />
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {activeTab === 'dashboard' && (
+            <HealthDashboard
+              processes={baseProcesses}
+              categories={categories}
+              diagnosticType={diagnosticType}
+            />
+          )}
+
+          {activeTab === 'heatmap' && (
+            <div className="card" style={{ padding: 'var(--space-6)' }}>
+              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>
+                Function × Outcome Heatmap
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+                Each cell shows the worst status of processes at that intersection. Click a cell to filter.
+              </p>
+              <FunctionHeatmap
+                processes={baseProcesses}
+                categories={categories}
+                outcomes={outcomes}
+                onFilterChange={({ function: func, outcome }) => {
+                  setFilters({ search: '', status: 'all', function: func, outcome, priorityOnly: false });
+                  setActiveTab('processes');
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'priority' && (
+            <div className="card" style={{ padding: 'var(--space-6)' }}>
+              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>
+                Priority Matrix
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+                High impact + poor health = top-right &quot;Fix Now&quot; quadrant. Click dots for details.
+              </p>
+              <PriorityMatrix processes={baseProcesses} />
+            </div>
+          )}
+
           {activeTab === 'power10' && power10Data && (
             <div>
               <div className="diagnostic-charts-row" style={{ marginBottom: 'var(--space-6)' }}>

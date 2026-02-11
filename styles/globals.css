@@ -1204,6 +1204,113 @@ a:hover {
 }
 
 /* ============================================
+   Scope Builder Mode
+   ============================================ */
+
+.scope-builder-overlay {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-xl);
+  animation: scopeBuilderSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+@keyframes scopeBuilderSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scope-builder-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 500px;
+}
+
+.scope-builder-left {
+  padding: var(--space-4);
+  border-right: 1px solid var(--border-color);
+  animation: scopePanelSlideLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scopePanelSlideLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.scope-builder-right {
+  padding: var(--space-4);
+  animation: scopePanelSlideRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+@keyframes scopePanelSlideRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.scope-item-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.scope-item-card:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.scope-section-card {
+  animation: scopeSectionAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scopeSectionAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scope-panel {
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+/* Diagnostic table slides left when scope builder is active */
+.diagnostic-content-with-scope {
+  animation: diagnosticSlideLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes diagnosticSlideLeft {
+  from { opacity: 0.5; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 900px) {
+  .scope-builder-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .scope-builder-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+/* ============================================
    Home Page Styles
    ============================================ */
 

@@ -15,6 +15,9 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 import DiagnosticItemPicker from './DiagnosticItemPicker';
 import SectionEditor from './SectionEditor';
+import SectionConfigurator from './SectionConfigurator';
+import InvestmentConfigurator from './InvestmentConfigurator';
+import TimelineConfigurator from './TimelineConfigurator';
 import CatalogPicker from './CatalogPicker';
 import ExecutiveSummaryEditor from './ExecutiveSummaryEditor';
 import AssumptionsEditor from './AssumptionsEditor';
@@ -50,6 +53,17 @@ export default function SowBuilder({
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState(null); // section ID being assigned items to
   const [showCatalog, setShowCatalog] = useState(false);
+  const [investmentConfig, setInvestmentConfig] = useState(
+    sow?.content?.investment_config || {
+      defaultRate: 250,
+      globalDiscount: 0,
+      paymentTerms: 'Net 30',
+      currency: 'USD',
+      taxRate: 0,
+      pricingMode: 'Fixed Price',
+    }
+  );
+  const [velocity, setVelocity] = useState(sow?.content?.velocity || 40);
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
 
@@ -81,6 +95,51 @@ export default function SowBuilder({
       setError('Failed to save executive summary.');
     }
   }, [sow.id, sow.content, executiveSummary]);
+
+  // Save investment config to SOW content
+  const saveInvestmentConfig = useCallback(async (newConfig) => {
+    setInvestmentConfig(newConfig);
+    try {
+      await fetch(`/api/sow/${sow.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPartial: { investment_config: newConfig },
+        }),
+      });
+    } catch (err) {
+      setError('Failed to save investment configuration.');
+    }
+  }, [sow.id]);
+
+  // Apply default rate to all sections
+  async function applyRateToAll(rate) {
+    const updates = sections.map(s =>
+      fetch(`/api/sow/${sow.id}/sections/${s.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rate }),
+      }).then(r => r.json())
+    );
+    try {
+      const results = await Promise.all(updates);
+      setSections(prev => prev.map(s => ({ ...s, rate })));
+    } catch (err) {
+      setError('Failed to apply rate to all sections.');
+    }
+  }
+
+  // Save velocity to SOW content
+  async function handleVelocityChange(v) {
+    setVelocity(v);
+    try {
+      await fetch(`/api/sow/${sow.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentPartial: { velocity: v } }),
+      });
+    } catch (err) { /* silent */ }
+  }
 
   // Regenerate sections from diagnostic
   async function handleRegenerate() {

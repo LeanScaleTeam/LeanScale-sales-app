@@ -959,11 +959,16 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           {activeTab === 'dashboard' && (
-            <HealthDashboard
-              processes={baseProcesses}
-              categories={categories}
-              diagnosticType={diagnosticType}
-            />
+            <div>
+              <HealthDashboard
+                processes={baseProcesses}
+                categories={categories}
+                diagnosticType={diagnosticType}
+              />
+              <div style={{ marginTop: 'var(--space-8)' }}>
+                <ScoreBreakdown processes={baseProcesses} />
+              </div>
+            </div>
           )}
 
           {activeTab === 'heatmap' && (
@@ -1168,6 +1173,62 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
                 {processes.length} processes grouped by their desired business outcome
               </p>
               <GroupedView items={processes} groupByField="outcome" groupNames={outcomes} />
+            </div>
+          )}
+
+          {activeTab === 'benchmark' && (
+            <div>
+              {/* Benchmark Preset Selector */}
+              <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-6)', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>
+                  Compare against:
+                </span>
+                {Object.entries(benchmarkPresets).map(([key, preset]) => (
+                  <button
+                    key={key}
+                    onClick={() => setBenchmarkPreset(key)}
+                    style={{
+                      padding: 'var(--space-2) var(--space-4)',
+                      fontSize: 'var(--text-sm)',
+                      fontWeight: 'var(--font-semibold)',
+                      background: benchmarkPreset === key ? 'var(--ls-purple)' : 'var(--bg-subtle)',
+                      color: benchmarkPreset === key ? 'white' : 'var(--text-secondary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Benchmark Overlay */}
+              <div style={{ marginBottom: 'var(--space-8)' }}>
+                <BenchmarkOverlay
+                  processes={baseProcesses}
+                  selectedPreset={benchmarkPreset}
+                  onPresetChange={setBenchmarkPreset}
+                />
+              </div>
+
+              {/* Comparison vs Benchmark */}
+              <div className="card" style={{ padding: 'var(--space-6)' }}>
+                <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>
+                  Detailed Comparison
+                </h3>
+                <DiagnosticComparison
+                  currentProcesses={baseProcesses}
+                  compareProcesses={baseProcesses.map(p => ({
+                    ...p,
+                    status: benchmarkPresets[benchmarkPreset]?.overrides[p.name]
+                      ?? benchmarkPresets[benchmarkPreset]?.defaultStatus
+                      ?? 'unable',
+                  }))}
+                  currentLabel="Your Status"
+                  compareLabel={`${benchmarkPresets[benchmarkPreset]?.label || 'Benchmark'} Benchmark`}
+                />
+              </div>
             </div>
           )}
         </div>

@@ -11,6 +11,8 @@ import NoteDrawer from './NoteDrawer';
 import MarkdownImport from './MarkdownImport';
 import FilterBar from './FilterBar';
 import StatusPicker from './StatusPicker';
+import ItemDetailEditor from './ItemDetailEditor';
+import { strategicProjects } from '../../data/services-catalog';
 import SowPreviewPanel from './SowPreviewPanel';
 
 /**
@@ -316,6 +318,13 @@ function HealthOverviewCard({ label, stats }) {
  *
  * @param {string} diagnosticType - 'gtm' | 'clay' | 'cpq'
  */
+// Build flat lookup of all strategic projects by serviceId
+const allStrategicProjects = Object.values(strategicProjects).flat();
+function getServiceEntry(serviceId) {
+  if (!serviceId) return null;
+  return allStrategicProjects.find(s => s.id === serviceId) || null;
+}
+
 export default function DiagnosticResults({ diagnosticType, readOnly = false }) {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
@@ -440,6 +449,14 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
   function handlePriorityToggle(processName) {
     const updated = allProcesses.map(p =>
       p.name === processName ? { ...p, addToEngagement: !p.addToEngagement } : p
+    );
+    setEditableProcesses(updated);
+    scheduleSave(updated, editableTools);
+  }
+
+  function handleFieldChange(processName, field, value) {
+    const updated = allProcesses.map(p =>
+      p.name === processName ? { ...p, [field]: value } : p
     );
     setEditableProcesses(updated);
     scheduleSave(updated, editableTools);
@@ -967,20 +984,45 @@ export default function DiagnosticResults({ diagnosticType, readOnly = false }) 
                   filters={filters}
                   onChange={setFilters}
                 />
-                <ItemTable
-                  items={processes}
-                  showFunction={true}
-                  functionLabel={categoryLabel}
-                  editMode={readOnly ? false : editMode}
-                  readOnly={readOnly}
-                  onStatusChange={handleStatusChange}
-                  onPriorityToggle={handlePriorityToggle}
-                  notes={notes}
-                  onAddNote={handleAddNote}
-                  onDeleteNote={handleDeleteNote}
-                  expandedRow={expandedRow}
-                  onRowExpand={setExpandedRow}
-                />
+                {/* Column headers for ItemDetailEditor rows */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(180px, 2fr) minmax(80px, 1fr) 90px 70px 60px 90px',
+                  padding: 'var(--space-2) var(--space-4)',
+                  background: 'var(--bg-subtle)',
+                  borderBottom: '1px solid var(--border-color)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 'var(--font-semibold)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: 'var(--text-secondary)',
+                }}>
+                  <div>Name</div>
+                  <div>{categoryLabel}</div>
+                  <div style={{ textAlign: 'center' }}>Status</div>
+                  <div style={{ textAlign: 'center' }}>Priority</div>
+                  <div style={{ textAlign: 'center' }}>Hours</div>
+                  <div style={{ textAlign: 'center' }}>Impact</div>
+                </div>
+                {processes.map((item) => (
+                  <ItemDetailEditor
+                    key={item.name}
+                    item={item}
+                    editMode={readOnly ? false : editMode}
+                    readOnly={readOnly}
+                    onFieldChange={handleFieldChange}
+                    onStatusChange={handleStatusChange}
+                    onPriorityToggle={handlePriorityToggle}
+                    notes={notes}
+                    onAddNote={handleAddNote}
+                    onDeleteNote={handleDeleteNote}
+                    showFunction={true}
+                    functionLabel={categoryLabel}
+                    serviceCatalogEntry={getServiceEntry(item.serviceId)}
+                    expanded={expandedRow === item.name}
+                    onToggleExpand={() => setExpandedRow(expandedRow === item.name ? null : item.name)}
+                  />
+                ))}
               </div>
             </div>
           )}

@@ -505,6 +505,50 @@ export default function SowPdfDocument({
           </View>
         )}
 
+        {/* ===== TEAM ===== */}
+        {Array.isArray(content.team) && content.team.length > 0 && (
+          <View wrap={false} style={{ marginTop: 10 }}>
+            <Text style={styles.sectionHeading}>Team</Text>
+            {content.team.map((member, idx) => {
+              const label = typeof member === 'string'
+                ? member
+                : `${member.name}${member.role ? ` — ${member.role}` : ''}`;
+              return (
+                <View key={idx} style={styles.deliverableItem}>
+                  <Text style={styles.deliverableBullet}>•</Text>
+                  <Text style={styles.deliverableText}>{label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* ===== ASSUMPTIONS ===== */}
+        {Array.isArray(content.assumptions) && content.assumptions.length > 0 && (
+          <View wrap={false} style={{ marginTop: 10 }}>
+            <Text style={styles.sectionHeading}>Assumptions</Text>
+            {content.assumptions.map((item, idx) => (
+              <View key={idx} style={styles.deliverableItem}>
+                <Text style={styles.deliverableBullet}>•</Text>
+                <Text style={styles.deliverableText}>{typeof item === 'string' ? item : JSON.stringify(item)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ===== ACCEPTANCE CRITERIA ===== */}
+        {Array.isArray(content.acceptance_criteria) && content.acceptance_criteria.length > 0 && (
+          <View wrap={false} style={{ marginTop: 10 }}>
+            <Text style={styles.sectionHeading}>Acceptance Criteria</Text>
+            {content.acceptance_criteria.map((item, idx) => (
+              <View key={idx} style={styles.deliverableItem}>
+                <Text style={styles.deliverableBullet}>•</Text>
+                <Text style={styles.deliverableText}>{typeof item === 'string' ? item : JSON.stringify(item)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* ===== FOOTER ===== */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>

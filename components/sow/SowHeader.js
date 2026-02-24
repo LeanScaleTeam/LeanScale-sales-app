@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import EditableField from './EditableField';
@@ -29,11 +30,13 @@ export default function SowHeader({
   readOnly = false,
   onFieldChange,
   onStatusUpdate,
+  onExport,
   customerSlug,
   customerPath,
   onPushToTeamwork,
   teamworkLoading = false,
 }) {
+  const [exporting, setExporting] = useState(false);
   const statusColors = STATUS_COLORS[sow.status] || STATUS_COLORS.draft;
   const canPushToTeamwork = !readOnly && ['review', 'sent', 'accepted'].includes(sow.status) && !sow.teamwork_project_id;
 
@@ -156,6 +159,31 @@ export default function SowHeader({
             }}>
               ${parseFloat(sow.total_investment).toLocaleString()}
             </span>
+          )}
+
+          {onExport && (
+            <button
+              onClick={async () => {
+                setExporting(true);
+                try { await onExport(); } finally { setExporting(false); }
+              }}
+              disabled={exporting}
+              style={{
+                padding: '0.5rem 1rem',
+                background: exporting ? '#9CA3AF' : '#1a1a2e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                cursor: exporting ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+              }}
+            >
+              {exporting ? 'Exporting...' : 'Export PDF'}
+            </button>
           )}
 
           {!readOnly && (

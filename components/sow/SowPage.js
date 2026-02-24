@@ -332,6 +332,7 @@ export default function SowPage({
         readOnly={readOnly}
         onFieldChange={handleSowFieldChange}
         onStatusUpdate={handleStatusUpdate}
+        onExport={onExport}
         customerSlug={customerSlug}
         customerPath={customerPath}
         onPushToTeamwork={handlePushToTeamwork}
@@ -567,70 +568,64 @@ export default function SowPage({
       )}
 
       {/* ===== TEAM / ASSUMPTIONS / ACCEPTANCE CRITERIA ===== */}
-      {(content.team || content.assumptions || content.acceptance_criteria) && (
+      {(!readOnly || content.team?.length || content.assumptions?.length || content.acceptance_criteria?.length) && (
         <motion.div
           variants={fadeUpItem}
           initial="hidden"
           animate="show"
           style={{
             display: 'grid',
-            gridTemplateColumns: content.team ? '1fr 1fr' : '1fr',
+            gridTemplateColumns: '1fr 1fr',
             gap: '1.5rem',
             marginBottom: '2rem',
           }}
         >
-          {content.team && (
+          <div style={{
+            background: 'white',
+            border: '1px solid #E2E8F0',
+            borderRadius: '0.75rem',
+            padding: '1.5rem',
+          }}>
+            <h2 style={sectionHeadingStyle}>Team</h2>
+            <EditableList
+              items={Array.isArray(content.team) ? content.team : content.team ? [content.team] : []}
+              onCommit={(val) => handleContentFieldChange('team', val)}
+              readOnly={readOnly}
+              placeholder="Add team member..."
+              formatItem={(item) => typeof item === 'string' ? item : `${item.name}${item.role ? ` — ${item.role}` : ''}`}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{
               background: 'white',
               border: '1px solid #E2E8F0',
               borderRadius: '0.75rem',
               padding: '1.5rem',
             }}>
-              <h2 style={sectionHeadingStyle}>Team</h2>
+              <h2 style={sectionHeadingStyle}>Assumptions</h2>
               <EditableList
-                items={Array.isArray(content.team) ? content.team : [content.team]}
-                onCommit={(val) => handleContentFieldChange('team', val)}
+                items={Array.isArray(content.assumptions) ? content.assumptions : content.assumptions ? [content.assumptions] : []}
+                onCommit={(val) => handleContentFieldChange('assumptions', val)}
                 readOnly={readOnly}
-                placeholder="Add team member..."
-                formatItem={(item) => typeof item === 'string' ? item : `${item.name}${item.role ? ` — ${item.role}` : ''}`}
+                placeholder="Add assumption..."
               />
             </div>
-          )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {content.assumptions && (
-              <div style={{
-                background: 'white',
-                border: '1px solid #E2E8F0',
-                borderRadius: '0.75rem',
-                padding: '1.5rem',
-              }}>
-                <h2 style={sectionHeadingStyle}>Assumptions</h2>
-                <EditableList
-                  items={Array.isArray(content.assumptions) ? content.assumptions : [content.assumptions]}
-                  onCommit={(val) => handleContentFieldChange('assumptions', val)}
-                  readOnly={readOnly}
-                  placeholder="Add assumption..."
-                />
-              </div>
-            )}
-
-            {content.acceptance_criteria && (
-              <div style={{
-                background: 'white',
-                border: '1px solid #E2E8F0',
-                borderRadius: '0.75rem',
-                padding: '1.5rem',
-              }}>
-                <h2 style={sectionHeadingStyle}>Acceptance Criteria</h2>
-                <EditableList
-                  items={Array.isArray(content.acceptance_criteria) ? content.acceptance_criteria : [content.acceptance_criteria]}
-                  onCommit={(val) => handleContentFieldChange('acceptance_criteria', val)}
-                  readOnly={readOnly}
-                  placeholder="Add acceptance criterion..."
-                />
-              </div>
-            )}
+            <div style={{
+              background: 'white',
+              border: '1px solid #E2E8F0',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+            }}>
+              <h2 style={sectionHeadingStyle}>Acceptance Criteria</h2>
+              <EditableList
+                items={Array.isArray(content.acceptance_criteria) ? content.acceptance_criteria : content.acceptance_criteria ? [content.acceptance_criteria] : []}
+                onCommit={(val) => handleContentFieldChange('acceptance_criteria', val)}
+                readOnly={readOnly}
+                placeholder="Add acceptance criterion..."
+              />
+            </div>
           </div>
         </motion.div>
       )}

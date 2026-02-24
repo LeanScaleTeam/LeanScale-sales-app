@@ -99,6 +99,7 @@ export default function DiagnosticResults({ diagnosticType }) {
         if (json.success && json.data) {
           setEditableProcesses(json.data.processes || []);
           setEditableTools(json.data.tools || []);
+          console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
           if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
             setEditablePower10(json.data.power10_metrics);
           }
@@ -164,6 +165,7 @@ export default function DiagnosticResults({ diagnosticType }) {
       if (p10 !== undefined) {
         payload.power10Metrics = p10;
       }
+      console.log('[DiagnosticSave] Saving with power10:', p10?.length, 'metrics');
       await fetch(`/api/diagnostics/${diagnosticType}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -195,7 +197,7 @@ export default function DiagnosticResults({ diagnosticType }) {
       p.name === processName ? { ...p, status: newStatus } : p
     );
     setEditableProcesses(updated);
-    scheduleSave(updated, editableTools);
+    scheduleSave(updated, editableTools, editablePower10);
   }
 
   function handlePriorityToggle(processName) {
@@ -203,7 +205,7 @@ export default function DiagnosticResults({ diagnosticType }) {
       p.name === processName ? { ...p, addToEngagement: !p.addToEngagement } : p
     );
     setEditableProcesses(updated);
-    scheduleSave(updated, editableTools);
+    scheduleSave(updated, editableTools, editablePower10);
   }
 
   // --- Note handlers ---
@@ -248,13 +250,15 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   // --- Markdown import handler ---
   async function handleImport({ processes: importedProcesses, tools: importedTools, power10Metrics: importedPower10 }) {
+    // Switch to v1 mode (markdown import is always v1)
+    setDiagnosticVersion(1);
+    setV2Result(null);
     setEditableProcesses(importedProcesses);
     setEditableTools(importedTools || []);
-    if (importedPower10 && importedPower10.length > 0) {
-      setEditablePower10(importedPower10);
-    }
+    setEditablePower10(importedPower10 || []);
+    console.log('[DiagnosticImport] Power10 received:', importedPower10?.length, 'metrics', importedPower10?.slice(0, 2));
     setShowImport(false);
-    await saveToApi(importedProcesses, importedTools || [], importedPower10);
+    await saveToApi(importedProcesses, importedTools || [], importedPower10 || []);
     try {
       const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
       if (res.ok) {

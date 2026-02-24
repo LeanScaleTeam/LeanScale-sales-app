@@ -21,6 +21,10 @@ import DiagnosticItemModal from './DiagnosticItemModal';
 // v2 Views
 import LayerView from './LayerView';
 
+// CPQ-specific views
+import LifecycleView from './views/LifecycleView';
+import CpqMetricsView from './views/CpqMetricsView';
+
 /**
  * Sort processes into priority tiers.
  */
@@ -66,7 +70,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [diagnosticResultId, setDiagnosticResultId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-  const [activeView, setActiveView] = useState('priority');
+  const [activeView, setActiveView] = useState(diagnosticType === 'cpq' ? 'lifecycle' : 'priority');
   const [linkedSows, setLinkedSows] = useState([]);
   const [syncToast, setSyncToast] = useState(null);
   const [highlightedItem, setHighlightedItem] = useState(null);
@@ -371,11 +375,19 @@ export default function DiagnosticResults({ diagnosticType }) {
   const availableViews = isV2
     ? ['layers', 'table']
     : (() => {
-        const views = ['priority'];
+        const views = [];
+        // CPQ gets lifecycle as first view
+        if (diagnosticType === 'cpq') views.push('lifecycle');
+        views.push('priority');
         if (categories && categories.length > 0) views.push('by-category');
         if (outcomes && outcomes.length > 0) views.push('by-outcome');
         views.push('table');
-        if (power10Data || (toolsData && toolsData.length > 0)) views.push('metrics');
+        // CPQ gets its own metrics view; GTM/Clay get Power10/Tools metrics
+        if (diagnosticType === 'cpq') {
+          views.push('metrics');
+        } else if (power10Data || (toolsData && toolsData.length > 0)) {
+          views.push('metrics');
+        }
         return views;
       })();
 
@@ -488,6 +500,22 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
+          {/* --- CPQ lifecycle view --- */}
+          {!isV2 && activeView === 'lifecycle' && diagnosticType === 'cpq' && (
+            <LifecycleView
+              processes={processes}
+              editMode={editMode}
+              onStatusChange={handleStatusChange}
+              onPriorityToggle={handlePriorityToggle}
+              notes={notes}
+              onOpenNotes={(name) => setExpandedRow(name === expandedRow ? null : name)}
+              linkedSows={linkedSows}
+              highlightedItem={highlightedItem}
+              customerPath={customerPath}
+              onOpenModal={editMode ? setModalItem : undefined}
+            />
+          )}
+
           {/* --- v1 views --- */}
           {!isV2 && activeView === 'priority' && (
             <PriorityView
@@ -558,7 +586,11 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {!isV2 && activeView === 'metrics' && (
+          {!isV2 && activeView === 'metrics' && diagnosticType === 'cpq' && (
+            <CpqMetricsView processes={processes} />
+          )}
+
+          {!isV2 && activeView === 'metrics' && diagnosticType !== 'cpq' && (
             <MetricsView
               power10Data={power10Data}
               toolsData={toolsData}

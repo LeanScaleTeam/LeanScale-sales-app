@@ -21,6 +21,7 @@ export default function TableView({
   onDeleteNote,
   categoryLabel = 'Function',
 }) {
+  const hasMetrics = processes.some(p => p.metric);
   const [sortField, setSortField] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
 
@@ -85,6 +86,14 @@ export default function TableView({
               >
                 {categoryLabel}{renderSortIcon('function')}
               </th>
+              {hasMetrics && (
+                <th
+                  onClick={() => handleSort('metric')}
+                  style={{ cursor: 'pointer', userSelect: 'none' }}
+                >
+                  Metric{renderSortIcon('metric')}
+                </th>
+              )}
               <th
                 onClick={() => handleSort('status')}
                 style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
@@ -110,6 +119,11 @@ export default function TableView({
                   <td style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                     {item.function || item.category || '-'}
                   </td>
+                  {hasMetrics && (
+                    <td style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      {item.metric || '-'}
+                    </td>
+                  )}
                   <td style={{ textAlign: 'center' }}>
                     {editMode && onStatusChange ? (
                       <button

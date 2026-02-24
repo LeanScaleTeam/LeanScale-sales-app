@@ -84,6 +84,19 @@ export default function DiagnosticItemCard({
         )}
       </div>
 
+      {/* Metric subtitle (CPQ KPI) */}
+      {item.metric && (
+        <div style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-muted)',
+          fontStyle: 'italic',
+          marginTop: '2px',
+          lineHeight: 1.3,
+        }}>
+          {item.metric}
+        </div>
+      )}
+
       {/* Tags: function + outcome */}
       <div className="diagnostic-item-card-tags">
         {item.function && (

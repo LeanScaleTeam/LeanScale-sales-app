@@ -5,6 +5,7 @@ import Layout from '../../../components/Layout';
 import SowPage from '../../../components/sow/SowPage';
 import SowSkeleton from '../../../components/sow/SowSkeleton';
 import { useCustomer } from '../../../context/CustomerContext';
+import { useAuth } from '../../../context/AuthContext';
 import { getCustomerServerSideProps } from '../../../lib/getCustomer';
 
 export const getServerSideProps = getCustomerServerSideProps;
@@ -13,6 +14,7 @@ export default function SowDetail() {
   const router = useRouter();
   const { id } = router.query;
   const { customer, customerPath } = useCustomer();
+  const { isAuthenticated } = useAuth();
 
   const [sow, setSow] = useState(null);
   const [diagnosticResult, setDiagnosticResult] = useState(null);
@@ -127,13 +129,12 @@ export default function SowDetail() {
     }
   }
 
-  // Read-only logic: customer portal views (/c/{slug}/sow/{id}) are read-only,
-  // direct visits (/sow/{id}) are editable. The ?edit=true query param overrides
-  // read-only for admin use in the customer portal.
-  // TODO: Replace with proper auth/role check once authentication is implemented.
+  // Read-only logic: authenticated admins (@leanscale.team) can always edit.
+  // Unauthenticated visitors in the customer portal see read-only.
+  // Demo mode is always editable for testing.
   const isCustomerPortal = !!customer?.slug && !customer?.isDemo;
-  const editOverride = router.query.edit === 'true';
-  const isReadOnly = isCustomerPortal && !editOverride;
+  const isAdmin = isAuthenticated;
+  const isReadOnly = isCustomerPortal && !isAdmin;
 
   return (
     <Layout title={sow ? sow.title : 'SOW Detail'}>

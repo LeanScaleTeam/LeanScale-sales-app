@@ -10,6 +10,16 @@ export const cpqCategories = [
   'System Integration',
 ];
 
+// Lifecycle pipeline ordering (left-to-right in Q2C flow)
+export const cpqLifecycleOrder = [
+  'Quoting Process',
+  'Pricing & Catalog',
+  'Contract Management',
+  'Billing Integration',
+  'Revenue Recognition',
+  'System Integration',
+];
+
 export const cpqOutcomes = [
   'Accelerate Deal Velocity',
   'Improve Quote Accuracy',

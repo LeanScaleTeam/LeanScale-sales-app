@@ -229,6 +229,10 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
                   <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
                     {diagnosticType === 'gtm' ? 'Function' : 'Category'}
                   </th>
+                  <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Outcome</th>
+                  {preview.processes.some(p => p.metric) && (
+                    <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Metric</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -244,6 +248,14 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
                     <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
                       {p.function || '-'}
                     </td>
+                    <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                      {p.outcome || '-'}
+                    </td>
+                    {preview.processes.some(pp => pp.metric) && (
+                      <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                        {p.metric || '-'}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

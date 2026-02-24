@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 
 const VIEWS = [
+  { id: 'lifecycle', label: 'Lifecycle', icon: '\uD83D\uDD04' },
   { id: 'priority', label: 'Priority', icon: '\uD83C\uDFAF' },
   { id: 'by-category', label: 'By Category', icon: '\uD83D\uDCC2' },
   { id: 'by-outcome', label: 'By Outcome', icon: '\uD83C\uDFAF' },

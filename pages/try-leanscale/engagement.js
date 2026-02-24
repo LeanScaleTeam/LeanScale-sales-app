@@ -205,8 +205,19 @@ export default function EngagementOverview() {
   };
 
   const weeks = Array.from({ length: 26 }, (_, i) => i + 1);
+  // Dynamic start date: next Monday from today
+  const timelineStart = useMemo(() => {
+    const today = new Date();
+    const day = today.getDay(); // 0=Sun, 1=Mon, ...
+    const daysUntilMonday = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + daysUntilMonday);
+    nextMonday.setHours(0, 0, 0, 0);
+    return nextMonday;
+  }, []);
   const getWeekLabel = (week) => {
-    const startDate = new Date(2026, 1, 2 + (week - 1) * 7);
+    const startDate = new Date(timelineStart);
+    startDate.setDate(timelineStart.getDate() + (week - 1) * 7);
     return `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
@@ -315,7 +326,9 @@ export default function EngagementOverview() {
         </section>
 
         <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Project Timeline (H1 2026)</h2>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>
+            Project Timeline (Starting {timelineStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+          </h2>
           <div className="card" style={{ padding: '1rem', overflowX: 'auto' }}>
             <div style={{ minWidth: '1200px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '280px repeat(26, 1fr)', gap: '2px', marginBottom: '0.5rem' }}>

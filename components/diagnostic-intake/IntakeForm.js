@@ -34,8 +34,11 @@ export default function IntakeForm() {
   const [answers, setAnswers] = useState({});
   const [sectionsCompleted, setSectionsCompleted] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [hubspotStatus, setHubspotStatus] = useState(null);
+  const [hubspotError, setHubspotError] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
 
   const skipRules = getSkipRules(answers);
@@ -74,7 +77,7 @@ export default function IntakeForm() {
 
   // Check for HubSpot callback params
   useEffect(() => {
-    const { hubspot, portalName } = router.query;
+    const { hubspot, portalName, reason } = router.query;
     if (hubspot === 'connected') {
       setHubspotStatus((prev) => ({
         ...prev,
@@ -82,6 +85,9 @@ export default function IntakeForm() {
         portalName: portalName || prev?.portalName,
         signalsReady: true,
       }));
+      setHubspotError(null);
+    } else if (hubspot === 'error') {
+      setHubspotError(reason || 'HubSpot connection failed. You can continue without it or try again.');
     }
   }, [router.query]);
 
@@ -90,8 +96,9 @@ export default function IntakeForm() {
     async (section, sectionAnswers) => {
       if (isDemo || !customer?.id) return;
       setSaving(true);
+      setSaved(false);
       try {
-        await fetch('/api/diagnostic/intake', {
+        const res = await fetch('/api/diagnostic/intake', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -100,8 +107,13 @@ export default function IntakeForm() {
             answers: sectionAnswers,
           }),
         });
+        if (!res.ok) throw new Error('Failed to save');
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
       } catch (err) {
         console.error('Error saving section:', err);
+        setError('Failed to save your answers. Your progress may not be saved.');
+        setTimeout(() => setError(null), 5000);
       } finally {
         setSaving(false);
       }
@@ -132,10 +144,11 @@ export default function IntakeForm() {
   const handleSubmit = useCallback(async () => {
     if (isDemo || !customer?.id) return;
     setSubmitting(true);
+    setError(null);
 
     try {
       // Mark intake as submitted
-      await fetch('/api/diagnostic/intake', {
+      const saveRes = await fetch('/api/diagnostic/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -144,6 +157,7 @@ export default function IntakeForm() {
           submitted: true,
         }),
       });
+      if (!saveRes.ok) throw new Error('Failed to save intake answers');
 
       // Run the diagnostic engine
       const runRes = await fetch('/api/diagnostic/run', {
@@ -152,12 +166,16 @@ export default function IntakeForm() {
         body: JSON.stringify({ customerId: customer.id }),
       });
 
-      if (runRes.ok) {
-        // Navigate to results
-        router.push(customerPath('/try-leanscale/diagnostic?view=priority'));
+      if (!runRes.ok) {
+        const errData = await runRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Diagnostic engine failed');
       }
+
+      // Navigate to results
+      router.push(customerPath('/try-leanscale/diagnostic?view=layers'));
     } catch (err) {
       console.error('Error submitting diagnostic:', err);
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -182,13 +200,35 @@ export default function IntakeForm() {
     <div className="container" style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 1rem' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', marginBottom: '0.5rem' }}>
+        <a
+          href={customerPath('/try-leanscale/diagnostic')}
+          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textDecoration: 'none' }}
+        >
+          &larr; Back to Diagnostic
+        </a>
+        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', marginBottom: '0.5rem', marginTop: '0.5rem' }}>
           GTM Diagnostic
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
           Answer a few questions about your go-to-market operations. Takes 5-8 minutes.
         </p>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div style={errorBannerStyle}>
+          <span>{error}</span>
+          <button onClick={() => setError(null)} style={errorDismissStyle}>&times;</button>
+        </div>
+      )}
+
+      {/* HubSpot error banner */}
+      {hubspotError && (
+        <div style={hubspotErrorBannerStyle}>
+          <span>{hubspotError}</span>
+          <button onClick={() => setHubspotError(null)} style={errorDismissStyle}>&times;</button>
+        </div>
+      )}
 
       {/* Progress */}
       <IntakeProgress
@@ -265,11 +305,49 @@ export default function IntakeForm() {
       </AnimatePresence>
 
       {/* Save indicator */}
-      {saving && (
-        <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-          Saving...
-        </div>
-      )}
+      <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', minHeight: '1.25rem' }}>
+        {saving && 'Saving...'}
+        {saved && !saving && (
+          <span style={{ color: 'var(--status-healthy)' }}>&#10003; Saved</span>
+        )}
+      </div>
     </div>
   );
 }
+
+const errorBannerStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0.75rem 1rem',
+  background: '#fef2f2',
+  border: '1px solid #fca5a5',
+  borderRadius: 'var(--radius-md, 8px)',
+  marginBottom: '1rem',
+  fontSize: 'var(--text-sm)',
+  color: '#991b1b',
+};
+
+const hubspotErrorBannerStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0.75rem 1rem',
+  background: '#FFF7ED',
+  border: '1px solid #FDBA74',
+  borderRadius: 'var(--radius-md, 8px)',
+  marginBottom: '1rem',
+  fontSize: 'var(--text-sm)',
+  color: '#9A3412',
+};
+
+const errorDismissStyle = {
+  background: 'none',
+  border: 'none',
+  fontSize: 'var(--text-lg)',
+  cursor: 'pointer',
+  color: 'inherit',
+  opacity: 0.6,
+  padding: '0 0.25rem',
+  lineHeight: 1,
+};

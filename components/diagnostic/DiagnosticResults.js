@@ -448,8 +448,8 @@ export default function DiagnosticResults({ diagnosticType }) {
               processes={processes}
             />
           )}
-          {/* Unable to Report section — always at bottom, across all views */}
-          {unableProcesses.length > 0 && (
+          {/* Unable to Report section — bottom of process views only */}
+          {activeView !== 'metrics' && unableProcesses.length > 0 && (
             <PrioritySection
               tier="unable"
               items={unableProcesses}

@@ -60,6 +60,7 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
       await onImport({
         processes: preview.processes,
         tools: preview.tools,
+        power10Metrics: preview.power10Metrics,
       });
     } catch (err) {
       setWarnings(prev => [...prev, `Import failed: ${err.message}`]);
@@ -210,7 +211,7 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
       {preview && preview.processes.length > 0 && (
         <div style={{ marginTop: '1rem' }}>
           <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Preview ({preview.processes.length} processes{preview.tools.length > 0 ? `, ${preview.tools.length} tools` : ''})
+            Preview ({preview.processes.length} processes{preview.tools.length > 0 ? `, ${preview.tools.length} tools` : ''}{preview.power10Metrics && preview.power10Metrics.length > 0 ? `, ${preview.power10Metrics.length} Power10 metrics` : ''})
           </h4>
 
           <div style={{

@@ -99,7 +99,7 @@ async function handleGet(req, res, type) {
 }
 
 async function handlePut(req, res, type) {
-  const { customerId, processes, tools, createdBy } = req.body;
+  const { customerId, processes, tools, power10Metrics, createdBy } = req.body;
 
   if (!customerId) {
     return res.status(400).json({
@@ -130,6 +130,7 @@ async function handlePut(req, res, type) {
       diagnosticType: type,
       processes,
       tools,
+      power10Metrics,
       createdBy,
     });
 

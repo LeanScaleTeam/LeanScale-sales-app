@@ -55,6 +55,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [editMode, setEditMode] = useState(false);
   const [editableProcesses, setEditableProcesses] = useState(null);
   const [editableTools, setEditableTools] = useState(null);
+  const [editablePower10, setEditablePower10] = useState(null);
   const [notes, setNotes] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [showImport, setShowImport] = useState(false);
@@ -78,11 +79,12 @@ export default function DiagnosticResults({ diagnosticType }) {
     );
   }
 
-  const { processes: staticProcesses, tools: staticTools, categories, outcomes, power10Metrics: power10Data } = config;
+  const { processes: staticProcesses, tools: staticTools, categories, outcomes, power10Metrics: staticPower10 } = config;
 
   // Use customer-specific data when available, otherwise static
   const processes = editableProcesses || staticProcesses;
   const toolsData = editableTools || staticTools;
+  const power10Data = editablePower10 || staticPower10;
 
   // --- Load customer-specific diagnostic data ---
   useEffect(() => {
@@ -97,6 +99,9 @@ export default function DiagnosticResults({ diagnosticType }) {
         if (json.success && json.data) {
           setEditableProcesses(json.data.processes || []);
           setEditableTools(json.data.tools || []);
+          if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
+            setEditablePower10(json.data.power10_metrics);
+          }
           setDiagnosticResultId(json.data.id);
           setNotes(json.notes || []);
         }
@@ -146,19 +151,23 @@ export default function DiagnosticResults({ diagnosticType }) {
   }, [router.query]);
 
   // --- Auto-save (debounced) ---
-  const saveToApi = useCallback(async (procs, tls) => {
+  const saveToApi = useCallback(async (procs, tls, p10) => {
     if (isDemo || !customer?.id) return;
     setSaving(true);
     try {
+      const payload = {
+        customerId: customer.id,
+        processes: procs,
+        tools: tls || [],
+        createdBy: customer.customerName || 'unknown',
+      };
+      if (p10 !== undefined) {
+        payload.power10Metrics = p10;
+      }
       await fetch(`/api/diagnostics/${diagnosticType}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId: customer.id,
-          processes: procs,
-          tools: tls || [],
-          createdBy: customer.customerName || 'unknown',
-        }),
+        body: JSON.stringify(payload),
       });
       // Show sync toast if there are linked SOWs
       if (linkedSows.length > 0) {
@@ -175,9 +184,9 @@ export default function DiagnosticResults({ diagnosticType }) {
     }
   }, [customer?.id, diagnosticType, isDemo, customer?.customerName, linkedSows]);
 
-  function scheduleSave(procs, tls) {
+  function scheduleSave(procs, tls, p10) {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => saveToApi(procs, tls), 800);
+    saveTimerRef.current = setTimeout(() => saveToApi(procs, tls, p10), 800);
   }
 
   // --- Edit handlers ---
@@ -238,11 +247,14 @@ export default function DiagnosticResults({ diagnosticType }) {
   }
 
   // --- Markdown import handler ---
-  async function handleImport({ processes: importedProcesses, tools: importedTools }) {
+  async function handleImport({ processes: importedProcesses, tools: importedTools, power10Metrics: importedPower10 }) {
     setEditableProcesses(importedProcesses);
     setEditableTools(importedTools || []);
+    if (importedPower10 && importedPower10.length > 0) {
+      setEditablePower10(importedPower10);
+    }
     setShowImport(false);
-    await saveToApi(importedProcesses, importedTools || []);
+    await saveToApi(importedProcesses, importedTools || [], importedPower10);
     try {
       const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
       if (res.ok) {

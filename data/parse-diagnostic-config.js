@@ -4,7 +4,8 @@ const path = require('path');
 const REQUIRED_HEADERS = {
   processes: ['process', 'status', 'include', 'function', 'service_id'],
   tools: ['tool', 'status', 'include', 'service_id'],
-  managed: ['service', 'status', 'include', 'hours_month', 'service_id']
+  managed: ['service', 'status', 'include', 'hours_month', 'service_id'],
+  power10: ['metric', 'able_to_report', 'status_against_plan']
 };
 
 function parseMarkdownTable(lines, startIndex, sectionName) {
@@ -55,23 +56,26 @@ function parseConfig() {
   let processes = [];
   let tools = [];
   let managedServices = [];
-  
+  let power10Metrics = [];
+
   let currentSection = null;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    
+
     if (line.startsWith('## Processes')) {
       currentSection = 'processes';
     } else if (line.startsWith('## Tools')) {
       currentSection = 'tools';
     } else if (line.startsWith('## Managed Services')) {
       currentSection = 'managed';
+    } else if (line.startsWith('## Power10') || line.startsWith('## Power 10')) {
+      currentSection = 'power10';
     } else if (line.startsWith('## Status Legend') || line.startsWith('## How to Edit')) {
       currentSection = null;
     } else if (line.startsWith('|') && currentSection) {
       const { rows, endIndex } = parseMarkdownTable(lines, i, currentSection);
-      
+
       if (currentSection === 'processes') {
         processes = rows.map(r => ({
           name: r.process || '',
@@ -100,19 +104,26 @@ function parseConfig() {
           serviceId: r.service_id || '',
           serviceType: 'managed'
         }));
+      } else if (currentSection === 'power10') {
+        power10Metrics = rows.map(r => ({
+          name: r.metric || '',
+          ableToReport: r.able_to_report || 'unable',
+          statusAgainstPlan: r.status_against_plan || 'unable',
+          currentPerformance: r.current_performance || null,
+        }));
       }
-      
+
       i = endIndex - 1;
       currentSection = null;
     }
   }
-  
-  return { processes, tools, managedServices };
+
+  return { processes, tools, managedServices, power10Metrics };
 }
 
 function generateDataFile() {
   console.log('Parsing diagnostic-config.md...');
-  const { processes, tools, managedServices } = parseConfig();
+  const { processes, tools, managedServices, power10Metrics } = parseConfig();
   
   if (processes.length === 0) {
     console.error('  ERROR: No processes found in diagnostic-config.md');
@@ -163,7 +174,9 @@ export const power10MetricNames = [
   'Pipeline production',
 ];
 
-export const power10Metrics = power10MetricNames.map(name => ({ name }));
+export const power10Metrics = ${power10Metrics.length > 0
+    ? JSON.stringify(power10Metrics, null, 2)
+    : 'power10MetricNames.map(name => ({ name }))'};
 
 export const processes = ${JSON.stringify(processes, null, 2)};
 
@@ -221,6 +234,7 @@ export function statusToLabel(status) {
   console.log('  - ' + processes.length + ' processes');
   console.log('  - ' + tools.length + ' tools');
   console.log('  - ' + managedServices.length + ' managed services');
+  console.log('  - ' + power10Metrics.length + ' power10 metrics');
 }
 
 if (require.main === module) {

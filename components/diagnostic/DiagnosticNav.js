@@ -6,6 +6,8 @@ const VIEWS = [
   { id: 'by-outcome', label: 'By Outcome', icon: '\uD83C\uDFAF' },
   { id: 'table', label: 'Table', icon: '\uD83D\uDCCB' },
   { id: 'metrics', label: 'Metrics', icon: '\uD83D\uDCC8' },
+  // v2 views
+  { id: 'layers', label: 'Layers', icon: '\uD83D\uDDC2\uFE0F' },
 ];
 
 /**

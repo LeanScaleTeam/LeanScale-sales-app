@@ -18,6 +18,9 @@ import PrioritySection from './PrioritySection';
 import DiagnosticSkeleton from './DiagnosticSkeleton';
 import DiagnosticItemModal from './DiagnosticItemModal';
 
+// v2 Views
+import LayerView from './LayerView';
+
 /**
  * Sort processes into priority tiers.
  */
@@ -70,6 +73,11 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [modalItem, setModalItem] = useState(null);
   const saveTimerRef = useRef(null);
 
+  // v2 state
+  const [diagnosticVersion, setDiagnosticVersion] = useState(null);
+  const [v2Result, setV2Result] = useState(null);
+  const [v2RunTimestamp, setV2RunTimestamp] = useState(null);
+
   if (!config) {
     return (
       <Layout title="Diagnostic Not Found">
@@ -102,13 +110,29 @@ export default function DiagnosticResults({ diagnosticType }) {
         if (!res.ok) return;
         const json = await res.json();
         if (json.success && json.data) {
-          setEditableProcesses(json.data.processes || []);
-          setEditableTools(json.data.tools || []);
-          console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
-          if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
-            setEditablePower10(json.data.power10_metrics);
+          // Detect v2 diagnostic result
+          if (json.data.version === 2 && json.data.items) {
+            setDiagnosticVersion(2);
+            setV2Result({
+              items: json.data.items,
+              scores: json.data.scores,
+              companyProfile: json.data.company_profile || json.data.companyProfile,
+              actionableServiceIds: json.data.actionable_service_ids || json.data.actionableServiceIds || [],
+              metadata: json.data.metadata,
+            });
+            setDiagnosticResultId(json.data.id);
+            setV2RunTimestamp(json.data.updated_at || json.data.created_at);
+            setActiveView('layers');
+          } else {
+            setDiagnosticVersion(1);
+            setEditableProcesses(json.data.processes || []);
+            setEditableTools(json.data.tools || []);
+            console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
+            if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
+              setEditablePower10(json.data.power10_metrics);
+            }
+            setDiagnosticResultId(json.data.id);
           }
-          setDiagnosticResultId(json.data.id);
           setNotes(json.notes || []);
         }
       } catch (err) {
@@ -213,6 +237,37 @@ export default function DiagnosticResults({ diagnosticType }) {
     scheduleSave(updated, editableTools, editablePower10);
   }
 
+  // --- v2 edit handler ---
+  function handleV2StatusChange(itemId, newStatus) {
+    if (!v2Result) return;
+    const updatedItems = v2Result.items.map(it =>
+      it.id === itemId ? { ...it, status: newStatus } : it
+    );
+    const updatedResult = { ...v2Result, items: updatedItems };
+    setV2Result(updatedResult);
+    // Debounced save to v2 API
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      if (!diagnosticResultId || !customer?.id) return;
+      setSaving(true);
+      try {
+        await fetch('/api/diagnostic/run', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            diagnosticResultId,
+            customerId: customer.id,
+            items: updatedItems,
+          }),
+        });
+      } catch (err) {
+        console.error('Error saving v2 diagnostic:', err);
+      } finally {
+        setSaving(false);
+      }
+    }, 800);
+  }
+
   // --- Note handlers ---
   async function handleAddNote({ processName, note }) {
     if (!diagnosticResultId) return;
@@ -311,11 +366,18 @@ export default function DiagnosticResults({ diagnosticType }) {
   const tiers = sortByPriority(reportableProcesses);
 
   // Build available views based on data
-  const availableViews = ['priority'];
-  if (categories && categories.length > 0) availableViews.push('by-category');
-  if (outcomes && outcomes.length > 0) availableViews.push('by-outcome');
-  availableViews.push('table');
-  if (power10Data || (toolsData && toolsData.length > 0)) availableViews.push('metrics');
+  const isV2 = diagnosticVersion === 2 && v2Result;
+
+  const availableViews = isV2
+    ? ['layers', 'table']
+    : (() => {
+        const views = ['priority'];
+        if (categories && categories.length > 0) views.push('by-category');
+        if (outcomes && outcomes.length > 0) views.push('by-outcome');
+        views.push('table');
+        if (power10Data || (toolsData && toolsData.length > 0)) views.push('metrics');
+        return views;
+      })();
 
   const categoryLabel = diagnosticType === 'gtm' ? 'Function' : 'Category';
 
@@ -336,6 +398,31 @@ export default function DiagnosticResults({ diagnosticType }) {
             <span>{config.icon}</span> {config.title}
           </h1>
           <p className="page-subtitle">{config.subtitle}</p>
+          {!isDemo && diagnosticType === 'gtm' && (
+            <div style={{ marginTop: '0.75rem' }}>
+              {isV2 && v2RunTimestamp && (
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                  Last run: {new Date(v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                </div>
+              )}
+              <a
+                href={customerPath('/diagnostic/intake')}
+                style={{
+                  display: 'inline-block',
+                  padding: '0.5rem 1.25rem',
+                  background: isV2 ? 'white' : 'var(--ls-purple)',
+                  color: isV2 ? 'var(--ls-purple)' : 'white',
+                  border: isV2 ? '1px solid var(--ls-purple)' : 'none',
+                  borderRadius: 'var(--radius-md, 8px)',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--font-semibold)',
+                  textDecoration: 'none',
+                }}
+              >
+                {isV2 ? 'Re-run Diagnostic' : 'Run v2 Diagnostic'}
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Markdown Import Modal */}
@@ -369,7 +456,40 @@ export default function DiagnosticResults({ diagnosticType }) {
 
         {/* Active View */}
         <div style={{ marginTop: 'var(--space-4)' }}>
-          {activeView === 'priority' && (
+          {/* --- v2 views --- */}
+          {isV2 && activeView === 'layers' && (
+            <LayerView
+              diagnosticResult={v2Result}
+              editMode={editMode}
+              onStatusChange={handleV2StatusChange}
+            />
+          )}
+
+          {isV2 && activeView === 'table' && (
+            <TableView
+              processes={v2Result.items.map(it => ({
+                name: `${it.id}: ${it.name}`,
+                function: it.layer,
+                status: it.status,
+                addToEngagement: it.status === 'warning',
+              }))}
+              editMode={editMode}
+              onStatusChange={(name, status) => {
+                const itemId = name.split(':')[0].trim();
+                handleV2StatusChange(itemId, status);
+              }}
+              onPriorityToggle={() => {}}
+              notes={notes}
+              expandedRow={expandedRow}
+              onRowExpand={setExpandedRow}
+              onAddNote={handleAddNote}
+              onDeleteNote={handleDeleteNote}
+              categoryLabel="Layer"
+            />
+          )}
+
+          {/* --- v1 views --- */}
+          {!isV2 && activeView === 'priority' && (
             <PriorityView
               tiers={tiers}
               stats={processStats}
@@ -391,7 +511,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {activeView === 'by-category' && categories && (
+          {!isV2 && activeView === 'by-category' && categories && (
             <CategoryView
               processes={reportableProcesses}
               groupNames={categories}
@@ -409,7 +529,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {activeView === 'by-outcome' && outcomes && (
+          {!isV2 && activeView === 'by-outcome' && outcomes && (
             <OutcomeView
               processes={reportableProcesses}
               outcomes={outcomes}
@@ -422,7 +542,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {activeView === 'table' && (
+          {!isV2 && activeView === 'table' && (
             <TableView
               processes={reportableProcesses}
               editMode={editMode}
@@ -438,7 +558,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {activeView === 'metrics' && (
+          {!isV2 && activeView === 'metrics' && (
             <MetricsView
               power10Data={power10Data}
               toolsData={toolsData}

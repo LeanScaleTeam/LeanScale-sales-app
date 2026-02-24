@@ -8,14 +8,16 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 /**
  * Animated circular score gauge.
  *
- * @param {number} score - 0 to 100
+ * @param {number} score - 0 to maxScore (default 0–100)
  * @param {string} rating - 'critical' | 'warning' | 'moderate' | 'healthy'
  * @param {number} size - SVG size in pixels (default 160)
+ * @param {number} maxScore - Maximum score value (default 100, use 3 for v2 diagnostics)
  */
-export default function HealthScoreRing({ score = 0, rating = 'moderate', size = RING_SIZE }) {
+export default function HealthScoreRing({ score = 0, rating = 'moderate', size = RING_SIZE, maxScore = 100 }) {
   const radius = (size - STROKE_WIDTH) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const pct = maxScore > 0 ? score / maxScore : 0;
+  const offset = circumference - pct * circumference;
 
   const ratingColors = {
     critical: '#ef4444',
@@ -28,7 +30,7 @@ export default function HealthScoreRing({ score = 0, rating = 'moderate', size =
 
   return (
     <div className="score-ring-container" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`Health score: ${score} out of 100, rated ${rating}`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`Health score: ${score} out of ${maxScore}, rated ${rating}`}>
         {/* Background track */}
         <circle
           cx={size / 2}
@@ -61,7 +63,7 @@ export default function HealthScoreRing({ score = 0, rating = 'moderate', size =
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
-          {score}
+          {maxScore <= 10 ? score.toFixed(1) : score}
         </motion.div>
         <div className="score-ring-label">health</div>
       </div>

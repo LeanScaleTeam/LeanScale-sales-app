@@ -22,7 +22,8 @@ import SowHeader from './SowHeader';
 import SowExecutiveSummary from './SowExecutiveSummary';
 import DiagnosticScoreCard from './DiagnosticScoreCard';
 import SowScopeSection from './SowScopeSection';
-import SowTimeline from './SowTimeline';
+import SowTimelineEnhanced from './SowTimelineEnhanced';
+import SowStatsCards from './SowStatsCards';
 import InvestmentTable from './InvestmentTable';
 import VersionHistory from './VersionHistory';
 import TeamworkPreview from './TeamworkPreview';
@@ -31,6 +32,7 @@ import SowRecalculateBar from './SowRecalculateBar';
 import EditableList from './EditableList';
 import SowPreview from '../SowPreview';
 import { staggerContainer, fadeUpItem } from '../../lib/animations';
+import { autoPopulateDates } from '../../lib/date-utils';
 
 export default function SowPage({
   sow: serverSow,
@@ -251,6 +253,17 @@ export default function SowPage({
     }
   }, [localSow, localSections, dirtyFields, projectedHours, projectedInvestment, onSowUpdate]);
 
+  // --- Auto-populate section dates ---
+  function handleAutoPopulateDates(hoursPerMonth) {
+    const populated = autoPopulateDates(localSections, new Date(), hoursPerMonth);
+    populated.forEach(section => {
+      if (section.startDate || section.endDate) {
+        handleSectionChange(section.id, 'start_date', section.startDate);
+        handleSectionChange(section.id, 'end_date', section.endDate);
+      }
+    });
+  }
+
   // --- Discard changes ---
   function handleDiscard() {
     setLocalSow(serverSowRef.current);
@@ -406,6 +419,15 @@ export default function SowPage({
         )}
       </div>
 
+      {/* ===== STATS CARDS ===== */}
+      {hasSections && (
+        <SowStatsCards
+          sections={localSections}
+          totalHours={projectedHours}
+          totalInvestment={projectedInvestment}
+        />
+      )}
+
       {/* ===== SCOPE SECTIONS ===== */}
       {hasSections && (
         <div style={{ marginBottom: '2rem' }}>
@@ -518,7 +540,13 @@ export default function SowPage({
           style={{ marginBottom: '2rem' }}
         >
           <h2 style={sectionHeadingStyle}>Timeline</h2>
-          <SowTimeline sections={localSections} />
+          <SowTimelineEnhanced
+            sections={localSections}
+            diagnosticProcesses={diagnosticProcesses}
+            readOnly={readOnly}
+            onSectionDateChange={readOnly ? undefined : handleSectionChange}
+            onAutoPopulate={readOnly ? undefined : handleAutoPopulateDates}
+          />
         </motion.div>
       )}
 

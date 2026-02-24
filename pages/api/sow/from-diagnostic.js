@@ -19,7 +19,7 @@ import { createSow, updateSow } from '../../../lib/sow';
 import { getDiagnosticResult } from '../../../lib/diagnostics';
 import { bulkCreateSections } from '../../../lib/sow-sections';
 import { getServicesBySlugs } from '../../../lib/service-catalog';
-import { generateSectionsFromDiagnostic, generateExecutiveSummary } from '../../../lib/sow-auto-generate';
+import { generateSectionsFromDiagnostic, generateExecutiveSummary, generateSectionsFromDiagnosticV2, generateExecutiveSummaryV2 } from '../../../lib/sow-auto-generate';
 
 const VALID_SOW_TYPES = ['clay', 'q2c', 'embedded', 'custom'];
 
@@ -61,32 +61,53 @@ export default async function handler(req, res) {
       });
     }
 
-    // Compute an overall rating from the diagnostic processes
-    const processes = diagnosticResult.processes || [];
-    const statusCounts = { warning: 0, unable: 0, careful: 0, healthy: 0 };
-    processes.forEach(p => {
-      if (statusCounts[p.status] !== undefined) {
-        statusCounts[p.status]++;
-      }
-    });
+    // Detect v1 vs v2
+    const isV2 = diagnosticResult.version === 2 && diagnosticResult.items;
 
-    let overallRating = 'healthy';
-    const criticalPct = (statusCounts.warning + statusCounts.unable) / (processes.length || 1);
-    if (criticalPct > 0.5) overallRating = 'critical';
-    else if (criticalPct > 0.3) overallRating = 'warning';
-    else if (criticalPct > 0.1) overallRating = 'moderate';
+    let overallRating;
+    let generatedSections;
+    let executiveSummary;
+    let processes;
 
-    // Look up service catalog entries by slug for auto-generation
-    const slugs = [...new Set(processes.filter(p => p.serviceId).map(p => p.serviceId))];
-    const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+    if (isV2) {
+      // --- v2 path ---
+      const items = diagnosticResult.items || [];
+      const scores = diagnosticResult.scores || {};
 
-    // Generate sections from diagnostic data
-    const generatedSections = generateSectionsFromDiagnostic(processes, catalogMap);
+      overallRating = scores.overallStatus || 'moderate';
 
-    // Generate executive summary
-    const executiveSummary = generateExecutiveSummary(
-      processes, customerName, diagnosticType, overallRating
-    );
+      // Collect all serviceIds from v2 items
+      const slugs = [...new Set(items.flatMap(it => it.serviceIds || []))];
+      const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+
+      generatedSections = generateSectionsFromDiagnosticV2(items, catalogMap);
+      executiveSummary = generateExecutiveSummaryV2(items, scores, customerName);
+      processes = items; // for snapshot
+    } else {
+      // --- v1 path ---
+      processes = diagnosticResult.processes || [];
+      const statusCounts = { warning: 0, unable: 0, careful: 0, healthy: 0 };
+      processes.forEach(p => {
+        if (statusCounts[p.status] !== undefined) {
+          statusCounts[p.status]++;
+        }
+      });
+
+      overallRating = 'healthy';
+      const criticalPct = (statusCounts.warning + statusCounts.unable) / (processes.length || 1);
+      if (criticalPct > 0.5) overallRating = 'critical';
+      else if (criticalPct > 0.3) overallRating = 'warning';
+      else if (criticalPct > 0.1) overallRating = 'moderate';
+
+      // Look up service catalog entries by slug for auto-generation
+      const slugs = [...new Set(processes.filter(p => p.serviceId).map(p => p.serviceId))];
+      const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+
+      generatedSections = generateSectionsFromDiagnostic(processes, catalogMap);
+      executiveSummary = generateExecutiveSummary(
+        processes, customerName, diagnosticType, overallRating
+      );
+    }
 
     // Auto-generate title
     const title = customerName
@@ -130,20 +151,38 @@ export default async function handler(req, res) {
       if (s.hours && s.rate) totalInvestment += s.hours * s.rate;
     }
 
-    // Update the SOW with diagnostic links and totals
+    // Build diagnostic snapshot (v1 vs v2)
+    const diagnosticSnapshot = isV2
+      ? {
+          version: 2,
+          items: processes.map(it => ({ id: it.id, name: it.name, layer: it.layer, status: it.status })),
+          scores: diagnosticResult.scores,
+          snapshotAt: new Date().toISOString(),
+        }
+      : {
+          processes: processes.map(p => ({
+            name: p.name,
+            status: p.status,
+            addToEngagement: p.addToEngagement,
+          })),
+          snapshotAt: new Date().toISOString(),
+        };
+
+    // Calculate SOW-level dates from section dates
+    const sectionStarts = generatedSections.filter(s => s.startDate).map(s => new Date(s.startDate));
+    const sectionEnds = generatedSections.filter(s => s.endDate).map(s => new Date(s.endDate));
+    const sowStartDate = sectionStarts.length > 0 ? new Date(Math.min(...sectionStarts)) : null;
+    const sowEndDate = sectionEnds.length > 0 ? new Date(Math.max(...sectionEnds)) : null;
+
+    // Update the SOW with diagnostic links, totals, and dates
     await updateSow(sow.id, {
       diagnostic_result_ids: [diagnosticResultId],
       overall_rating: overallRating,
-      diagnostic_snapshot: {
-        processes: processes.map(p => ({
-          name: p.name,
-          status: p.status,
-          addToEngagement: p.addToEngagement,
-        })),
-        snapshotAt: new Date().toISOString(),
-      },
+      diagnostic_snapshot: diagnosticSnapshot,
       total_hours: totalHours || null,
       total_investment: totalInvestment || null,
+      start_date: sowStartDate ? sowStartDate.toISOString().split('T')[0] : null,
+      end_date: sowEndDate ? sowEndDate.toISOString().split('T')[0] : null,
     });
 
     return res.status(201).json({

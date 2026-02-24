@@ -5,6 +5,7 @@ import { processes as staticProcesses, managedServicesHealth, statusToLabel } fr
 import { strategicProjects, managedServices } from '../../data/services-catalog';
 import { useCustomer } from '../../context/CustomerContext';
 import { getCustomerServerSideProps } from '../../lib/getCustomer';
+import { functionColors } from '../../lib/function-colors';
 
 export const getServerSideProps = getCustomerServerSideProps;
 
@@ -26,13 +27,7 @@ const allManagedServices = [
 
 const DIAG_TYPE_TO_SOW_TYPE = { gtm: 'embedded', clay: 'clay', cpq: 'q2c' };
 
-const functionColors = {
-  'Cross Functional': { bg: '#e0e7ff', border: '#818cf8' },
-  'Marketing': { bg: '#dcfce7', border: '#4ade80' },
-  'Sales': { bg: '#fef3c7', border: '#fbbf24' },
-  'Customer Success': { bg: '#fce7f3', border: '#f472b6' },
-  'Partnerships': { bg: '#dbeafe', border: '#60a5fa' },
-};
+// functionColors imported from lib/function-colors.js
 
 const statusColors = {
   healthy: '#22c55e',

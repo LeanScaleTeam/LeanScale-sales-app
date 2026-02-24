@@ -12,7 +12,8 @@ const diagnosticFeatures = [
 ];
 
 export default function TryLeanScale() {
-  const { customerPath } = useCustomer();
+  const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
   return (
     <Layout title="Try LeanScale">
       <div className="container">
@@ -154,7 +155,7 @@ export default function TryLeanScale() {
             { href: '/try-leanscale/power10', label: 'Power10 Metrics', icon: '📈' },
             { href: '/try-leanscale/gtm-tool-health', label: 'GTM Tool Health', icon: '🔧' },
             { href: '/try-leanscale/process-health', label: 'Process Health', icon: '⚙️' },
-            { href: '/try-leanscale/engagement', label: 'Engagement Overview', icon: '📋' },
+            ...(diagnosticType === 'gtm' ? [{ href: '/try-leanscale/engagement', label: 'Engagement Overview', icon: '📋' }] : []),
           ].map((link) => (
             <Link key={link.href} href={customerPath(link.href)} className="quick-link" style={{
               display: 'flex',

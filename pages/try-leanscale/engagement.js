@@ -49,6 +49,7 @@ function getServiceDetails(serviceId, serviceType) {
 
 export default function EngagementOverview() {
   const { customer, customerPath, isDemo } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
   const [dbProcesses, setDbProcesses] = useState(null);
   const [catalogMap, setCatalogMap] = useState(null);
   const [existingSowId, setExistingSowId] = useState(null);
@@ -220,6 +221,25 @@ export default function EngagementOverview() {
     startDate.setDate(timelineStart.getDate() + (week - 1) * 7);
     return `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
+
+  // Engagement overview is only available for GTM diagnostics
+  if (diagnosticType !== 'gtm') {
+    return (
+      <Layout title="Engagement Overview">
+        <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+          <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Engagement Overview</h1>
+          <p style={{ color: '#666', marginBottom: '2rem' }}>
+            The engagement overview is currently only available for GTM diagnostics.
+          </p>
+          <Link href={customerPath('/dashboard')}>
+            <button className="btn" style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', cursor: 'pointer' }}>
+              Back to Dashboard
+            </button>
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Engagement Overview">

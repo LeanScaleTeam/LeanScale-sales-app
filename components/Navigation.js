@@ -73,7 +73,7 @@ function buildCustomerNav(diagnosticType) {
       label: 'More',
       type: 'dropdown',
       links: [
-        { href: '/try-leanscale/engagement', label: 'Engagement' },
+        ...(diagnosticType === 'gtm' ? [{ href: '/try-leanscale/engagement', label: 'Engagement' }] : []),
         { href: '/why-leanscale/services', label: 'Services Catalog' },
         { href: '/buy-leanscale/team', label: 'Your Team' },
         { href: '/why-leanscale/resources', label: 'Key Resources' },
@@ -103,7 +103,18 @@ export default function Navigation() {
   const isActive = customerType === 'active';
   const diagnosticType = customer.diagnosticType || 'gtm';
   const navItems = useMemo(
-    () => isActive ? buildCustomerNav(diagnosticType) : prospectSections,
+    () => {
+      if (isActive) return buildCustomerNav(diagnosticType);
+      // For prospect nav, hide engagement link if customer is non-GTM
+      if (diagnosticType !== 'gtm') {
+        return prospectSections.map(section =>
+          section.name === 'try'
+            ? { ...section, links: section.links.filter(l => l.href !== '/try-leanscale/engagement') }
+            : section
+        );
+      }
+      return prospectSections;
+    },
     [isActive, diagnosticType]
   );
 

@@ -151,7 +151,7 @@ export default async function handler(req, res) {
       if (s.hours && s.rate) totalInvestment += s.hours * s.rate;
     }
 
-    // Update the SOW with diagnostic links and totals
+    // Build diagnostic snapshot (v1 vs v2)
     const diagnosticSnapshot = isV2
       ? {
           version: 2,
@@ -168,12 +168,21 @@ export default async function handler(req, res) {
           snapshotAt: new Date().toISOString(),
         };
 
+    // Calculate SOW-level dates from section dates
+    const sectionStarts = generatedSections.filter(s => s.startDate).map(s => new Date(s.startDate));
+    const sectionEnds = generatedSections.filter(s => s.endDate).map(s => new Date(s.endDate));
+    const sowStartDate = sectionStarts.length > 0 ? new Date(Math.min(...sectionStarts)) : null;
+    const sowEndDate = sectionEnds.length > 0 ? new Date(Math.max(...sectionEnds)) : null;
+
+    // Update the SOW with diagnostic links, totals, and dates
     await updateSow(sow.id, {
       diagnostic_result_ids: [diagnosticResultId],
       overall_rating: overallRating,
       diagnostic_snapshot: diagnosticSnapshot,
       total_hours: totalHours || null,
       total_investment: totalInvestment || null,
+      start_date: sowStartDate ? sowStartDate.toISOString().split('T')[0] : null,
+      end_date: sowEndDate ? sowEndDate.toISOString().split('T')[0] : null,
     });
 
     return res.status(201).json({

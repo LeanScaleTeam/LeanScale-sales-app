@@ -5,6 +5,7 @@ import EditableField from './EditableField';
 import EditableTextArea from './EditableTextArea';
 import EditableNumber from './EditableNumber';
 import { fadeUpItem } from '../../lib/animations';
+import { getSectionColor } from '../../lib/function-colors';
 
 /**
  * SowScopeSection — Fully editable scope section (replaces ScopeCard).
@@ -258,56 +259,94 @@ export default function SowScopeSection({
       </div>
 
       {/* Dates row */}
-      {(section.start_date || section.end_date || !readOnly) && (
-        <div style={{
-          display: 'flex',
-          gap: '1.5rem',
-          padding: '0 1.5rem 0.75rem 3.5rem',
-          fontSize: '0.8rem',
-          color: '#718096',
-        }}>
-          <div>
-            <span style={{ color: '#A0AEC0', marginRight: '0.25rem' }}>Start:</span>
-            {readOnly ? (
-              section.start_date ? new Date(section.start_date).toLocaleDateString() : '-'
-            ) : (
-              <input
-                type="date"
-                value={section.start_date ? section.start_date.split('T')[0] : ''}
-                onChange={(e) => handleFieldChange('start_date', e.target.value || null)}
-                style={{
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '0.25rem',
-                  padding: '0.15rem 0.4rem',
-                  fontSize: '0.8rem',
-                  color: '#4A5568',
-                  background: 'white',
-                }}
-              />
+      {(section.start_date || section.end_date || !readOnly) && (() => {
+        const sectionColor = getSectionColor(section, diagnosticProcesses);
+        const hasBothDates = section.start_date && section.end_date;
+        const durationDays = hasBothDates
+          ? Math.round((new Date(section.end_date) - new Date(section.start_date)) / (1000 * 60 * 60 * 24))
+          : 0;
+        const durationWeeks = Math.ceil(durationDays / 7);
+
+        return (
+          <div style={{
+            display: 'flex',
+            gap: '1.5rem',
+            padding: '0 1.5rem 0.75rem 3.5rem',
+            fontSize: '0.8rem',
+            color: '#718096',
+            alignItems: 'center',
+          }}>
+            {/* Function color indicator */}
+            <div style={{
+              width: 12,
+              height: 12,
+              borderRadius: '2px',
+              background: sectionColor.bg,
+              border: `2px solid ${sectionColor.border}`,
+              flexShrink: 0,
+            }} />
+            <div>
+              <span style={{ color: '#A0AEC0', marginRight: '0.25rem' }}>Start:</span>
+              {readOnly ? (
+                section.start_date ? new Date(section.start_date).toLocaleDateString() : '-'
+              ) : (
+                <input
+                  type="date"
+                  value={section.start_date ? section.start_date.split('T')[0] : ''}
+                  onChange={(e) => handleFieldChange('start_date', e.target.value || null)}
+                  style={{
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '0.25rem',
+                    padding: '0.15rem 0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#4A5568',
+                    background: 'white',
+                  }}
+                />
+              )}
+            </div>
+            <div>
+              <span style={{ color: '#A0AEC0', marginRight: '0.25rem' }}>End:</span>
+              {readOnly ? (
+                section.end_date ? new Date(section.end_date).toLocaleDateString() : '-'
+              ) : (
+                <input
+                  type="date"
+                  value={section.end_date ? section.end_date.split('T')[0] : ''}
+                  onChange={(e) => handleFieldChange('end_date', e.target.value || null)}
+                  style={{
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '0.25rem',
+                    padding: '0.15rem 0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#4A5568',
+                    background: 'white',
+                  }}
+                />
+              )}
+            </div>
+            {/* Duration display */}
+            {hasBothDates && durationWeeks > 0 && (
+              <span style={{
+                fontSize: '0.7rem',
+                color: sectionColor.border,
+                fontWeight: 600,
+                background: sectionColor.bg,
+                padding: '0.15rem 0.5rem',
+                borderRadius: '1rem',
+              }}>
+                ~{durationWeeks}w
+              </span>
+            )}
+            {/* Hint when no dates */}
+            {!hasBothDates && !readOnly && (
+              <span style={{ fontSize: '0.7rem', color: '#A0AEC0', fontStyle: 'italic' }}>
+                Use &quot;Auto-populate&quot; on timeline to set dates
+              </span>
             )}
           </div>
-          <div>
-            <span style={{ color: '#A0AEC0', marginRight: '0.25rem' }}>End:</span>
-            {readOnly ? (
-              section.end_date ? new Date(section.end_date).toLocaleDateString() : '-'
-            ) : (
-              <input
-                type="date"
-                value={section.end_date ? section.end_date.split('T')[0] : ''}
-                onChange={(e) => handleFieldChange('end_date', e.target.value || null)}
-                style={{
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '0.25rem',
-                  padding: '0.15rem 0.4rem',
-                  fontSize: '0.8rem',
-                  color: '#4A5568',
-                  background: 'white',
-                }}
-              />
-            )}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Deliverables */}
       <div style={{ padding: '0 1.5rem 1rem 3.5rem' }}>

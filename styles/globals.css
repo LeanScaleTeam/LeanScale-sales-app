@@ -1749,6 +1749,7 @@ a:hover {
 .priority-section-indicator.warning { background: var(--status-careful); }
 .priority-section-indicator.moderate { background: #3b82f6; }
 .priority-section-indicator.healthy { background: var(--status-healthy); }
+.priority-section-indicator.unable { background: var(--status-unable); }
 
 .priority-section-title {
   font-size: var(--text-base);

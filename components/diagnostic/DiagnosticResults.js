@@ -303,6 +303,9 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   // --- Markdown import handler ---
   async function handleImport({ processes: importedProcesses, tools: importedTools, power10Metrics: importedPower10 }) {
+    // Switch to v1 mode (markdown import is always v1)
+    setDiagnosticVersion(1);
+    setV2Result(null);
     setEditableProcesses(importedProcesses);
     setEditableTools(importedTools || []);
     if (importedPower10 && importedPower10.length > 0) {

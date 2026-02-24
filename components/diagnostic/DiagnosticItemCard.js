@@ -128,10 +128,10 @@ export default function DiagnosticItemCard({
           </button>
         )}
 
-        {/* View in SOW link */}
-        {sowsWithItem.length > 0 && customerPath && (
+        {/* View Playbook link */}
+        {item.serviceId && customerPath && (
           <a
-            href={customerPath(`/sow/${sowsWithItem[0].id}`)}
+            href={customerPath(`/playbooks/${item.serviceId}`)}
             onClick={(e) => e.stopPropagation()}
             className="diagnostic-item-card-sow-link"
             style={{
@@ -142,7 +142,7 @@ export default function DiagnosticItemCard({
               transition: 'color 0.15s',
             }}
           >
-            View in SOW
+            View Playbook
           </a>
         )}
       </div>

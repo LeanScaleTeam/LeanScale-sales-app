@@ -24,6 +24,11 @@ const TIER_CONFIG = {
     icon: '\u2705',
     defaultExpanded: false,
   },
+  unable: {
+    label: 'Unable to Report',
+    icon: '\u26AB',
+    defaultExpanded: false,
+  },
 };
 
 /**
@@ -98,8 +103,8 @@ export default function PrioritySection({
             variants={collapseExpand}
           >
             <div className="priority-section-content">
-              {tier === 'healthy' && !editMode ? (
-                /* Compact chip view for healthy items */
+              {(tier === 'healthy' || tier === 'unable') && !editMode ? (
+                /* Compact chip view for healthy/unable items */
                 <div className="diagnostic-chip-grid">
                   {items.map((item) => (
                     <motion.span
@@ -113,7 +118,7 @@ export default function PrioritySection({
                         width: 6,
                         height: 6,
                         borderRadius: '50%',
-                        background: 'var(--status-healthy)',
+                        background: tier === 'unable' ? 'var(--status-unable)' : 'var(--status-healthy)',
                         flexShrink: 0,
                       }} />
                       {item.name}

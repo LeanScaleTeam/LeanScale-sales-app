@@ -14,6 +14,7 @@ import OutcomeView from './views/OutcomeView';
 import TableView from './views/TableView';
 import MetricsView from './views/MetricsView';
 import MarkdownImport from './MarkdownImport';
+import PrioritySection from './PrioritySection';
 import DiagnosticSkeleton from './DiagnosticSkeleton';
 import DiagnosticItemModal from './DiagnosticItemModal';
 
@@ -85,6 +86,10 @@ export default function DiagnosticResults({ diagnosticType }) {
   const processes = editableProcesses || staticProcesses;
   const toolsData = editableTools || staticTools;
   const power10Data = editablePower10 || staticPower10;
+
+  // Separate "unable" processes into their own bottom section
+  const reportableProcesses = processes.filter(p => p.status !== 'unable');
+  const unableProcesses = processes.filter(p => p.status === 'unable');
 
   // --- Load customer-specific diagnostic data ---
   useEffect(() => {
@@ -295,13 +300,15 @@ export default function DiagnosticResults({ diagnosticType }) {
   }
 
   // --- Computed data ---
+  // Stats use ALL processes (health score reflects full picture)
   const processStats = countStatuses(processes);
   const toolStats = toolsData ? countStatuses(toolsData) : null;
   const power10Stats = power10Data
     ? countStatuses(power10Data.map(m => ({ status: m.ableToReport || 'unable' })))
     : null;
   const priorityCount = processes.filter(p => p.addToEngagement).length;
-  const tiers = sortByPriority(processes);
+  // Tiers use only reportable processes (unable has its own section)
+  const tiers = sortByPriority(reportableProcesses);
 
   // Build available views based on data
   const availableViews = ['priority'];
@@ -386,7 +393,7 @@ export default function DiagnosticResults({ diagnosticType }) {
 
           {activeView === 'by-category' && categories && (
             <CategoryView
-              processes={processes}
+              processes={reportableProcesses}
               groupNames={categories}
               groupField="function"
               groupLabel={categoryLabel}
@@ -404,7 +411,7 @@ export default function DiagnosticResults({ diagnosticType }) {
 
           {activeView === 'by-outcome' && outcomes && (
             <OutcomeView
-              processes={processes}
+              processes={reportableProcesses}
               outcomes={outcomes}
               editMode={editMode}
               onStatusChange={handleStatusChange}
@@ -417,7 +424,7 @@ export default function DiagnosticResults({ diagnosticType }) {
 
           {activeView === 'table' && (
             <TableView
-              processes={processes}
+              processes={reportableProcesses}
               editMode={editMode}
               onStatusChange={handleStatusChange}
               onPriorityToggle={handlePriorityToggle}
@@ -439,6 +446,22 @@ export default function DiagnosticResults({ diagnosticType }) {
               toolStats={toolStats}
               power10Stats={power10Stats}
               processes={processes}
+            />
+          )}
+          {/* Unable to Report section — always at bottom, across all views */}
+          {unableProcesses.length > 0 && (
+            <PrioritySection
+              tier="unable"
+              items={unableProcesses}
+              editMode={editMode}
+              onStatusChange={handleStatusChange}
+              onPriorityToggle={handlePriorityToggle}
+              notes={notes}
+              onOpenNotes={(name) => setExpandedRow(name === expandedRow ? null : name)}
+              linkedSows={linkedSows}
+              highlightedItem={highlightedItem}
+              customerPath={customerPath}
+              onOpenModal={editMode ? setModalItem : undefined}
             />
           )}
         </div>

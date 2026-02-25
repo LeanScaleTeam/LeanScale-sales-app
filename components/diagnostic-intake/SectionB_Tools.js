@@ -17,17 +17,22 @@ const TOOL_CATEGORIES = [
 
 const ADOPTION_OPTIONS = ['Fully adopted by team', 'Partial adoption', 'Just implemented'];
 
-export default function SectionB({ answers, skipRules, onComplete, onBack }) {
+export default function SectionB({ answers, skipRules, preFill = {}, onComplete, onBack }) {
   const [selectedTools, setSelectedTools] = useState(() => {
     const saved = answers.B1_tools || [];
-    return Array.isArray(saved) ? saved : [];
+    const savedArr = Array.isArray(saved) ? saved : [];
+    const preFilled = preFill.B1_tools?.value || [];
+    const merged = [...new Set([...savedArr, ...preFilled])];
+    return merged;
   });
+  const [overriddenTools, setOverriddenTools] = useState(new Set());
   const [toolDetails, setToolDetails] = useState(() => answers.B2_details || {});
 
   const toggleTool = (key) => {
     setSelectedTools((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
+    setOverriddenTools((prev) => new Set(prev).add(key));
   };
 
   const setDetail = (toolKey, field, value) => {
@@ -50,7 +55,9 @@ export default function SectionB({ answers, skipRules, onComplete, onBack }) {
       <p style={styles.sectionDesc}>Which of these tools do you use? (check all that apply)</p>
 
       <div style={{ marginBottom: '1.5rem' }}>
-        {TOOL_CATEGORIES.map((tool) => (
+        {TOOL_CATEGORIES.map((tool) => {
+          const isPreFilled = preFill.B1_tools?.value?.includes(tool.key) && !overriddenTools.has(tool.key);
+          return (
           <div key={tool.key}>
             <label style={styles.checkboxRow}>
               <input
@@ -60,6 +67,9 @@ export default function SectionB({ answers, skipRules, onComplete, onBack }) {
                 style={{ marginRight: '0.5rem' }}
               />
               <span style={{ fontSize: 'var(--text-sm)' }}>{tool.label}</span>
+              {isPreFilled && (
+                <span style={styles.autoDetectedBadge}>Auto-detected</span>
+              )}
             </label>
 
             {/* Follow-up: adoption level */}
@@ -98,7 +108,8 @@ export default function SectionB({ answers, skipRules, onComplete, onBack }) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={styles.navRow}>
@@ -122,4 +133,13 @@ const styles = {
   navRow: { display: 'flex', gap: '0.75rem', marginTop: '2rem' },
   backBtn: { flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' },
   continueBtn: { flex: 1, padding: '0.75rem', background: 'var(--ls-purple)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', cursor: 'pointer' },
+  autoDetectedBadge: {
+    marginLeft: '0.5rem',
+    padding: '0.125rem 0.5rem',
+    background: '#EFF6FF',
+    color: '#1E40AF',
+    fontSize: '10px',
+    borderRadius: '9999px',
+    fontWeight: 'var(--font-medium)',
+  },
 };

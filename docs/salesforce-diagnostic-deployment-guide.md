@@ -112,7 +112,7 @@ All queries should return results.
 
 ## 3. Environment Variables
 
-Add these three variables to your deployment environment (Vercel, .env.local, etc.):
+Add these three variables to your deployment environment (Netlify, .env.local, etc.):
 
 ```bash
 # From the Connected App created in Step 1
@@ -132,13 +132,17 @@ SALESFORCE_REDIRECT_URI=https://clients.leanscale.team/api/salesforce/callback
 
 > The `CLIENT_ID` and `CLIENT_SECRET` are the same across all environments — they come from the single Connected App in LeanScale's org.
 
-### Vercel deployment
+### Netlify deployment
+
+Add via **Site settings > Environment variables** in the Netlify dashboard, or via CLI:
 
 ```bash
-vercel env add SALESFORCE_CLIENT_ID production
-vercel env add SALESFORCE_CLIENT_SECRET production
-vercel env add SALESFORCE_REDIRECT_URI production
+netlify env:set SALESFORCE_CLIENT_ID <value>
+netlify env:set SALESFORCE_CLIENT_SECRET <value>
+netlify env:set SALESFORCE_REDIRECT_URI https://clients.leanscale.team/api/salesforce/callback
 ```
+
+All env vars in Netlify are server-only by default (never exposed to browser). Do not prefix with `NEXT_PUBLIC_`.
 
 ---
 

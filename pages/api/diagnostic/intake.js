@@ -9,6 +9,32 @@
 import { supabaseAdmin } from '../../../lib/supabase';
 
 export default async function handler(req, res) {
+  // GET: Load existing intake answers
+  if (req.method === 'GET') {
+    const { customerId } = req.query;
+    if (!customerId) {
+      return res.status(400).json({ error: 'customerId is required' });
+    }
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('diagnostic_intake')
+        .select('answers, sections_completed')
+        .eq('customer_id', customerId)
+        .single();
+      if (error && error.code !== 'PGRST116') {
+        return res.status(500).json({ error: 'Failed to load intake' });
+      }
+      return res.status(200).json({
+        success: true,
+        answers: data?.answers || {},
+        sectionsCompleted: data?.sections_completed || [],
+      });
+    } catch (err) {
+      console.error('Intake load error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

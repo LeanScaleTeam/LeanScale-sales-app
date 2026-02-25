@@ -14,7 +14,6 @@ import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
 import SectionC from './SectionC_Processes';
 import SectionD from './SectionD_Reporting';
-import HubSpotConnect from './HubSpotConnect';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 
@@ -52,12 +51,19 @@ export default function IntakeForm() {
 
     async function loadExisting() {
       try {
-        // Load intake answers
-        const intakeRes = await fetch(`/api/diagnostic/intake`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ customerId: customer.id, answers: {} }),
-        });
+        // Load saved intake answers
+        const intakeRes = await fetch(`/api/diagnostic/intake?customerId=${customer.id}`);
+        if (intakeRes.ok) {
+          const intakeData = await intakeRes.json();
+          if (intakeData.answers && Object.keys(intakeData.answers).length > 0) {
+            setAnswers(intakeData.answers);
+            setSectionsCompleted(intakeData.sectionsCompleted || []);
+            // If returning from OAuth, jump to review section
+            if (router.query.hubspot) {
+              setCurrentSection('review');
+            }
+          }
+        }
 
         // Load HubSpot status
         const hsRes = await fetch(`/api/hubspot/status/${customer.id}`);
@@ -255,21 +261,12 @@ export default function IntakeForm() {
           )}
 
           {currentSection === 'B' && (
-            <>
-              {skipRules.showHubSpotConnect && (
-                <HubSpotConnect
-                  customerId={customer?.id}
-                  slug={customer?.slug}
-                  status={hubspotStatus}
-                />
-              )}
-              <SectionB
-                answers={answers}
-                skipRules={skipRules}
-                onComplete={(a) => handleSectionComplete('B', a)}
-                onBack={handleBack}
-              />
-            </>
+            <SectionB
+              answers={answers}
+              skipRules={skipRules}
+              onComplete={(a) => handleSectionComplete('B', a)}
+              onBack={handleBack}
+            />
           )}
 
           {currentSection === 'C' && (
@@ -295,6 +292,10 @@ export default function IntakeForm() {
               answers={answers}
               sectionTitles={SECTION_TITLES}
               hubspotStatus={hubspotStatus}
+              showHubSpotConnect={skipRules.showHubSpotConnect}
+              customerId={customer?.id}
+              slug={customer?.slug}
+              onSaveAllAnswers={() => saveSection('review', answers)}
               onSubmit={handleSubmit}
               onBack={handleBack}
               onEditSection={setCurrentSection}

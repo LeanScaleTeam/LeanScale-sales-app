@@ -20,12 +20,14 @@ const LAYER_LABELS = {
   foundation: 'Foundation',
   motions: 'Motions',
   maturity: 'Maturity',
+  platformHealth: 'Platform Health',
 };
 
 const LAYER_DESCRIPTIONS = {
   foundation: 'CRM infrastructure, data model, and automation backbone',
   motions: 'Go-to-market motions, lead flow, and execution processes',
   maturity: 'Reporting maturity, forecasting, and revenue metrics',
+  platformHealth: 'Salesforce platform configuration, code health, and security',
 };
 
 export default function LayerHeader({ layer, score, itemCount, isExpanded, onToggle }) {

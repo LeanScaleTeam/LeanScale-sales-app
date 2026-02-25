@@ -38,6 +38,8 @@ export default function IntakeForm() {
   const [error, setError] = useState(null);
   const [hubspotStatus, setHubspotStatus] = useState(null);
   const [hubspotError, setHubspotError] = useState(null);
+  const [salesforceStatus, setSalesforceStatus] = useState(null);
+  const [salesforceError, setSalesforceError] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
 
   const skipRules = getSkipRules(answers);
@@ -59,7 +61,7 @@ export default function IntakeForm() {
             setAnswers(intakeData.answers);
             setSectionsCompleted(intakeData.sectionsCompleted || []);
             // If returning from OAuth, jump to review section
-            if (router.query.hubspot) {
+            if (router.query.hubspot || router.query.salesforce) {
               setCurrentSection('review');
             }
           }
@@ -71,6 +73,13 @@ export default function IntakeForm() {
           const hsData = await hsRes.json();
           setHubspotStatus(hsData);
         }
+
+        // Load Salesforce status
+        const sfRes = await fetch(`/api/salesforce/status/${customer.id}`);
+        if (sfRes.ok) {
+          const sfData = await sfRes.json();
+          setSalesforceStatus(sfData);
+        }
       } catch (err) {
         console.error('Error loading intake:', err);
       } finally {
@@ -81,9 +90,9 @@ export default function IntakeForm() {
     loadExisting();
   }, [customer?.id, isDemo]);
 
-  // Check for HubSpot callback params
+  // Check for HubSpot / Salesforce callback params
   useEffect(() => {
-    const { hubspot, portalName, reason } = router.query;
+    const { hubspot, portalName, reason, salesforce, orgName } = router.query;
     if (hubspot === 'connected') {
       setHubspotStatus((prev) => ({
         ...prev,
@@ -94,6 +103,13 @@ export default function IntakeForm() {
       setHubspotError(null);
     } else if (hubspot === 'error') {
       setHubspotError(reason || 'HubSpot connection failed. You can continue without it or try again.');
+    }
+
+    if (salesforce === 'connected') {
+      setSalesforceStatus((prev) => ({ ...prev, connected: true, signalsReady: true }));
+      setSalesforceError(null);
+    } else if (salesforce === 'error') {
+      setSalesforceError(reason || 'Salesforce connection failed. Please try again.');
     }
   }, [router.query]);
 
@@ -153,7 +169,15 @@ export default function IntakeForm() {
     setError(null);
 
     try {
-      // Mark intake as submitted
+      // Check if CRM is connected
+      const crmType = answers.A1;
+      const crmConnected =
+        (crmType === 'HubSpot' && hubspotStatus?.connected) ||
+        (crmType === 'Salesforce' && salesforceStatus?.connected);
+
+      // Save intake with appropriate status
+      const status = crmConnected ? 'complete' : 'awaiting_crm_data';
+
       const saveRes = await fetch('/api/diagnostic/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,9 +185,17 @@ export default function IntakeForm() {
           customerId: customer.id,
           answers,
           submitted: true,
+          status,
         }),
       });
       if (!saveRes.ok) throw new Error('Failed to save intake answers');
+
+      if (!crmConnected) {
+        // Stay on review page — show waiting state
+        setError(null);
+        setSubmitting(false);
+        return;
+      }
 
       // Run the diagnostic engine
       const runRes = await fetch('/api/diagnostic/run', {
@@ -185,7 +217,7 @@ export default function IntakeForm() {
     } finally {
       setSubmitting(false);
     }
-  }, [customer?.id, isDemo, answers, customerPath, router]);
+  }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus]);
 
   const handleBack = () => {
     const idx = SECTIONS.indexOf(currentSection);
@@ -233,6 +265,14 @@ export default function IntakeForm() {
         <div style={hubspotErrorBannerStyle}>
           <span>{hubspotError}</span>
           <button onClick={() => setHubspotError(null)} style={errorDismissStyle}>&times;</button>
+        </div>
+      )}
+
+      {/* Salesforce error banner */}
+      {salesforceError && (
+        <div style={salesforceErrorBannerStyle}>
+          <span>{salesforceError}</span>
+          <button onClick={() => setSalesforceError(null)} style={errorDismissStyle}>&times;</button>
         </div>
       )}
 
@@ -293,6 +333,8 @@ export default function IntakeForm() {
               sectionTitles={SECTION_TITLES}
               hubspotStatus={hubspotStatus}
               showHubSpotConnect={skipRules.showHubSpotConnect}
+              salesforceStatus={salesforceStatus}
+              showSalesforceConnect={skipRules.showSalesforceConnect}
               customerId={customer?.id}
               slug={customer?.slug}
               onSaveAllAnswers={() => saveSection('review', answers)}
@@ -340,6 +382,19 @@ const hubspotErrorBannerStyle = {
   marginBottom: '1rem',
   fontSize: 'var(--text-sm)',
   color: '#9A3412',
+};
+
+const salesforceErrorBannerStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0.75rem 1rem',
+  background: '#EFF6FF',
+  border: '1px solid #93C5FD',
+  borderRadius: 'var(--radius-md, 8px)',
+  marginBottom: '1rem',
+  fontSize: 'var(--text-sm)',
+  color: '#1E40AF',
 };
 
 const errorDismissStyle = {

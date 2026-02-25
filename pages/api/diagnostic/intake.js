@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { customerId, section, answers, submitted } = req.body;
+  const { customerId, section, answers, submitted, status } = req.body;
 
   if (!customerId) {
     return res.status(400).json({ error: 'customerId is required' });
@@ -66,14 +66,21 @@ export default async function handler(req, res) {
     }
 
     // Upsert
+    const upsertPayload = {
+      customer_id: customerId,
+      answers: mergedAnswers,
+      sections_completed: sectionsCompleted,
+      submitted_at: submitted ? new Date().toISOString() : existing?.submitted_at || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Include status when explicitly provided (e.g., 'awaiting_crm_data' or 'complete')
+    if (status) {
+      upsertPayload.status = status;
+    }
+
     const { data, error } = await supabaseAdmin.from('diagnostic_intake').upsert(
-      {
-        customer_id: customerId,
-        answers: mergedAnswers,
-        sections_completed: sectionsCompleted,
-        submitted_at: submitted ? new Date().toISOString() : existing?.submitted_at || null,
-        updated_at: new Date().toISOString(),
-      },
+      upsertPayload,
       { onConflict: 'customer_id' }
     );
 

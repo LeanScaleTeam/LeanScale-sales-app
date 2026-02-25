@@ -14,6 +14,7 @@ const QUESTIONS = [
     key: 'A2',
     label: 'How many total sales reps?',
     options: ['1-5', '6-15', '16-50', '50+'],
+    hideWhenSalesforce: true,
   },
   {
     key: 'A3',
@@ -39,7 +40,12 @@ export default function SectionA({ answers, onComplete }) {
     return init;
   });
 
-  const allAnswered = QUESTIONS.every((q) => local[q.key]);
+  const visibleQuestions = QUESTIONS.filter((q) => {
+    if (q.hideWhenSalesforce && local.A1 === 'Salesforce') return false;
+    return true;
+  });
+
+  const allAnswered = visibleQuestions.every((q) => local[q.key]);
 
   const handleSelect = (key, value) => {
     setLocal((prev) => ({ ...prev, [key]: value }));
@@ -50,7 +56,7 @@ export default function SectionA({ answers, onComplete }) {
       <h2 style={styles.sectionTitle}>Company Profile</h2>
       <p style={styles.sectionDesc}>Tell us about your organization so we can tailor the diagnostic.</p>
 
-      {QUESTIONS.map((q) => (
+      {visibleQuestions.map((q) => (
         <div key={q.key} style={styles.question}>
           <label style={styles.label}>{q.label}</label>
           <div style={styles.optionGrid}>

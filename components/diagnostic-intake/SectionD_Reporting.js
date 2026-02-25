@@ -26,13 +26,21 @@ const POWER_10_METRICS = [
 
 const POWER_10_OPTIONS = ['Automated', 'Manual calc', "Can't report"];
 
-export default function SectionD({ answers, skipRules, onComplete, onBack }) {
+export default function SectionD({ answers, skipRules, preFill = {}, onComplete, onBack }) {
   const allQuestions = [...REPORTING_QUESTIONS, ...POWER_10_METRICS.map((m) => ({ ...m, options: POWER_10_OPTIONS }))];
   const [local, setLocal] = useState(() => {
     const init = {};
-    for (const q of allQuestions) init[q.key] = answers[q.key] || '';
+    for (const q of allQuestions) {
+      init[q.key] = answers[q.key] || preFill[q.key]?.value || '';
+    }
     return init;
   });
+  const [overridden, setOverridden] = useState(new Set());
+
+  const handleSelect = (key, value) => {
+    setLocal((prev) => ({ ...prev, [key]: value }));
+    setOverridden((prev) => new Set(prev).add(key));
+  };
 
   const answeredCount = allQuestions.filter((q) => local[q.key]).length;
   const allAnswered = answeredCount === allQuestions.length;
@@ -45,25 +53,34 @@ export default function SectionD({ answers, skipRules, onComplete, onBack }) {
       </p>
 
       {/* General reporting questions */}
-      {REPORTING_QUESTIONS.map((q) => (
-        <div key={q.key} style={styles.question}>
-          <label style={styles.label}>{q.label}</label>
-          <div style={styles.optionGrid}>
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setLocal((prev) => ({ ...prev, [q.key]: opt }))}
-                style={{
-                  ...styles.optionBtn,
-                  ...(local[q.key] === opt ? styles.optionSelected : {}),
-                }}
-              >
-                {opt}
-              </button>
-            ))}
+      {REPORTING_QUESTIONS.map((q) => {
+        const pf = preFill[q.key];
+        const showBadge = pf && local[q.key] === pf.value && !overridden.has(q.key);
+        return (
+          <div key={q.key} style={styles.question}>
+            <label style={styles.label}>{q.label}</label>
+            <div style={styles.optionGrid}>
+              {q.options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleSelect(q.key, opt)}
+                  style={{
+                    ...styles.optionBtn,
+                    ...(local[q.key] === opt ? styles.optionSelected : {}),
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+            {showBadge && (
+              <div style={styles.autoDetectedHint}>
+                Auto-detected: {pf.evidence}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Power 10 metrics */}
       <div style={{ marginTop: '2rem', marginBottom: '1rem' }}>
@@ -82,7 +99,7 @@ export default function SectionD({ answers, skipRules, onComplete, onBack }) {
             {POWER_10_OPTIONS.map((opt) => (
               <button
                 key={opt}
-                onClick={() => setLocal((prev) => ({ ...prev, [m.key]: opt }))}
+                onClick={() => handleSelect(m.key, opt)}
                 style={{
                   ...styles.optionBtn,
                   ...(local[m.key] === opt ? styles.optionSelected : {}),
@@ -121,4 +138,5 @@ const styles = {
   navRow: { display: 'flex', gap: '0.75rem', marginTop: '2rem' },
   backBtn: { flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' },
   continueBtn: { flex: 1, padding: '0.75rem', background: 'var(--ls-purple)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', cursor: 'pointer' },
+  autoDetectedHint: { marginTop: '0.25rem', fontSize: '11px', color: '#1E40AF', background: '#EFF6FF', display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px' },
 };

@@ -16,10 +16,14 @@ import SectionC from './SectionC_Processes';
 import SectionD from './SectionD_Reporting';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
+import SalesforceConnect from './SalesforceConnect';
+import AnalyzingScreen from './AnalyzingScreen';
 
-const SECTIONS = ['A', 'B', 'C', 'D', 'review'];
+const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
+  'sf-connect': 'Connect CRM',
+  'sf-analyzing': 'Analyzing',
   B: 'GTM Tools',
   C: 'Processes',
   D: 'Reporting & Metrics',
@@ -40,6 +44,7 @@ export default function IntakeForm() {
   const [hubspotError, setHubspotError] = useState(null);
   const [salesforceStatus, setSalesforceStatus] = useState(null);
   const [salesforceError, setSalesforceError] = useState(null);
+  const [preFill, setPreFill] = useState({});
   const [loadingIntake, setLoadingIntake] = useState(true);
 
   const skipRules = getSkipRules(answers);
@@ -60,9 +65,11 @@ export default function IntakeForm() {
           if (intakeData.answers && Object.keys(intakeData.answers).length > 0) {
             setAnswers(intakeData.answers);
             setSectionsCompleted(intakeData.sectionsCompleted || []);
-            // If returning from OAuth, jump to review section
-            if (router.query.hubspot || router.query.salesforce) {
+            // If returning from OAuth, jump to appropriate section
+            if (router.query.hubspot) {
               setCurrentSection('review');
+            } else if (router.query.salesforce) {
+              setCurrentSection('sf-analyzing');
             }
           }
         }
@@ -108,6 +115,7 @@ export default function IntakeForm() {
     if (salesforce === 'connected') {
       setSalesforceStatus((prev) => ({ ...prev, connected: true, signalsReady: true }));
       setSalesforceError(null);
+      setCurrentSection('sf-analyzing');
     } else if (salesforce === 'error') {
       setSalesforceError(reason || 'Salesforce connection failed. Please try again.');
     }
@@ -154,12 +162,16 @@ export default function IntakeForm() {
       saveSection(section, sectionAnswers);
 
       // Navigate to next section
-      const idx = SECTIONS.indexOf(section);
-      if (idx < SECTIONS.length - 1) {
-        setCurrentSection(SECTIONS[idx + 1]);
+      if (section === 'A' && sectionAnswers.A1 === 'Salesforce') {
+        setCurrentSection('sf-connect');
+      } else {
+        const idx = SECTIONS.indexOf(currentSection);
+        if (idx < SECTIONS.length - 1) {
+          setCurrentSection(SECTIONS[idx + 1]);
+        }
       }
     },
-    [answers, saveSection]
+    [answers, saveSection, currentSection]
   );
 
   // Handle final submit
@@ -220,6 +232,11 @@ export default function IntakeForm() {
   }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus]);
 
   const handleBack = () => {
+    // When going back from B with Salesforce, skip sf-analyzing and sf-connect
+    if (currentSection === 'B' && answers.A1 === 'Salesforce') {
+      setCurrentSection('A');
+      return;
+    }
     const idx = SECTIONS.indexOf(currentSection);
     if (idx > 0) setCurrentSection(SECTIONS[idx - 1]);
   };
@@ -278,7 +295,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => s !== 'review')}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -300,12 +317,55 @@ export default function IntakeForm() {
             />
           )}
 
+          {currentSection === 'sf-connect' && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
+                Connect Salesforce
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                Connect to the customer&apos;s Salesforce org so we can pre-fill the diagnostic form.
+              </p>
+              <SalesforceConnect
+                customerId={customer?.id}
+                slug={customer?.slug}
+                status={salesforceStatus}
+                onSaveAllAnswers={() => saveSection('A', answers)}
+              />
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
+                <button
+                  onClick={() => setCurrentSection('A')}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentSection === 'sf-analyzing' && (
+            <AnalyzingScreen
+              customerId={customer?.id}
+              onComplete={(inferredPreFill) => {
+                setPreFill(inferredPreFill);
+                if (inferredPreFill.A2) {
+                  setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
+                }
+                setCurrentSection('B');
+              }}
+              onError={(errMsg) => {
+                setSalesforceError(errMsg);
+                setCurrentSection('B');
+              }}
+            />
+          )}
+
           {currentSection === 'B' && (
             <SectionB
               answers={answers}
               skipRules={skipRules}
               onComplete={(a) => handleSectionComplete('B', a)}
               onBack={handleBack}
+              preFill={preFill}
             />
           )}
 
@@ -315,6 +375,7 @@ export default function IntakeForm() {
               skipRules={skipRules}
               onComplete={(a) => handleSectionComplete('C', a)}
               onBack={handleBack}
+              preFill={preFill}
             />
           )}
 
@@ -324,6 +385,7 @@ export default function IntakeForm() {
               skipRules={skipRules}
               onComplete={(a) => handleSectionComplete('D', a)}
               onBack={handleBack}
+              preFill={preFill}
             />
           )}
 

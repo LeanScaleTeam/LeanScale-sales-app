@@ -26,12 +26,20 @@ const ALL_QUESTIONS = [
   { key: 'R4_winloss', label: 'Do you conduct win/loss analysis?', options: ['Formal process', 'Ad hoc', 'No'] },
 ];
 
-export default function SectionC({ answers, skipRules, onComplete, onBack }) {
+export default function SectionC({ answers, skipRules, preFill = {}, onComplete, onBack }) {
   const [local, setLocal] = useState(() => {
     const init = {};
-    for (const q of ALL_QUESTIONS) init[q.key] = answers[q.key] || '';
+    for (const q of ALL_QUESTIONS) {
+      init[q.key] = answers[q.key] || preFill[q.key]?.value || '';
+    }
     return init;
   });
+  const [overridden, setOverridden] = useState(new Set());
+
+  const handleSelect = (key, value) => {
+    setLocal((prev) => ({ ...prev, [key]: value }));
+    setOverridden((prev) => new Set(prev).add(key));
+  };
 
   // Filter questions based on skip rules
   const questions = ALL_QUESTIONS.filter((q) => {
@@ -49,25 +57,34 @@ export default function SectionC({ answers, skipRules, onComplete, onBack }) {
         Tell us about your current GTM processes. ({answeredCount}/{questions.length} answered)
       </p>
 
-      {questions.map((q) => (
-        <div key={q.key} style={styles.question}>
-          <label style={styles.label}>{q.label}</label>
-          <div style={styles.optionGrid}>
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setLocal((prev) => ({ ...prev, [q.key]: opt }))}
-                style={{
-                  ...styles.optionBtn,
-                  ...(local[q.key] === opt ? styles.optionSelected : {}),
-                }}
-              >
-                {opt}
-              </button>
-            ))}
+      {questions.map((q) => {
+        const pf = preFill[q.key];
+        const showBadge = pf && local[q.key] === pf.value && !overridden.has(q.key);
+        return (
+          <div key={q.key} style={styles.question}>
+            <label style={styles.label}>{q.label}</label>
+            <div style={styles.optionGrid}>
+              {q.options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleSelect(q.key, opt)}
+                  style={{
+                    ...styles.optionBtn,
+                    ...(local[q.key] === opt ? styles.optionSelected : {}),
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+            {showBadge && (
+              <div style={styles.autoDetectedHint}>
+                Auto-detected: {pf.evidence}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <div style={styles.navRow}>
         <button onClick={onBack} style={styles.backBtn}>Back</button>
@@ -95,4 +112,5 @@ const styles = {
   navRow: { display: 'flex', gap: '0.75rem', marginTop: '2rem' },
   backBtn: { flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' },
   continueBtn: { flex: 1, padding: '0.75rem', background: 'var(--ls-purple)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', cursor: 'pointer' },
+  autoDetectedHint: { marginTop: '0.25rem', fontSize: '11px', color: '#1E40AF', background: '#EFF6FF', display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px' },
 };

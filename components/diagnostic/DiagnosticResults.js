@@ -21,9 +21,19 @@ import DiagnosticItemModal from './DiagnosticItemModal';
 // v2 Views
 import LayerView from './LayerView';
 
+// v3 Views
+import ScoreCardGrid from './v3/ScoreCardGrid';
+import RoadmapView from './v3/RoadmapView';
+import V3Summary from './v3/V3Summary';
+import DataCoverage from './v3/DataCoverage';
+import TranscriptUpload from './v3/TranscriptUpload';
+import ConsultantForm from './v3/ConsultantForm';
+
 // CPQ-specific views
 import LifecycleView from './views/LifecycleView';
 import CpqMetricsView from './views/CpqMetricsView';
+
+const V3_STATUS_LABELS = { 1: 'Weak', 2: 'Below Average', 3: 'Average', 4: 'Good', 5: 'Best Practice' };
 
 /**
  * Sort processes into priority tiers.
@@ -82,6 +92,13 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [v2Result, setV2Result] = useState(null);
   const [v2RunTimestamp, setV2RunTimestamp] = useState(null);
 
+  // v3 state
+  const [v3Result, setV3Result] = useState(null);
+  const [v3RunTimestamp, setV3RunTimestamp] = useState(null);
+  const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
+  const [showConsultantForm, setShowConsultantForm] = useState(false);
+  const [consultantAssessments, setConsultantAssessments] = useState([]);
+
   if (!config) {
     return (
       <Layout title="Diagnostic Not Found">
@@ -127,6 +144,8 @@ export default function DiagnosticResults({ diagnosticType }) {
             setDiagnosticResultId(json.data.id);
             setV2RunTimestamp(json.data.updated_at || json.data.created_at);
             setActiveView('layers');
+          } else if (false) {
+            // v3 loaded separately below
           } else {
             setDiagnosticVersion(1);
             setEditableProcesses(json.data.processes || []);
@@ -148,6 +167,48 @@ export default function DiagnosticResults({ diagnosticType }) {
 
     loadDiagnosticData();
   }, [customer?.id, diagnosticType, isDemo]);
+
+  // --- Load v3 diagnostic data ---
+  useEffect(() => {
+    if (isDemo || !customer?.id || diagnosticType !== 'gtm') return;
+
+    async function loadV3Data() {
+      try {
+        const res = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && json.data) {
+          setDiagnosticVersion(3);
+          setV3Result(json.data);
+          setDiagnosticResultId(json.data.id);
+          setV3RunTimestamp(json.data.updated_at || json.data.created_at);
+          setActiveView('scorecard');
+        }
+      } catch (_) { /* v3 not available yet */ }
+    }
+
+    // Only load v3 if no v2 result loaded
+    if (!v2Result && !loadingData) {
+      loadV3Data();
+    }
+  }, [customer?.id, diagnosticType, isDemo, v2Result, loadingData]);
+
+  // --- Load consultant assessments for v3 ---
+  useEffect(() => {
+    if (isDemo || !customer?.id || diagnosticVersion !== 3) return;
+
+    async function loadConsultant() {
+      try {
+        const res = await fetch(`/api/diagnostic/consultant?customerId=${customer.id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) setConsultantAssessments(json.data || []);
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    loadConsultant();
+  }, [customer?.id, diagnosticVersion, isDemo]);
 
   // --- Load linked SOWs ---
   useEffect(() => {
@@ -370,9 +431,12 @@ export default function DiagnosticResults({ diagnosticType }) {
   const tiers = sortByPriority(reportableProcesses);
 
   // Build available views based on data
+  const isV3 = diagnosticVersion === 3 && v3Result;
   const isV2 = diagnosticVersion === 2 && v2Result;
 
-  const availableViews = isV2
+  const availableViews = isV3
+    ? ['scorecard', 'roadmap', 'transcript', 'consultant', 'table']
+    : isV2
     ? ['layers', 'table']
     : (() => {
         const views = [];
@@ -468,6 +532,114 @@ export default function DiagnosticResults({ diagnosticType }) {
 
         {/* Active View */}
         <div style={{ marginTop: 'var(--space-4)' }}>
+          {/* --- v3 views --- */}
+          {isV3 && activeView === 'scorecard' && (
+            <>
+              <V3Summary
+                overallScore={v3Result.overall_score}
+                overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
+                pillarScores={v3Result.pillar_scores}
+                departmentScores={v3Result.department_scores}
+                companyProfile={v3Result.company_profile}
+                roadmapSummary={v3Result.roadmap?.summary}
+                dataCoverage={v3Result.data_coverage}
+              />
+              <ScoreCardGrid
+                scoreCard={v3Result.score_card}
+                pillarScores={v3Result.pillar_scores}
+                departmentScores={v3Result.department_scores}
+                competencies={v3Result.competencies}
+                editMode={editMode}
+                onCellClick={(compId, dept, score) => {
+                  // Admin override
+                  if (!editMode) return;
+                  fetch('/api/diagnostic/v3/run', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      customerId: customer.id,
+                      overrides: [{ competencyId: compId, department: dept, score }],
+                    }),
+                  })
+                    .then((r) => r.json())
+                    .then((json) => {
+                      if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
+                    });
+                }}
+              />
+              <DataCoverage
+                dataCoverage={v3Result.data_coverage}
+                onUploadTranscript={() => setShowTranscriptUpload(true)}
+                onStartConsultant={() => setShowConsultantForm(true)}
+              />
+            </>
+          )}
+
+          {isV3 && activeView === 'roadmap' && (
+            <RoadmapView roadmap={v3Result.roadmap} />
+          )}
+
+          {isV3 && activeView === 'transcript' && (
+            <TranscriptUpload
+              customerId={customer?.id}
+              onUploadComplete={() => {
+                // Re-run v3 diagnostic after transcript analysis
+                fetch('/api/diagnostic/v3/run', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ customerId: customer.id }),
+                })
+                  .then((r) => r.json())
+                  .then((json) => {
+                    if (json.success && json.data) setV3Result(json.data);
+                  });
+              }}
+            />
+          )}
+
+          {isV3 && activeView === 'consultant' && (
+            <ConsultantForm
+              customerId={customer?.id}
+              existingAssessments={consultantAssessments}
+              onSave={() => {
+                // Re-run v3 diagnostic after consultant input
+                fetch('/api/diagnostic/v3/run', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ customerId: customer.id }),
+                })
+                  .then((r) => r.json())
+                  .then((json) => {
+                    if (json.success && json.data) setV3Result(json.data);
+                  });
+              }}
+            />
+          )}
+
+          {isV3 && activeView === 'table' && (
+            <TableView
+              processes={(v3Result.competencies || []).map((c) => {
+                const avgScore = Object.values(c.departments || {}).filter((s) => s !== null).reduce((a, b) => a + b, 0) /
+                  Math.max(1, Object.values(c.departments || {}).filter((s) => s !== null).length);
+                return {
+                  name: `${c.id}: ${c.name}`,
+                  function: c.pillar,
+                  status: avgScore >= 4 ? 'healthy' : avgScore >= 2.5 ? 'careful' : 'warning',
+                  addToEngagement: avgScore < 3,
+                };
+              })}
+              editMode={false}
+              onStatusChange={() => {}}
+              onPriorityToggle={() => {}}
+              notes={notes}
+              expandedRow={expandedRow}
+              onRowExpand={setExpandedRow}
+              onAddNote={handleAddNote}
+              onDeleteNote={handleDeleteNote}
+              categoryLabel="Pillar"
+            />
+          )}
+
           {/* --- v2 views --- */}
           {isV2 && activeView === 'layers' && (
             <LayerView

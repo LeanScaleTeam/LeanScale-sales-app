@@ -21,9 +21,12 @@ export default function DiagnosticSummary({ scores, itemCount, companyProfile })
   if (!scores) return null;
 
   const layers = [
-    { key: 'foundation', label: 'Foundation', weight: '40%', score: scores.foundation },
-    { key: 'motions', label: 'Motions', weight: '35%', score: scores.motions },
-    { key: 'maturity', label: 'Maturity', weight: '25%', score: scores.maturity },
+    { key: 'foundation', label: 'Foundation', weight: scores.platformHealth !== undefined ? '35%' : '40%', score: scores.foundation },
+    { key: 'motions', label: 'Motions', weight: scores.platformHealth !== undefined ? '30%' : '35%', score: scores.motions },
+    { key: 'maturity', label: 'Maturity', weight: scores.platformHealth !== undefined ? '20%' : '25%', score: scores.maturity },
+    ...(scores.platformHealth !== undefined ? [
+      { key: 'platformHealth', label: 'Platform Health', weight: '15%', score: scores.platformHealth },
+    ] : []),
   ];
 
   return (
@@ -51,7 +54,7 @@ export default function DiagnosticSummary({ scores, itemCount, companyProfile })
       </div>
 
       {/* Layer scores */}
-      <div style={styles.layerGrid}>
+      <div style={{ ...styles.layerGrid, gridTemplateColumns: `repeat(${layers.length}, 1fr)` }}>
         {layers.map((layer) => {
           const status = layer.score >= 2.5 ? 'healthy' : layer.score >= 1.5 ? 'careful' : 'warning';
           return (

@@ -39,19 +39,45 @@ async function handleRun(req, res) {
       return res.status(404).json({ error: 'No intake found. Complete the intake form first.' });
     }
 
-    // Read computed signals (if HubSpot connected)
-    const { data: metadata } = await supabaseAdmin
-      .from('hubspot_metadata')
-      .select('id, computed_signals')
-      .eq('customer_id', customerId)
-      .order('downloaded_at', { ascending: false })
-      .limit(1)
+    // Detect CRM type
+    const { data: customer } = await supabaseAdmin
+      .from('customers')
+      .select('crm_type')
+      .eq('id', customerId)
       .single();
 
-    const computedSignals = metadata?.computed_signals || {};
+    const crmType = customer?.crm_type || 'unknown';
+    let computedSignals = {};
+    let metadataId = null;
+
+    if (crmType === 'salesforce') {
+      // Read Salesforce signals
+      const { data: sfMetadata } = await supabaseAdmin
+        .from('salesforce_metadata')
+        .select('id, computed_signals')
+        .eq('customer_id', customerId)
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      computedSignals = sfMetadata?.computed_signals || {};
+      metadataId = sfMetadata?.id || null;
+    } else {
+      // Read HubSpot signals (existing behavior)
+      const { data: metadata } = await supabaseAdmin
+        .from('hubspot_metadata')
+        .select('id, computed_signals')
+        .eq('customer_id', customerId)
+        .order('downloaded_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      computedSignals = metadata?.computed_signals || {};
+      metadataId = metadata?.id || null;
+    }
 
     // Run the diagnostic engine
-    const result = runDiagnostic(intake.answers, computedSignals);
+    const result = runDiagnostic(intake.answers, computedSignals, crmType);
 
     // Store result in diagnostic_results (version=2)
     const { data: stored, error } = await supabaseAdmin
@@ -61,12 +87,14 @@ async function handleRun(req, res) {
           customer_id: customerId,
           diagnostic_type: 'gtm',
           version: 2,
+          crm_type: crmType,
           items: result.items,
           scores: result.scores,
           company_profile: result.company_profile,
           metadata: result.metadata,
           intake_id: intake.id,
-          hubspot_metadata_id: metadata?.id || null,
+          hubspot_metadata_id: crmType === 'hubspot' ? metadataId : null,
+          salesforce_metadata_id: crmType === 'salesforce' ? metadataId : null,
         },
         { onConflict: 'customer_id,diagnostic_type' }
       )
@@ -106,7 +134,7 @@ async function handleUpdate(req, res) {
     // Get existing result
     const { data: existing, error: fetchError } = await supabaseAdmin
       .from('diagnostic_results')
-      .select('id, items, scores')
+      .select('id, items, scores, crm_type')
       .eq('customer_id', customerId)
       .eq('diagnostic_type', 'gtm')
       .eq('version', 2)
@@ -130,7 +158,7 @@ async function handleUpdate(req, res) {
     const { attachRecommendations } = await import('../../../lib/diagnostic-engine/generate-recommendations');
 
     attachRecommendations(currentItems);
-    const newScores = computeScores(currentItems);
+    const newScores = computeScores(currentItems, existing.crm_type);
 
     // Update
     const { error: updateError } = await supabaseAdmin

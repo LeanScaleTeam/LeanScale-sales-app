@@ -12,7 +12,7 @@ import DiagnosticSummary from './DiagnosticSummary';
 import LayerHeader from './LayerHeader';
 import ItemDetailPanel from './ItemDetailPanel';
 
-const LAYER_ORDER = ['foundation', 'motions', 'maturity'];
+const LAYER_ORDER = ['foundation', 'motions', 'maturity', 'platformHealth'];
 
 export default function LayerView({ diagnosticResult, editMode, onStatusChange }) {
   const { items, scores, companyProfile } = diagnosticResult;
@@ -40,11 +40,13 @@ export default function LayerView({ diagnosticResult, editMode, onStatusChange }
   }
 
   // Group items by layer
-  const layerGroups = LAYER_ORDER.map((layer) => ({
-    layer,
-    items: items.filter((it) => it.layer === layer),
-    score: scores[layer] ?? 0,
-  }));
+  const layerGroups = LAYER_ORDER
+    .map((layer) => ({
+      layer,
+      items: items.filter((it) => it.layer === layer),
+      score: scores[layer] ?? 0,
+    }))
+    .filter(({ items: layerItems }) => layerItems.length > 0);
 
   return (
     <motion.div variants={staggerContainer} initial="hidden" animate="show">

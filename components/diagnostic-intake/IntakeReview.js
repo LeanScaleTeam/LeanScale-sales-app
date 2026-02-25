@@ -4,10 +4,12 @@
  */
 
 import { useState } from 'react';
+import SalesforceConnect from './SalesforceConnect';
 
 export default function IntakeReview({
   answers, sectionTitles, hubspotStatus,
-  showHubSpotConnect, customerId, slug, onSaveAllAnswers,
+  showHubSpotConnect, salesforceStatus, showSalesforceConnect,
+  customerId, slug, onSaveAllAnswers,
   onSubmit, onBack, onEditSection, submitting,
 }) {
   const [savingForOAuth, setSavingForOAuth] = useState(false);
@@ -101,6 +103,16 @@ export default function IntakeReview({
             </>
           )}
         </div>
+      )}
+
+      {/* Salesforce connection — shown after form is complete */}
+      {showSalesforceConnect && (
+        <SalesforceConnect
+          customerId={customerId}
+          slug={slug}
+          status={salesforceStatus}
+          onSaveAllAnswers={onSaveAllAnswers}
+        />
       )}
 
       {/* Submit */}

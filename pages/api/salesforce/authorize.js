@@ -2,10 +2,11 @@
  * Salesforce OAuth Authorize
  * GET /api/salesforce/authorize?customerId=xxx&slug=yyy&sandbox=false
  *
- * Generates Salesforce OAuth URL and redirects the user to Salesforce consent screen.
+ * Generates PKCE challenge, stores verifier in HTTP-only cookie,
+ * and redirects the user to Salesforce consent screen.
  */
 
-import { getAuthorizationUrl } from '../../../lib/salesforce';
+import { getAuthorizationUrl, generatePKCE } from '../../../lib/salesforce';
 
 export default function handler(req, res) {
   if (req.method !== 'GET') {
@@ -19,6 +20,14 @@ export default function handler(req, res) {
   }
 
   const isSandbox = sandbox === 'true';
-  const url = getAuthorizationUrl(customerId, slug, isSandbox);
+  const { codeVerifier, codeChallenge } = generatePKCE();
+
+  // Store code_verifier in HTTP-only cookie for the callback
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader('Set-Cookie',
+    `sf_code_verifier=${codeVerifier}; HttpOnly; SameSite=Lax; Path=/api/salesforce/callback; Max-Age=600${secure}`
+  );
+
+  const url = getAuthorizationUrl(customerId, slug, isSandbox, codeChallenge);
   res.redirect(url);
 }

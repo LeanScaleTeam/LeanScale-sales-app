@@ -45,9 +45,18 @@ export default async function handler(req, res) {
     return res.redirect(`/c/${slug}/diagnostic/intake?salesforce=error&reason=no_code`);
   }
 
+  // Read PKCE code_verifier from cookie (Next.js parses cookies automatically)
+  const codeVerifier = req.cookies?.sf_code_verifier;
+
+  // Clear the verifier cookie
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader('Set-Cookie',
+    `sf_code_verifier=; HttpOnly; SameSite=Lax; Path=/api/salesforce/callback; Max-Age=0${secure}`
+  );
+
   try {
-    // Exchange code for tokens
-    const tokens = await exchangeCodeForTokens(code, isSandbox);
+    // Exchange code for tokens with PKCE verifier
+    const tokens = await exchangeCodeForTokens(code, isSandbox, codeVerifier);
 
     // Get org identity
     const identity = await getOrgIdentity(tokens.id, tokens.access_token);

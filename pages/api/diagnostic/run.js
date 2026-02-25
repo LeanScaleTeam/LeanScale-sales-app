@@ -134,7 +134,7 @@ async function handleUpdate(req, res) {
     // Get existing result
     const { data: existing, error: fetchError } = await supabaseAdmin
       .from('diagnostic_results')
-      .select('id, items, scores')
+      .select('id, items, scores, crm_type')
       .eq('customer_id', customerId)
       .eq('diagnostic_type', 'gtm')
       .eq('version', 2)
@@ -158,7 +158,7 @@ async function handleUpdate(req, res) {
     const { attachRecommendations } = await import('../../../lib/diagnostic-engine/generate-recommendations');
 
     attachRecommendations(currentItems);
-    const newScores = computeScores(currentItems);
+    const newScores = computeScores(currentItems, existing.crm_type);
 
     // Update
     const { error: updateError } = await supabaseAdmin

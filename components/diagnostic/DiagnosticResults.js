@@ -21,9 +21,19 @@ import DiagnosticItemModal from './DiagnosticItemModal';
 // v2 Views
 import LayerView from './LayerView';
 
+// v3 Views
+import ScoreCardGrid from './v3/ScoreCardGrid';
+import RoadmapView from './v3/RoadmapView';
+import V3Summary from './v3/V3Summary';
+import DataCoverage from './v3/DataCoverage';
+import TranscriptUpload from './v3/TranscriptUpload';
+import ConsultantForm from './v3/ConsultantForm';
+
 // CPQ-specific views
 import LifecycleView from './views/LifecycleView';
 import CpqMetricsView from './views/CpqMetricsView';
+
+const V3_STATUS_LABELS = { 1: 'Weak', 2: 'Below Average', 3: 'Average', 4: 'Good', 5: 'Best Practice' };
 
 /**
  * Sort processes into priority tiers.
@@ -77,10 +87,20 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [modalItem, setModalItem] = useState(null);
   const saveTimerRef = useRef(null);
 
-  // v2 state
+  // Diagnostic version comes from admin config on the customer record
+  const configuredVersion = customer?.diagnosticVersion || 2;
   const [diagnosticVersion, setDiagnosticVersion] = useState(null);
+
+  // v2 state
   const [v2Result, setV2Result] = useState(null);
   const [v2RunTimestamp, setV2RunTimestamp] = useState(null);
+
+  // v3 state
+  const [v3Result, setV3Result] = useState(null);
+  const [v3RunTimestamp, setV3RunTimestamp] = useState(null);
+  const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
+  const [showConsultantForm, setShowConsultantForm] = useState(false);
+  const [consultantAssessments, setConsultantAssessments] = useState([]);
 
   if (!config) {
     return (
@@ -110,34 +130,49 @@ export default function DiagnosticResults({ diagnosticType }) {
     async function loadDiagnosticData() {
       setLoadingData(true);
       try {
-        const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.success && json.data) {
-          // Detect v2 diagnostic result
-          if (json.data.version === 2 && json.data.items) {
-            setDiagnosticVersion(2);
-            setV2Result({
-              items: json.data.items,
-              scores: json.data.scores,
-              companyProfile: json.data.company_profile || json.data.companyProfile,
-              actionableServiceIds: json.data.actionable_service_ids || json.data.actionableServiceIds || [],
-              metadata: json.data.metadata,
-            });
-            setDiagnosticResultId(json.data.id);
-            setV2RunTimestamp(json.data.updated_at || json.data.created_at);
-            setActiveView('layers');
-          } else {
-            setDiagnosticVersion(1);
-            setEditableProcesses(json.data.processes || []);
-            setEditableTools(json.data.tools || []);
-            console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
-            if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
-              setEditablePower10(json.data.power10_metrics);
+        if (configuredVersion === 3 && diagnosticType === 'gtm') {
+          // v3: load from v3 endpoint
+          const res = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              setDiagnosticVersion(3);
+              setV3Result(json.data);
+              setDiagnosticResultId(json.data.id);
+              setV3RunTimestamp(json.data.updated_at || json.data.created_at);
+              setActiveView('scorecard');
             }
-            setDiagnosticResultId(json.data.id);
           }
-          setNotes(json.notes || []);
+        } else {
+          // v1/v2: load from existing endpoint
+          const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
+          if (!res.ok) return;
+          const json = await res.json();
+          if (json.success && json.data) {
+            if (json.data.version === 2 && json.data.items) {
+              setDiagnosticVersion(2);
+              setV2Result({
+                items: json.data.items,
+                scores: json.data.scores,
+                companyProfile: json.data.company_profile || json.data.companyProfile,
+                actionableServiceIds: json.data.actionable_service_ids || json.data.actionableServiceIds || [],
+                metadata: json.data.metadata,
+              });
+              setDiagnosticResultId(json.data.id);
+              setV2RunTimestamp(json.data.updated_at || json.data.created_at);
+              setActiveView('layers');
+            } else {
+              setDiagnosticVersion(1);
+              setEditableProcesses(json.data.processes || []);
+              setEditableTools(json.data.tools || []);
+              console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
+              if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
+                setEditablePower10(json.data.power10_metrics);
+              }
+              setDiagnosticResultId(json.data.id);
+            }
+            setNotes(json.notes || []);
+          }
         }
       } catch (err) {
         console.error('Error loading diagnostic data:', err);
@@ -147,7 +182,24 @@ export default function DiagnosticResults({ diagnosticType }) {
     }
 
     loadDiagnosticData();
-  }, [customer?.id, diagnosticType, isDemo]);
+  }, [customer?.id, diagnosticType, isDemo, configuredVersion]);
+
+  // --- Load consultant assessments for v3 ---
+  useEffect(() => {
+    if (isDemo || !customer?.id || diagnosticVersion !== 3) return;
+
+    async function loadConsultant() {
+      try {
+        const res = await fetch(`/api/diagnostic/consultant?customerId=${customer.id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) setConsultantAssessments(json.data || []);
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    loadConsultant();
+  }, [customer?.id, diagnosticVersion, isDemo]);
 
   // --- Load linked SOWs ---
   useEffect(() => {
@@ -370,9 +422,12 @@ export default function DiagnosticResults({ diagnosticType }) {
   const tiers = sortByPriority(reportableProcesses);
 
   // Build available views based on data
+  const isV3 = diagnosticVersion === 3 && v3Result;
   const isV2 = diagnosticVersion === 2 && v2Result;
 
-  const availableViews = isV2
+  const availableViews = isV3
+    ? ['scorecard', 'roadmap', 'transcript', 'consultant', 'table']
+    : isV2
     ? ['layers', 'table']
     : (() => {
         const views = [];
@@ -412,27 +467,46 @@ export default function DiagnosticResults({ diagnosticType }) {
           <p className="page-subtitle">{config.subtitle}</p>
           {!isDemo && diagnosticType === 'gtm' && (
             <div style={{ marginTop: '0.75rem' }}>
-              {isV2 && v2RunTimestamp && (
+              {((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Last run: {new Date(v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  Last run: {new Date(v3RunTimestamp || v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                 </div>
               )}
-              <a
-                href={customerPath('/diagnostic/intake')}
-                style={{
-                  display: 'inline-block',
-                  padding: '0.5rem 1.25rem',
-                  background: isV2 ? 'white' : 'var(--ls-purple)',
-                  color: isV2 ? 'var(--ls-purple)' : 'white',
-                  border: isV2 ? '1px solid var(--ls-purple)' : 'none',
-                  borderRadius: 'var(--radius-md, 8px)',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: 'var(--font-semibold)',
-                  textDecoration: 'none',
-                }}
-              >
-                {isV2 ? 'Re-run Diagnostic' : 'Run v2 Diagnostic'}
-              </a>
+              {diagnosticResultId ? (
+                <a
+                  href={customerPath('/diagnostic/intake')}
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 1.25rem',
+                    background: 'white',
+                    color: 'var(--ls-purple)',
+                    border: '1px solid var(--ls-purple)',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Re-run Diagnostic
+                </a>
+              ) : (
+                <a
+                  href={customerPath('/diagnostic/intake')}
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 1.25rem',
+                    background: 'var(--ls-purple)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Run Diagnostic
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -468,6 +542,114 @@ export default function DiagnosticResults({ diagnosticType }) {
 
         {/* Active View */}
         <div style={{ marginTop: 'var(--space-4)' }}>
+          {/* --- v3 views --- */}
+          {isV3 && activeView === 'scorecard' && (
+            <>
+              <V3Summary
+                overallScore={v3Result.overall_score}
+                overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
+                pillarScores={v3Result.pillar_scores}
+                departmentScores={v3Result.department_scores}
+                companyProfile={v3Result.company_profile}
+                roadmapSummary={v3Result.roadmap?.summary}
+                dataCoverage={v3Result.data_coverage}
+              />
+              <ScoreCardGrid
+                scoreCard={v3Result.score_card}
+                pillarScores={v3Result.pillar_scores}
+                departmentScores={v3Result.department_scores}
+                competencies={v3Result.competencies}
+                editMode={editMode}
+                onCellClick={(compId, dept, score) => {
+                  // Admin override
+                  if (!editMode) return;
+                  fetch('/api/diagnostic/v3/run', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      customerId: customer.id,
+                      overrides: [{ competencyId: compId, department: dept, score }],
+                    }),
+                  })
+                    .then((r) => r.json())
+                    .then((json) => {
+                      if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
+                    });
+                }}
+              />
+              <DataCoverage
+                dataCoverage={v3Result.data_coverage}
+                onUploadTranscript={() => setShowTranscriptUpload(true)}
+                onStartConsultant={() => setShowConsultantForm(true)}
+              />
+            </>
+          )}
+
+          {isV3 && activeView === 'roadmap' && (
+            <RoadmapView roadmap={v3Result.roadmap} />
+          )}
+
+          {isV3 && activeView === 'transcript' && (
+            <TranscriptUpload
+              customerId={customer?.id}
+              onUploadComplete={() => {
+                // Re-run v3 diagnostic after transcript analysis
+                fetch('/api/diagnostic/v3/run', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ customerId: customer.id }),
+                })
+                  .then((r) => r.json())
+                  .then((json) => {
+                    if (json.success && json.data) setV3Result(json.data);
+                  });
+              }}
+            />
+          )}
+
+          {isV3 && activeView === 'consultant' && (
+            <ConsultantForm
+              customerId={customer?.id}
+              existingAssessments={consultantAssessments}
+              onSave={() => {
+                // Re-run v3 diagnostic after consultant input
+                fetch('/api/diagnostic/v3/run', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ customerId: customer.id }),
+                })
+                  .then((r) => r.json())
+                  .then((json) => {
+                    if (json.success && json.data) setV3Result(json.data);
+                  });
+              }}
+            />
+          )}
+
+          {isV3 && activeView === 'table' && (
+            <TableView
+              processes={(v3Result.competencies || []).map((c) => {
+                const avgScore = Object.values(c.departments || {}).filter((s) => s !== null).reduce((a, b) => a + b, 0) /
+                  Math.max(1, Object.values(c.departments || {}).filter((s) => s !== null).length);
+                return {
+                  name: `${c.id}: ${c.name}`,
+                  function: c.pillar,
+                  status: avgScore >= 4 ? 'healthy' : avgScore >= 2.5 ? 'careful' : 'warning',
+                  addToEngagement: avgScore < 3,
+                };
+              })}
+              editMode={false}
+              onStatusChange={() => {}}
+              onPriorityToggle={() => {}}
+              notes={notes}
+              expandedRow={expandedRow}
+              onRowExpand={setExpandedRow}
+              onAddNote={handleAddNote}
+              onDeleteNote={handleDeleteNote}
+              categoryLabel="Pillar"
+            />
+          )}
+
           {/* --- v2 views --- */}
           {isV2 && activeView === 'layers' && (
             <LayerView

@@ -9,6 +9,11 @@ const VIEWS = [
   { id: 'metrics', label: 'Metrics', icon: '\uD83D\uDCC8' },
   // v2 views
   { id: 'layers', label: 'Layers', icon: '\uD83D\uDDC2\uFE0F' },
+  // v3 views
+  { id: 'scorecard', label: 'Score Card', icon: '\uD83D\uDCCA' },
+  { id: 'roadmap', label: 'Roadmap', icon: '\uD83D\uDDFA\uFE0F' },
+  { id: 'transcript', label: 'Transcripts', icon: '\uD83C\uDFA4' },
+  { id: 'consultant', label: 'Consultant', icon: '\uD83D\uDC64' },
 ];
 
 /**

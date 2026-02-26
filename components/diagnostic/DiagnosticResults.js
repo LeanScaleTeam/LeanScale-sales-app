@@ -87,8 +87,11 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [modalItem, setModalItem] = useState(null);
   const saveTimerRef = useRef(null);
 
-  // v2 state
+  // Diagnostic version comes from admin config on the customer record
+  const configuredVersion = customer?.diagnosticVersion || 2;
   const [diagnosticVersion, setDiagnosticVersion] = useState(null);
+
+  // v2 state
   const [v2Result, setV2Result] = useState(null);
   const [v2RunTimestamp, setV2RunTimestamp] = useState(null);
 
@@ -127,36 +130,49 @@ export default function DiagnosticResults({ diagnosticType }) {
     async function loadDiagnosticData() {
       setLoadingData(true);
       try {
-        const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.success && json.data) {
-          // Detect v2 diagnostic result
-          if (json.data.version === 2 && json.data.items) {
-            setDiagnosticVersion(2);
-            setV2Result({
-              items: json.data.items,
-              scores: json.data.scores,
-              companyProfile: json.data.company_profile || json.data.companyProfile,
-              actionableServiceIds: json.data.actionable_service_ids || json.data.actionableServiceIds || [],
-              metadata: json.data.metadata,
-            });
-            setDiagnosticResultId(json.data.id);
-            setV2RunTimestamp(json.data.updated_at || json.data.created_at);
-            setActiveView('layers');
-          } else if (false) {
-            // v3 loaded separately below
-          } else {
-            setDiagnosticVersion(1);
-            setEditableProcesses(json.data.processes || []);
-            setEditableTools(json.data.tools || []);
-            console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
-            if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
-              setEditablePower10(json.data.power10_metrics);
+        if (configuredVersion === 3 && diagnosticType === 'gtm') {
+          // v3: load from v3 endpoint
+          const res = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              setDiagnosticVersion(3);
+              setV3Result(json.data);
+              setDiagnosticResultId(json.data.id);
+              setV3RunTimestamp(json.data.updated_at || json.data.created_at);
+              setActiveView('scorecard');
             }
-            setDiagnosticResultId(json.data.id);
           }
-          setNotes(json.notes || []);
+        } else {
+          // v1/v2: load from existing endpoint
+          const res = await fetch(`/api/diagnostics/${diagnosticType}?customerId=${customer.id}`);
+          if (!res.ok) return;
+          const json = await res.json();
+          if (json.success && json.data) {
+            if (json.data.version === 2 && json.data.items) {
+              setDiagnosticVersion(2);
+              setV2Result({
+                items: json.data.items,
+                scores: json.data.scores,
+                companyProfile: json.data.company_profile || json.data.companyProfile,
+                actionableServiceIds: json.data.actionable_service_ids || json.data.actionableServiceIds || [],
+                metadata: json.data.metadata,
+              });
+              setDiagnosticResultId(json.data.id);
+              setV2RunTimestamp(json.data.updated_at || json.data.created_at);
+              setActiveView('layers');
+            } else {
+              setDiagnosticVersion(1);
+              setEditableProcesses(json.data.processes || []);
+              setEditableTools(json.data.tools || []);
+              console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
+              if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
+                setEditablePower10(json.data.power10_metrics);
+              }
+              setDiagnosticResultId(json.data.id);
+            }
+            setNotes(json.notes || []);
+          }
         }
       } catch (err) {
         console.error('Error loading diagnostic data:', err);
@@ -166,32 +182,7 @@ export default function DiagnosticResults({ diagnosticType }) {
     }
 
     loadDiagnosticData();
-  }, [customer?.id, diagnosticType, isDemo]);
-
-  // --- Load v3 diagnostic data ---
-  useEffect(() => {
-    if (isDemo || !customer?.id || diagnosticType !== 'gtm') return;
-
-    async function loadV3Data() {
-      try {
-        const res = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.success && json.data) {
-          setDiagnosticVersion(3);
-          setV3Result(json.data);
-          setDiagnosticResultId(json.data.id);
-          setV3RunTimestamp(json.data.updated_at || json.data.created_at);
-          setActiveView('scorecard');
-        }
-      } catch (_) { /* v3 not available yet */ }
-    }
-
-    // Only load v3 if no v2 result loaded
-    if (!v2Result && !loadingData) {
-      loadV3Data();
-    }
-  }, [customer?.id, diagnosticType, isDemo, v2Result, loadingData]);
+  }, [customer?.id, diagnosticType, isDemo, configuredVersion]);
 
   // --- Load consultant assessments for v3 ---
   useEffect(() => {
@@ -476,27 +467,46 @@ export default function DiagnosticResults({ diagnosticType }) {
           <p className="page-subtitle">{config.subtitle}</p>
           {!isDemo && diagnosticType === 'gtm' && (
             <div style={{ marginTop: '0.75rem' }}>
-              {isV2 && v2RunTimestamp && (
+              {((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Last run: {new Date(v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  Last run: {new Date(v3RunTimestamp || v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                 </div>
               )}
-              <a
-                href={customerPath('/diagnostic/intake')}
-                style={{
-                  display: 'inline-block',
-                  padding: '0.5rem 1.25rem',
-                  background: isV2 ? 'white' : 'var(--ls-purple)',
-                  color: isV2 ? 'var(--ls-purple)' : 'white',
-                  border: isV2 ? '1px solid var(--ls-purple)' : 'none',
-                  borderRadius: 'var(--radius-md, 8px)',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: 'var(--font-semibold)',
-                  textDecoration: 'none',
-                }}
-              >
-                {isV2 ? 'Re-run Diagnostic' : 'Run v2 Diagnostic'}
-              </a>
+              {diagnosticResultId ? (
+                <a
+                  href={customerPath('/diagnostic/intake')}
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 1.25rem',
+                    background: 'white',
+                    color: 'var(--ls-purple)',
+                    border: '1px solid var(--ls-purple)',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Re-run Diagnostic
+                </a>
+              ) : (
+                <a
+                  href={customerPath('/diagnostic/intake')}
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 1.25rem',
+                    background: 'var(--ls-purple)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Run Diagnostic
+                </a>
+              )}
             </div>
           )}
         </div>

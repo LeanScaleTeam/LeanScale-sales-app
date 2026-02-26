@@ -209,8 +209,12 @@ export default function IntakeForm() {
         return;
       }
 
-      // Run the diagnostic engine
-      const runRes = await fetch('/api/diagnostic/run', {
+      // Run the diagnostic engine (version determined by admin config)
+      const diagVersion = customer.diagnosticVersion || 2;
+      const runUrl = diagVersion === 3
+        ? '/api/diagnostic/v3/run'
+        : '/api/diagnostic/run';
+      const runRes = await fetch(runUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: customer.id }),
@@ -221,8 +225,9 @@ export default function IntakeForm() {
         throw new Error(errData.error || 'Diagnostic engine failed');
       }
 
-      // Navigate to results
-      router.push(customerPath('/try-leanscale/diagnostic?view=layers'));
+      // Navigate to results (v3 defaults to scorecard, v2 to layers)
+      const defaultView = diagVersion === 3 ? 'scorecard' : 'layers';
+      router.push(customerPath(`/try-leanscale/diagnostic?view=${defaultView}`));
     } catch (err) {
       console.error('Error submitting diagnostic:', err);
       setError(err.message || 'Something went wrong. Please try again.');

@@ -90,6 +90,7 @@ async function handlePost(req, res) {
       assigned_team,
       is_demo,
       diagnostic_type,
+      diagnostic_version,
       customer_type,
     } = req.body;
 
@@ -123,6 +124,7 @@ async function handlePost(req, res) {
         assigned_team: assigned_team || [],
         is_demo: is_demo || false,
         diagnostic_type: diagnostic_type || 'gtm',
+        diagnostic_version: diagnostic_version || 2,
         customer_type: customer_type || 'active',
       })
       .select()
@@ -151,6 +153,7 @@ async function handlePut(req, res) {
       assigned_team,
       is_demo,
       diagnostic_type,
+      diagnostic_version,
       customer_type,
     } = req.body;
 
@@ -171,6 +174,7 @@ async function handlePut(req, res) {
         assigned_team: assigned_team || [],
         is_demo: is_demo || false,
         diagnostic_type: diagnostic_type || 'gtm',
+        diagnostic_version: diagnostic_version || 2,
         customer_type: customer_type || 'active',
       })
       .eq('id', id)

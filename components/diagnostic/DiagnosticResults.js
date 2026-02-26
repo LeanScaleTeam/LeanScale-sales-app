@@ -579,8 +579,8 @@ export default function DiagnosticResults({ diagnosticType }) {
               />
               <DataCoverage
                 dataCoverage={v3Result.data_coverage}
-                onUploadTranscript={() => setShowTranscriptUpload(true)}
-                onStartConsultant={() => setShowConsultantForm(true)}
+                onUploadTranscript={() => setActiveView('transcript')}
+                onStartConsultant={() => setActiveView('consultant')}
               />
             </>
           )}

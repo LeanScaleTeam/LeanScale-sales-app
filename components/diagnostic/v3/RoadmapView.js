@@ -6,7 +6,9 @@
  */
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCustomer } from '../../../context/CustomerContext';
 import { ROADMAP_PHASES, V3_STATUS_COLORS } from '../../../lib/diagnostic-engine/v3/constants-v3';
 import { lookupServiceV3 } from '../../../lib/diagnostic-engine/v3/service-mapping-v3';
 
@@ -18,6 +20,7 @@ const PHASE_COLORS = {
 };
 
 export default function RoadmapView({ roadmap, showHealthy = false, onToggleHealthy }) {
+  const { customerPath } = useCustomer();
   const [expandedProject, setExpandedProject] = useState(null);
 
   if (!roadmap?.phases) return null;
@@ -58,6 +61,7 @@ export default function RoadmapView({ roadmap, showHealthy = false, onToggleHeal
                       expandedProject === project.serviceId ? null : project.serviceId
                     )
                   }
+                  customerPath={customerPath}
                 />
               ))}
             </div>
@@ -89,7 +93,7 @@ export default function RoadmapView({ roadmap, showHealthy = false, onToggleHeal
   );
 }
 
-function ProjectCard({ project, isExpanded, onToggle }) {
+function ProjectCard({ project, isExpanded, onToggle, customerPath }) {
   const service = project.service;
 
   return (
@@ -98,7 +102,13 @@ function ProjectCard({ project, isExpanded, onToggle }) {
         <div style={styles.cardInfo}>
           <span style={styles.cardIcon}>{service?.icon || ''}</span>
           <div>
-            <div style={styles.cardName}>{service?.name || project.serviceId}</div>
+            <Link
+              href={customerPath(`/playbooks/${project.serviceId}`)}
+              style={styles.cardName}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {service?.name || project.serviceId}
+            </Link>
             <div style={styles.cardMeta}>
               {project.competencyCount} competenc{project.competencyCount !== 1 ? 'ies' : 'y'} impacted
             </div>
@@ -239,6 +249,9 @@ const styles = {
   cardName: {
     fontWeight: 600,
     fontSize: '0.9rem',
+    color: '#6C5CE7',
+    textDecoration: 'none',
+    display: 'block',
   },
   cardMeta: {
     fontSize: '0.75rem',

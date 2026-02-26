@@ -7,8 +7,10 @@ import { useState } from 'react';
 const REPORTING_QUESTIONS = [
   { key: 'D1', label: 'How many custom dashboards exist in your CRM?', options: ['10+', '5-10', '1-4', 'None'] },
   { key: 'D2', label: 'Are dashboards trusted for decision-making?', options: ['Yes, primary tool', 'Somewhat', 'Not really', 'No dashboards'] },
-  { key: 'D3', label: 'How is sales forecasting done?', options: ['CRM forecast tool', 'Spreadsheet', 'Gut feel', 'Not done'] },
+  { key: 'D3', label: 'How is sales forecasting done?', options: ['AI/tool-assisted', 'CRM forecast tool', 'Spreadsheet', 'Gut feel', 'Not done'] },
   { key: 'D4', label: 'Do you have a growth model / revenue plan?', options: ['Yes, comprehensive', 'Partial', 'No'] },
+  { key: 'D5', label: 'How are reports distributed to the team?', options: ['Automated schedule', 'Manual email', 'On-demand', 'Not distributed'] },
+  { key: 'D6', label: 'Are playbooks documented?', options: ['Yes in enablement platform', 'Yes in docs', 'Tribal knowledge', 'No'] },
 ];
 
 const POWER_10_METRICS = [

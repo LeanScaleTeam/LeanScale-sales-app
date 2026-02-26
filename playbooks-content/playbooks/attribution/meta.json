@@ -1,0 +1,11 @@
+{
+  "slug": "attribution",
+  "title": "Lead and Opportunity Attribution",
+  "tier": "core",
+  "description": "Implement multi-touch attribution for leads and opportunities.",
+  "status": "published",
+  "competencyIds": [
+    "PR-9"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

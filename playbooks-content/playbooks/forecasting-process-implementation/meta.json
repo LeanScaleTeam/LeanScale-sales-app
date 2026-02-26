@@ -1,0 +1,12 @@
+{
+  "slug": "forecasting-process-implementation",
+  "title": "Forecasting Process Implementation",
+  "tier": "extended",
+  "description": "Implement structured forecasting methodology and cadence.",
+  "status": "published",
+  "competencyIds": [
+    "PR-10",
+    "RP-6"
+  ],
+  "loomEmbedId": null
+}

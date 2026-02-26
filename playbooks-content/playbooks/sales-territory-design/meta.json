@@ -1,0 +1,11 @@
+{
+  "slug": "sales-territory-design",
+  "title": "Sales Territory Design",
+  "tier": "core",
+  "description": "Design balanced territories for optimal coverage and quota attainment.",
+  "status": "published",
+  "competencyIds": [
+    "PR-7"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

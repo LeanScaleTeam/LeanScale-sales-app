@@ -1,0 +1,11 @@
+{
+  "slug": "arr-reporting",
+  "title": "ARR Reporting",
+  "tier": "extended",
+  "description": "Build comprehensive ARR reporting and dashboards.",
+  "status": "published",
+  "competencyIds": [
+    "RP-5"
+  ],
+  "loomEmbedId": null
+}

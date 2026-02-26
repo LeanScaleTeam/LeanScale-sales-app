@@ -1,0 +1,11 @@
+{
+  "slug": "abm-abs-process-and-system",
+  "title": "ABM/ABS Process and System",
+  "tier": "extended",
+  "description": "Implement account-based marketing/selling program.",
+  "status": "published",
+  "competencyIds": [
+    "PR-8"
+  ],
+  "loomEmbedId": null
+}

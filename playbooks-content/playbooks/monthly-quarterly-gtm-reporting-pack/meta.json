@@ -1,0 +1,15 @@
+{
+  "slug": "monthly-quarterly-gtm-reporting-pack",
+  "title": "Monthly/Quarterly GTM Reporting Pack",
+  "tier": "extended",
+  "description": "Build recurring GTM performance reporting package.",
+  "status": "published",
+  "competencyIds": [
+    "PL-1",
+    "PL-5",
+    "RP-2",
+    "RP-3",
+    "RP-4"
+  ],
+  "loomEmbedId": null
+}

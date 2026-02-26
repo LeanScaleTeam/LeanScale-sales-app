@@ -1,0 +1,11 @@
+{
+  "slug": "customer-lifecycle",
+  "title": "Customer Lifecycle",
+  "tier": "extended",
+  "description": "Define customer journey stages from onboarding to renewal.",
+  "status": "published",
+  "competencyIds": [
+    "PR-3"
+  ],
+  "loomEmbedId": null
+}

@@ -1,0 +1,11 @@
+{
+  "slug": "lead-routing",
+  "title": "Lead Routing",
+  "tier": "core",
+  "description": "Design and implement lead routing rules and assignment logic.",
+  "status": "published",
+  "competencyIds": [
+    "PR-7"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

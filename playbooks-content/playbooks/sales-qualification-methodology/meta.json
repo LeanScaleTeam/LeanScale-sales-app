@@ -1,0 +1,11 @@
+{
+  "slug": "sales-qualification-methodology",
+  "title": "Sales Qualification Methodology",
+  "tier": "extended",
+  "description": "Implement MEDDIC, BANT, or custom qualification framework.",
+  "status": "published",
+  "competencyIds": [
+    "PR-6"
+  ],
+  "loomEmbedId": null
+}

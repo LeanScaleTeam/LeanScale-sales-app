@@ -1,0 +1,11 @@
+{
+  "slug": "gtm-lifecycle",
+  "title": "GTM Lifecycle",
+  "tier": "core",
+  "description": "Define end-to-end GTM lifecycle stages from lead to customer.",
+  "status": "published",
+  "competencyIds": [
+    "PR-1"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

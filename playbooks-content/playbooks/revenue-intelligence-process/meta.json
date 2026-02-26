@@ -1,0 +1,11 @@
+{
+  "slug": "revenue-intelligence-process",
+  "title": "Revenue Intelligence Process",
+  "tier": "extended",
+  "description": "Implement revenue intelligence and deal insights.",
+  "status": "stub",
+  "competencyIds": [
+    "PR-10"
+  ],
+  "loomEmbedId": null
+}

@@ -1,0 +1,11 @@
+{
+  "slug": "sales-engagement-platform",
+  "title": "Sales Engagement Platform",
+  "tier": "extended",
+  "description": "Implement sales engagement/sequencing platform.",
+  "status": "published",
+  "competencyIds": [
+    "SY-3"
+  ],
+  "loomEmbedId": null
+}

@@ -1,0 +1,11 @@
+{
+  "slug": "commission-plan-design-and-implementation",
+  "title": "Commission Plan Design and Implementation",
+  "tier": "extended",
+  "description": "Design sales compensation and commission plans.",
+  "status": "stub",
+  "competencyIds": [
+    "PE-4"
+  ],
+  "loomEmbedId": null
+}

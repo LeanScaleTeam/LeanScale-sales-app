@@ -1,0 +1,11 @@
+{
+  "slug": "lead-lifecycle",
+  "title": "Lead Lifecycle",
+  "tier": "extended",
+  "description": "Define lead stages, qualification criteria, and handoff processes.",
+  "status": "published",
+  "competencyIds": [
+    "PR-1"
+  ],
+  "loomEmbedId": null
+}

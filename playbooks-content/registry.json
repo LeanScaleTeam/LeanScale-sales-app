@@ -1,0 +1,1966 @@
+{
+  "version": "2.0",
+  "generated": "2026-02-26T20:18:05.107Z",
+  "playbooks": [
+    {
+      "slug": "growth-model",
+      "numericId": "01",
+      "title": "Growth Model",
+      "description": "Financial modeling integrating ARR targets with GTM efficiency metrics to create achievable quarterly revenue goals.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops",
+          "finance"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": true,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "market-map",
+      "numericId": "02",
+      "title": "Market Map",
+      "description": "Define ICP, target market segments, and account scoring methodology.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "marketing"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "pipeline-generation"
+        ],
+        "metric": [
+          "cac"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": true,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "automated-inbound",
+      "numericId": "03",
+      "title": "Automated Inbound Data Enrichment",
+      "description": "Automate lead enrichment with firmographic and technographic data.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency",
+          "pipeline-generation"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "gtm-lifecycle",
+      "numericId": "04",
+      "title": "GTM Lifecycle",
+      "description": "Define end-to-end GTM lifecycle stages from lead to customer.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "lead-lifecycle",
+      "numericId": "05",
+      "title": "Lead Lifecycle",
+      "description": "Define lead stages, qualification criteria, and handoff processes.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "sales-lifecycle",
+      "numericId": "06",
+      "title": "Sales Lifecycle",
+      "description": "Define opportunity stages, exit criteria, and sales process.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [],
+        "metric": [
+          "win-rate",
+          "cycle-time"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "customer-lifecycle",
+      "numericId": "07",
+      "title": "Customer Lifecycle",
+      "description": "Define customer journey stages from onboarding to renewal.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention"
+        ],
+        "metric": [
+          "nrr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "executive-reporting-suite",
+      "numericId": "08",
+      "title": "Executive Reporting Suite",
+      "description": "Build comprehensive executive dashboards for GTM performance.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "quotas-and-target-setting",
+      "numericId": "09",
+      "title": "Quotas and Target Setting",
+      "description": "Design quota methodology and set achievable targets by segment.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [],
+        "metric": [
+          "quota-attainment",
+          "arr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "crm-deduplication",
+      "numericId": "10",
+      "title": "CRM Deduplication",
+      "description": "Clean CRM data by merging duplicate accounts and contacts.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "crm-deduplication-ongoing-tool",
+      "numericId": "11",
+      "title": "CRM Deduplication Ongoing Tool",
+      "description": "Implement automated duplicate detection and prevention.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "fed-pubsec-crm-partitioning",
+      "numericId": "12",
+      "title": "Fed/PubSec CRM Partitioning",
+      "description": "Partition CRM for federal and public sector compliance.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "gtm-org-chart-roles-and-hiring-plan",
+      "numericId": "13",
+      "title": "GTM Org Chart, Roles & Hiring Plan",
+      "description": "Design GTM org structure and hiring roadmap.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "lead-routing",
+      "numericId": "14",
+      "title": "Lead Routing",
+      "description": "Design and implement lead routing rules and assignment logic.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "marketing-automation-platform-implementation",
+      "numericId": "15",
+      "title": "Marketing Automation Platform Implementation",
+      "description": "Implement and configure marketing automation platform.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "attribution",
+      "numericId": "16",
+      "title": "Lead and Opportunity Attribution",
+      "description": "Implement multi-touch attribution for leads and opportunities.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "cac"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "inbound-lead-journey-mapping",
+      "numericId": "17",
+      "title": "Inbound Lead Journey Mapping",
+      "description": "Map and optimize the inbound lead journey.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "conversion-optimization",
+          "pipeline-generation"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "automated-outbound-process",
+      "numericId": "18",
+      "title": "Automated Outbound Process",
+      "description": "Design and automate outbound sales development process.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "physical-event-process-and-roi-reporting",
+      "numericId": "19",
+      "title": "Physical Event Process and ROI Reporting",
+      "description": "Standardize event operations and measure ROI.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "visibility"
+        ],
+        "metric": [
+          "cac"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "sales-territory-design",
+      "numericId": "20",
+      "title": "Sales Territory Design",
+      "description": "Design balanced territories for optimal coverage and quota attainment.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "quota-attainment"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "rules-of-engagement-design",
+      "numericId": "21",
+      "title": "Rules of Engagement Design",
+      "description": "Define account ownership rules and conflict resolution.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "forecasting-process-implementation",
+      "numericId": "22",
+      "title": "Forecasting Process Implementation",
+      "description": "Implement structured forecasting methodology and cadence.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "sales-qualification-methodology",
+      "numericId": "23",
+      "title": "Sales Qualification Methodology",
+      "description": "Implement MEDDIC, BANT, or custom qualification framework.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "conversion-optimization"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "activity-capture",
+      "numericId": "24",
+      "title": "Activity Capture",
+      "description": "Automate capture of sales activities and engagement data.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "visibility",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "renewal-churn-nrr-grr-reporting",
+      "numericId": "25",
+      "title": "Renewal/Churn/NRR/GRR Reporting",
+      "description": "Build retention and revenue retention reporting.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "retention",
+          "visibility"
+        ],
+        "metric": [
+          "nrr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "onboarding-and-process-improvement",
+      "numericId": "26",
+      "title": "Onboarding and Process Improvement",
+      "description": "Optimize customer onboarding process and time-to-value.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention"
+        ],
+        "metric": [
+          "ltv"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "sales-to-cs-handoff-process-implementation",
+      "numericId": "27",
+      "title": "Sales to CS Handoff Process",
+      "description": "Design seamless handoff from sales to customer success.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "nps-and-voice-of-customer-launch",
+      "numericId": "28",
+      "title": "NPS and Voice of Customer Launch",
+      "description": "Implement NPS program and customer feedback loops.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention",
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "cpq-implementation",
+      "numericId": "29",
+      "title": "CPQ Implementation",
+      "description": "Implement Configure-Price-Quote solution.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "sales-engagement-platform",
+      "numericId": "30",
+      "title": "Sales Engagement Platform",
+      "description": "Implement sales engagement/sequencing platform.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "e-signature-implementation",
+      "numericId": "31",
+      "title": "E-Signature Implementation",
+      "description": "Implement electronic signature solution.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "support-system-implementation",
+      "numericId": "32",
+      "title": "Support System Implementation",
+      "description": "Implement customer support ticketing system.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "customer-success-platform-implementation",
+      "numericId": "33",
+      "title": "Customer Success Platform Implementation",
+      "description": "Implement CS platform for health scoring and playbooks.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention"
+        ],
+        "metric": [
+          "nrr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "clm-implementation",
+      "numericId": "34",
+      "title": "CLM Implementation",
+      "description": "Implement Contract Lifecycle Management solution.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "website-lead-capture-and-form-compliance",
+      "numericId": "35",
+      "title": "Website Lead Capture and Form Configuration",
+      "description": "Optimize website forms and lead capture.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "conversion-optimization"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "partnership-success-platform-implementation",
+      "numericId": "36",
+      "title": "Partnership Success Platform Implementation",
+      "description": "Implement partner relationship management platform.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "partnerships"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "pipeline-generation"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "lead-scoring-model-sales-led",
+      "numericId": "37",
+      "title": "Lead Scoring Model (Sales-Led)",
+      "description": "Build lead scoring model for sales-led motion.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "lead-scoring-model-product-led",
+      "numericId": "38",
+      "title": "Lead Scoring Model (Product-Led)",
+      "description": "Build lead scoring model for product-led motion.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "plg-gtm-design",
+      "numericId": "39",
+      "title": "PLG GTM Design",
+      "description": "Design product-led growth go-to-market motion.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "conversion-optimization"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "foundational-automations-and-reporting",
+      "numericId": "40",
+      "title": "Foundational Automations and Reporting Logic",
+      "description": "Build core CRM automations and reporting foundation.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency",
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "revenue-recognition",
+      "numericId": "41",
+      "title": "Revenue Recognition",
+      "description": "Implement revenue recognition processes and reporting.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "finance",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "arr-reporting",
+      "numericId": "42",
+      "title": "ARR Reporting",
+      "description": "Build comprehensive ARR reporting and dashboards.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops",
+          "finance"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "hubspot-sfdc-migration",
+      "numericId": "43",
+      "title": "HubSpot to Salesforce CRM Migration",
+      "description": "Migrate from HubSpot to Salesforce CRM.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "salesforce-to-hubspot-crm-migration",
+      "numericId": "44",
+      "title": "Salesforce to HubSpot CRM Migration",
+      "description": "Migrate from Salesforce to HubSpot CRM.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "event-operations-platform-implementation",
+      "numericId": "45",
+      "title": "Event Operations Platform Implementation",
+      "description": "Implement event management platform.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "monthly-quarterly-gtm-reporting-pack",
+      "numericId": "46",
+      "title": "Monthly/Quarterly GTM Reporting Pack",
+      "description": "Build recurring GTM performance reporting package.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "arr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "abm-abs-process-and-system",
+      "numericId": "47",
+      "title": "ABM/ABS Process and System",
+      "description": "Implement account-based marketing/selling program.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "conversation-intelligence-platform-implementation",
+      "numericId": "48",
+      "title": "Conversation Intelligence Platform",
+      "description": "Implement call recording and conversation intelligence.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "sales-enablement-platform-implementation",
+      "numericId": "49",
+      "title": "Sales Enablement Platform Implementation",
+      "description": "Implement sales content and enablement platform.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "marketing"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "customer-segmentation",
+      "numericId": "50",
+      "title": "Customer Segmentation",
+      "description": "Build customer segmentation for CS prioritization.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs",
+          "revops"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "customer-health-model",
+      "numericId": "51",
+      "title": "Customer Health Model",
+      "description": "Build customer health scoring model.",
+      "tier": "extended",
+      "status": "published",
+      "tags": {
+        "function": [
+          "cs"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention"
+        ],
+        "metric": [
+          "nrr"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "renewal-management",
+      "numericId": "52",
+      "title": "Renewal Management",
+      "description": "Implement structured renewal process and playbooks.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "cs",
+          "sales"
+        ],
+        "team": [
+          "cs-team"
+        ],
+        "outcome": [
+          "retention"
+        ],
+        "metric": [
+          "nrr"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "email-operations-nurture-program",
+      "numericId": "53",
+      "title": "Email Operations: Nurture Program",
+      "description": "Build automated email nurture programs.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "conversion-optimization"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "marketing-database-segmentation",
+      "numericId": "54",
+      "title": "Marketing Database Segmentation",
+      "description": "Build marketing database segmentation strategy.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "marketing-reporting-pack",
+      "numericId": "55",
+      "title": "Marketing Reporting Pack",
+      "description": "Build marketing performance reporting package.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "cac"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "email-operations-subscription-and-compliance",
+      "numericId": "56",
+      "title": "Email Operations: Subscription and Compliance",
+      "description": "Implement email preference center and compliance.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "email-operations-templates-and-build-process",
+      "numericId": "57",
+      "title": "Email Operations: Templates and Build Process",
+      "description": "Standardize email templates and build process.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "event-operations-lead-list-intake-process",
+      "numericId": "58",
+      "title": "Event Operations: Lead List Intake Process",
+      "description": "Standardize event lead list processing.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing"
+        ],
+        "team": [
+          "marketing-team"
+        ],
+        "outcome": [
+          "pipeline-generation",
+          "efficiency"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "commission-plan-design-and-implementation",
+      "numericId": "59",
+      "title": "Commission Plan Design and Implementation",
+      "description": "Design sales compensation and commission plans.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "quota-attainment"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "commission-tool-implementation",
+      "numericId": "60",
+      "title": "Commission Tool Implementation",
+      "description": "Implement commission calculation and tracking tool.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency",
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "quote-to-cash",
+      "numericId": "61",
+      "title": "Quote to Cash",
+      "description": "Optimize quote-to-cash process end-to-end.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "revops",
+          "finance"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "marketing-to-sales-handoff-and-sla-tracking",
+      "numericId": "62",
+      "title": "Marketing to Sales Handoff and SLA Tracking",
+      "description": "Define MQL handoff process and track SLA compliance.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "foundational"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "ai-automated-inbound",
+      "numericId": "63",
+      "title": "AI Automated Inbound",
+      "description": "Implement AI-powered inbound lead processing.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "marketing",
+          "sales"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency",
+          "pipeline-generation"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "speed-to-lead-sla-tracking",
+      "numericId": "64",
+      "title": "Speed to Lead",
+      "description": "Optimize lead response time and first contact.",
+      "tier": "core",
+      "status": "published",
+      "tags": {
+        "function": [
+          "sales",
+          "marketing"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "conversion-optimization"
+        ],
+        "metric": [
+          "cycle-time"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09",
+      "pages": [
+        "advisory",
+        "methodology",
+        "implementation"
+      ]
+    },
+    {
+      "slug": "crm-erp-integration",
+      "numericId": "65",
+      "title": "CRM-ERP Integration",
+      "description": "Integrate CRM with ERP for revenue operations.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "revops",
+          "finance"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency",
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "gtm-diagnostic",
+      "numericId": "66",
+      "title": "GTM Diagnostic",
+      "description": "Comprehensive GTM health assessment and roadmap.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "revops"
+        ],
+        "team": [
+          "leadership"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [],
+        "complexity": "foundational"
+      },
+      "featured": true,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "revenue-intelligence-process",
+      "numericId": "67",
+      "title": "Revenue Intelligence Process",
+      "description": "Implement revenue intelligence and deal insights.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "sales-team"
+        ],
+        "outcome": [
+          "visibility"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "advanced"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    },
+    {
+      "slug": "opportunity-management-ux-improvements",
+      "numericId": "68",
+      "title": "Opportunity Management UX Improvements",
+      "description": "Optimize CRM opportunity management experience.",
+      "tier": "extended",
+      "status": "stub",
+      "tags": {
+        "function": [
+          "sales",
+          "revops"
+        ],
+        "team": [
+          "revops-team"
+        ],
+        "outcome": [
+          "efficiency"
+        ],
+        "metric": [
+          "win-rate"
+        ],
+        "complexity": "intermediate"
+      },
+      "featured": false,
+      "loomEmbedId": null,
+      "pages": []
+    }
+  ]
+}

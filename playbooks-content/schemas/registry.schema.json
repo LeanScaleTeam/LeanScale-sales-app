@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Playbook Registry",
+  "type": "object",
+  "required": ["version", "generated", "playbooks"],
+  "properties": {
+    "version": { "type": "string" },
+    "generated": { "type": "string", "format": "date-time" },
+    "playbooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slug", "numericId", "title", "description", "tier", "status"],
+        "properties": {
+          "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "numericId": { "type": "string", "pattern": "^\\d{2}$" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "tier": { "type": "string", "enum": ["core", "extended"] },
+          "status": { "type": "string", "enum": ["published", "stub"] },
+          "tags": { "type": "object" },
+          "featured": { "type": "boolean" },
+          "loomEmbedId": { "type": ["string", "null"] },
+          "pages": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["advisory", "methodology", "implementation"] }
+          }
+        }
+      }
+    }
+  }
+}

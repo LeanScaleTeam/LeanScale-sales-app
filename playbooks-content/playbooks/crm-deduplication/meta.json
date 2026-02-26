@@ -1,0 +1,9 @@
+{
+  "slug": "crm-deduplication",
+  "title": "CRM Deduplication",
+  "tier": "extended",
+  "description": "Clean CRM data by merging duplicate accounts and contacts.",
+  "status": "published",
+  "competencyIds": [],
+  "loomEmbedId": null
+}

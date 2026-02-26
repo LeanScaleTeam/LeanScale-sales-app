@@ -1,0 +1,11 @@
+{
+  "slug": "automated-outbound-process",
+  "title": "Automated Outbound Process",
+  "tier": "extended",
+  "description": "Design and automate outbound sales development process.",
+  "status": "published",
+  "competencyIds": [
+    "SY-3"
+  ],
+  "loomEmbedId": null
+}

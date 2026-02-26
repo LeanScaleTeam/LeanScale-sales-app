@@ -1,0 +1,11 @@
+{
+  "slug": "support-system-implementation",
+  "title": "Support System Implementation",
+  "tier": "extended",
+  "description": "Implement customer support ticketing system.",
+  "status": "published",
+  "competencyIds": [
+    "SY-4"
+  ],
+  "loomEmbedId": null
+}

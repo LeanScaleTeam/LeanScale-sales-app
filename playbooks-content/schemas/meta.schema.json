@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Playbook Metadata",
+  "type": "object",
+  "required": ["slug", "title", "tier", "description", "status"],
+  "properties": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "title": { "type": "string" },
+    "tier": { "type": "string", "enum": ["core", "extended"] },
+    "description": { "type": "string" },
+    "status": { "type": "string", "enum": ["published", "stub"] },
+    "competencyIds": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Z]{2}-\\d+$" }
+    },
+    "loomEmbedId": { "type": ["string", "null"] }
+  }
+}

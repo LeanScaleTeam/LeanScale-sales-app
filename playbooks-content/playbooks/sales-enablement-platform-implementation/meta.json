@@ -1,0 +1,14 @@
+{
+  "slug": "sales-enablement-platform-implementation",
+  "title": "Sales Enablement Platform Implementation",
+  "tier": "extended",
+  "description": "Implement sales content and enablement platform.",
+  "status": "published",
+  "competencyIds": [
+    "EN-1",
+    "EN-2",
+    "EN-4",
+    "EN-5"
+  ],
+  "loomEmbedId": null
+}

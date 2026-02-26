@@ -1,0 +1,11 @@
+{
+  "slug": "rules-of-engagement-design",
+  "title": "Rules of Engagement Design",
+  "tier": "extended",
+  "description": "Define account ownership rules and conflict resolution.",
+  "status": "published",
+  "competencyIds": [
+    "PR-7"
+  ],
+  "loomEmbedId": null
+}

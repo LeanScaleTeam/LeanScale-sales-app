@@ -1,0 +1,12 @@
+{
+  "slug": "growth-model",
+  "title": "Growth Model",
+  "tier": "core",
+  "description": "Financial modeling integrating ARR targets with GTM efficiency metrics to create achievable quarterly revenue goals.",
+  "status": "published",
+  "competencyIds": [
+    "PL-1",
+    "PL-3"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

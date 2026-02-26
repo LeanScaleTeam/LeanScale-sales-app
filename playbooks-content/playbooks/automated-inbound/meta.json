@@ -1,0 +1,11 @@
+{
+  "slug": "automated-inbound",
+  "title": "Automated Inbound Data Enrichment",
+  "tier": "core",
+  "description": "Automate lead enrichment with firmographic and technographic data.",
+  "status": "published",
+  "competencyIds": [
+    "SY-6"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

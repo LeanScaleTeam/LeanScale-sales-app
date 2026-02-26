@@ -1,0 +1,13 @@
+{
+  "slug": "executive-reporting-suite",
+  "title": "Executive Reporting Suite",
+  "tier": "extended",
+  "description": "Build comprehensive executive dashboards for GTM performance.",
+  "status": "published",
+  "competencyIds": [
+    "PL-4",
+    "RP-1",
+    "RP-5"
+  ],
+  "loomEmbedId": null
+}

@@ -1,0 +1,11 @@
+{
+  "slug": "foundational-automations-and-reporting",
+  "title": "Foundational Automations and Reporting Logic",
+  "tier": "extended",
+  "description": "Build core CRM automations and reporting foundation.",
+  "status": "published",
+  "competencyIds": [
+    "SY-1"
+  ],
+  "loomEmbedId": null
+}

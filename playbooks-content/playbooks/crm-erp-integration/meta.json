@@ -1,0 +1,11 @@
+{
+  "slug": "crm-erp-integration",
+  "title": "CRM-ERP Integration",
+  "tier": "extended",
+  "description": "Integrate CRM with ERP for revenue operations.",
+  "status": "stub",
+  "competencyIds": [
+    "SY-7"
+  ],
+  "loomEmbedId": null
+}

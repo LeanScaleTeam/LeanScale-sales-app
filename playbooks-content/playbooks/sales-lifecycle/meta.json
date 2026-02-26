@@ -1,0 +1,11 @@
+{
+  "slug": "sales-lifecycle",
+  "title": "Sales Lifecycle",
+  "tier": "extended",
+  "description": "Define opportunity stages, exit criteria, and sales process.",
+  "status": "published",
+  "competencyIds": [
+    "PR-2"
+  ],
+  "loomEmbedId": null
+}

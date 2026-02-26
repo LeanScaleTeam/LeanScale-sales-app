@@ -1,0 +1,11 @@
+{
+  "slug": "customer-success-platform-implementation",
+  "title": "Customer Success Platform Implementation",
+  "tier": "extended",
+  "description": "Implement CS platform for health scoring and playbooks.",
+  "status": "published",
+  "competencyIds": [
+    "SY-4"
+  ],
+  "loomEmbedId": null
+}

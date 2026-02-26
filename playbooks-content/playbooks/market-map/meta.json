@@ -1,0 +1,11 @@
+{
+  "slug": "market-map",
+  "title": "Market Map",
+  "tier": "core",
+  "description": "Define ICP, target market segments, and account scoring methodology.",
+  "status": "published",
+  "competencyIds": [
+    "PR-8"
+  ],
+  "loomEmbedId": "dcbcfbcb84fd4c0dae37cf82adf4af09"
+}

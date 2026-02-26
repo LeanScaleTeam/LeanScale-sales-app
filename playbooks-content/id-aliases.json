@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "aliases": {
+    "lead-and-opportunity-attribution": "attribution",
+    "automated-inbound-data-enrichment": "automated-inbound",
+    "hubspot-to-salesforce-crm-migration": "hubspot-sfdc-migration",
+    "foundational-automations-and-reporting-logic": "foundational-automations-and-reporting",
+    "speed-to-lead": "speed-to-lead-sla-tracking",
+    "website-lead-capture-and-form-configuration": "website-lead-capture-and-form-compliance"
+  }
+}

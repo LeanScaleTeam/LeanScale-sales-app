@@ -1,0 +1,11 @@
+{
+  "slug": "conversation-intelligence-platform-implementation",
+  "title": "Conversation Intelligence Platform",
+  "tier": "extended",
+  "description": "Implement call recording and conversation intelligence.",
+  "status": "published",
+  "competencyIds": [
+    "EN-3"
+  ],
+  "loomEmbedId": null
+}

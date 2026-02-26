@@ -5,6 +5,8 @@
  * evidence quotes, consultant notes, linked services, and rubric reference.
  */
 
+import Link from 'next/link';
+import { useCustomer } from '../../../context/CustomerContext';
 import {
   V3_STATUS,
   V3_STATUS_COLORS,
@@ -21,6 +23,7 @@ export default function CompetencyDetailPanel({
   editMode,
   onScoreChange,
 }) {
+  const { customerPath } = useCustomer();
   const statusColor = score !== null && score !== undefined
     ? V3_STATUS_COLORS[Math.round(score)] || '#CBD5E0'
     : '#CBD5E0';
@@ -136,9 +139,14 @@ export default function CompetencyDetailPanel({
               const service = lookupServiceV3(sid);
               if (!service) return null;
               return (
-                <span key={sid} style={styles.serviceChip}>
+                <Link
+                  key={sid}
+                  href={customerPath(`/playbooks/${sid}`)}
+                  style={styles.serviceChip}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {service.icon} {service.name}
-                </span>
+                </Link>
               );
             })}
           </div>
@@ -312,5 +320,8 @@ const styles = {
     background: '#F3F0FF',
     color: '#6C5CE7',
     border: '1px solid #E9E4FF',
+    textDecoration: 'none',
+    cursor: 'pointer',
+    transition: 'background 0.15s ease',
   },
 };

@@ -2,13 +2,20 @@
  * DataCoverage — Shows data source coverage percentages
  *
  * Progress bars for API, Transcript, and Consultant coverage
- * with CTAs to fill gaps.
+ * with tier-aware breakdown and CTAs to fill gaps.
  */
 
 export default function DataCoverage({ dataCoverage, onUploadTranscript, onStartConsultant }) {
   if (!dataCoverage) return null;
 
-  const { coveragePercent, apiPercent, transcriptPercent, consultantPercent, totalCells, scoredCells } = dataCoverage;
+  const {
+    coveragePercent, apiPercent, transcriptPercent, consultantPercent,
+    totalCells, scoredCells,
+    tiers,
+    consultantNeeded,
+  } = dataCoverage;
+
+  const hasTiers = Boolean(tiers);
 
   return (
     <div style={styles.container}>
@@ -38,6 +45,52 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
         <SourceBar label="Consultant" percent={consultantPercent} color="#38A169" />
       </div>
 
+      {/* Tier breakdown */}
+      {hasTiers && (
+        <div style={styles.tierBreakdown}>
+          <h5 style={styles.subTitle}>Consultant Workload</h5>
+          <div style={styles.tierRow}>
+            <span style={styles.tierLabel}>Required</span>
+            <div style={styles.tierTrack}>
+              <div style={{
+                ...styles.tierFill,
+                width: `${tiers.required.percent}%`,
+                backgroundColor: tiers.required.percent === 100 ? '#48BB78' : '#E53E3E',
+              }} />
+            </div>
+            <span style={styles.tierValue}>
+              {tiers.required.scored}/{tiers.required.total}
+            </span>
+          </div>
+          <div style={styles.tierRow}>
+            <span style={styles.tierLabel}>Review</span>
+            <div style={styles.tierTrack}>
+              <div style={{
+                ...styles.tierFill,
+                width: `${tiers.review.percent}%`,
+                backgroundColor: tiers.review.percent === 100 ? '#48BB78' : '#ECC94B',
+              }} />
+            </div>
+            <span style={styles.tierValue}>
+              {tiers.review.scored}/{tiers.review.total}
+            </span>
+          </div>
+          <div style={styles.tierRow}>
+            <span style={styles.tierLabel}>Auto</span>
+            <div style={styles.tierTrack}>
+              <div style={{
+                ...styles.tierFill,
+                width: `${tiers.auto.percent}%`,
+                backgroundColor: '#3182CE',
+              }} />
+            </div>
+            <span style={styles.tierValue}>
+              {tiers.auto.scored}/{tiers.auto.total}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* CTAs */}
       <div style={styles.ctas}>
         {transcriptPercent < 30 && onUploadTranscript && (
@@ -45,7 +98,23 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
             Upload a Transcript
           </button>
         )}
-        {consultantPercent < 20 && onStartConsultant && (
+
+        {/* Tier 1 completion-based CTA */}
+        {hasTiers && tiers.required.percent < 100 && onStartConsultant && (
+          <button style={{ ...styles.ctaBtn, ...styles.ctaBtnSecondary }} onClick={onStartConsultant}>
+            Complete Required Assessment ({tiers.required.total - tiers.required.scored} remaining)
+          </button>
+        )}
+
+        {/* Tier 2 review CTA — only when Tier 1 is mostly done */}
+        {hasTiers && tiers.review.scored < tiers.review.total && tiers.required.percent >= 80 && onStartConsultant && (
+          <button style={{ ...styles.ctaBtn, ...styles.ctaBtnTertiary }} onClick={onStartConsultant}>
+            Review {tiers.review.total - tiers.review.scored} API Scores (optional)
+          </button>
+        )}
+
+        {/* Fallback for old results without tiers */}
+        {!hasTiers && consultantPercent < 20 && onStartConsultant && (
           <button style={{ ...styles.ctaBtn, ...styles.ctaBtnSecondary }} onClick={onStartConsultant}>
             Complete Consultant Assessment
           </button>
@@ -138,6 +207,48 @@ const styles = {
     minWidth: '2.5rem',
     textAlign: 'right',
   },
+  tierBreakdown: {
+    marginBottom: '1rem',
+    padding: '0.75rem',
+    background: '#F7FAFC',
+    borderRadius: 'var(--radius-md, 8px)',
+  },
+  subTitle: {
+    margin: '0 0 0.5rem',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    color: '#4A5568',
+  },
+  tierRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    marginBottom: '0.35rem',
+  },
+  tierLabel: {
+    fontSize: '0.7rem',
+    color: '#718096',
+    minWidth: '4rem',
+  },
+  tierTrack: {
+    flex: 1,
+    height: '6px',
+    borderRadius: '3px',
+    background: '#EDF2F7',
+    overflow: 'hidden',
+  },
+  tierFill: {
+    height: '100%',
+    borderRadius: '3px',
+    transition: 'width 0.3s ease',
+  },
+  tierValue: {
+    fontSize: '0.7rem',
+    fontWeight: 600,
+    color: '#4A5568',
+    minWidth: '3rem',
+    textAlign: 'right',
+  },
   ctas: {
     display: 'flex',
     gap: '0.5rem',
@@ -157,5 +268,11 @@ const styles = {
     background: 'transparent',
     border: '1px solid var(--ls-purple, #6C5CE7)',
     color: 'var(--ls-purple, #6C5CE7)',
+  },
+  ctaBtnTertiary: {
+    background: 'transparent',
+    border: '1px solid #A0AEC0',
+    color: '#718096',
+    fontSize: '0.75rem',
   },
 };

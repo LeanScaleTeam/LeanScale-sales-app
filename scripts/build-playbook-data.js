@@ -38,7 +38,12 @@ function readMeta(slug) {
 
 function buildContent() {
   if (!fs.existsSync(REGISTRY_PATH)) {
-    console.error('registry.json not found. Run scripts/migrate-to-shared-package.js first.');
+    if (fs.existsSync(OUTPUT_CONTENT)) {
+      console.log('playbooks-content/ submodule not initialized — using committed data/playbook-content.js');
+      return;
+    }
+    console.error('registry.json not found and no committed playbook-content.js exists.');
+    console.error('Run: git submodule update --init');
     process.exit(1);
   }
 

@@ -10,6 +10,14 @@ import { supabaseAdmin } from '../../../lib/supabase';
 import { extractSalesforceSignals } from '../../../lib/diagnostic-engine/signal-extractor-sf';
 import { inferEnhancedAnswers } from '../../../lib/diagnostic-engine/intake-inferrer-sf-enhanced';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });

@@ -353,6 +353,10 @@ export default function IntakeForm() {
                 slug={customer?.slug}
                 status={salesforceStatus}
                 onSaveAllAnswers={() => saveSection('A', answers)}
+                onUploadSuccess={() => {
+                  setSalesforceStatus((prev) => ({ ...prev, connected: true, signalsReady: true, source: 'upload' }));
+                  setCurrentSection('sf-analyzing');
+                }}
               />
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
                 <button

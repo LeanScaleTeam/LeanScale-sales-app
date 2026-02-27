@@ -325,6 +325,25 @@ This section covers intake form details shared across both CRM paths.
 - The progress bar at the top shows which section you're on
 - You cannot skip sections — they must be completed in order
 
+### Pre-fill from Slack Intake Form
+
+If you have a completed pre-diagnostic questionnaire from Slack, you can pre-fill the intake form:
+
+1. On Section A, click the purple **"Have a completed intake form? Paste it here to pre-fill"** banner
+2. Paste the raw Slack form output into the text area (the `Key:Value` format)
+3. Click **Parse & Pre-fill**
+4. The banner collapses and shows a summary: "Pre-filled X of Y fields"
+
+**What gets mapped:**
+- **CRM and ARR** → Section A answers
+- **Tool stack** (Marketo, Salesloft, Gong, ZoomInfo, etc.) → Section B tool checkboxes
+- **Revenue metrics** (bookings, SQL, MQL, conversion rates, churn, retention) → Section D Power 10 context
+- **Biggest pains / Biggest opportunities** → A "Notes from intake call" panel that appears at the top of Sections B, C, and D
+
+Pre-filled answers show blue **"From intake form"** badges. Click any answer to override — the badge disappears.
+
+If you also connect Salesforce, the CRM inference runs on top of the Slack pre-fill. CRM-detected answers take precedence since they're verified from metadata.
+
 ---
 
 ## 6. Diagnostic Results

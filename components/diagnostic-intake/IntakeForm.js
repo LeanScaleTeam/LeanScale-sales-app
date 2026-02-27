@@ -18,6 +18,7 @@ import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
+import IntakeContextPanel from './IntakeContextPanel';
 
 const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'review'];
 const SECTION_TITLES = {
@@ -45,6 +46,7 @@ export default function IntakeForm() {
   const [salesforceStatus, setSalesforceStatus] = useState(null);
   const [salesforceError, setSalesforceError] = useState(null);
   const [preFill, setPreFill] = useState({});
+  const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
 
   const skipRules = getSkipRules(answers);
@@ -319,6 +321,22 @@ export default function IntakeForm() {
             <SectionA
               answers={answers}
               onComplete={(a) => handleSectionComplete('A', a)}
+              onSlackFormParsed={(result) => {
+                // Merge parsed answers into current answers
+                setAnswers((prev) => ({ ...prev, ...result.answers }));
+                // Merge preFill (Slack form is lower priority than CRM inference)
+                setPreFill((prev) => {
+                  const merged = { ...prev };
+                  for (const [key, val] of Object.entries(result.preFill)) {
+                    if (!merged[key]) merged[key] = val;
+                  }
+                  return merged;
+                });
+                // Store context notes
+                if (result.contextNotes && Object.keys(result.contextNotes).length > 0) {
+                  setContextNotes(result.contextNotes);
+                }
+              }}
             />
           )}
 
@@ -351,7 +369,9 @@ export default function IntakeForm() {
             <AnalyzingScreen
               customerId={customer?.id}
               onComplete={(inferredPreFill) => {
-                setPreFill(inferredPreFill);
+                // Merge CRM inference on top of any existing Slack form pre-fills
+                // CRM inference takes precedence for overlapping fields
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
@@ -365,33 +385,42 @@ export default function IntakeForm() {
           )}
 
           {currentSection === 'B' && (
-            <SectionB
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('B', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionB
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('B', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
           )}
 
           {currentSection === 'C' && (
-            <SectionC
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('C', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionC
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('C', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
           )}
 
           {currentSection === 'D' && (
-            <SectionD
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('D', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionD
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('D', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
           )}
 
           {currentSection === 'review' && (

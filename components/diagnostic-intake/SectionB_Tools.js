@@ -80,7 +80,9 @@ export default function SectionB({ answers, skipRules, preFill = {}, onComplete,
               />
               <span style={{ fontSize: 'var(--text-sm)' }}>{tool.label}</span>
               {isPreFilled && (
-                <span style={styles.autoDetectedBadge}>Auto-detected</span>
+                <span style={styles.autoDetectedBadge}>
+                  {preFill.B1_tools?.source === 'slack-form' ? 'From intake form' : 'Auto-detected'}
+                </span>
               )}
             </label>
 

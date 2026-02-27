@@ -87,7 +87,7 @@ export default function SectionC({ answers, skipRules, preFill = {}, onComplete,
             </div>
             {showBadge && (
               <div style={styles.autoDetectedHint}>
-                Auto-detected: {pf.evidence}
+                {pf.source === 'slack-form' ? 'From intake form' : `Auto-detected: ${pf.evidence}`}
               </div>
             )}
           </div>

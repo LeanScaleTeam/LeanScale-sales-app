@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import SlackFormBanner from './SlackFormBanner';
 
 const QUESTIONS = [
   {
@@ -33,7 +34,7 @@ const QUESTIONS = [
   },
 ];
 
-export default function SectionA({ answers, onComplete }) {
+export default function SectionA({ answers, onComplete, onSlackFormParsed }) {
   const [local, setLocal] = useState(() => {
     const init = {};
     for (const q of QUESTIONS) init[q.key] = answers[q.key] || '';
@@ -51,10 +52,24 @@ export default function SectionA({ answers, onComplete }) {
     setLocal((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSlackFormParsed = (result) => {
+    // Update local state with any Section A answers
+    const sectionAKeys = QUESTIONS.map((q) => q.key);
+    for (const key of sectionAKeys) {
+      if (result.answers[key]) {
+        setLocal((prev) => ({ ...prev, [key]: result.answers[key] }));
+      }
+    }
+    // Pass full result up to IntakeForm
+    if (onSlackFormParsed) onSlackFormParsed(result);
+  };
+
   return (
     <div style={styles.section}>
       <h2 style={styles.sectionTitle}>Company Profile</h2>
       <p style={styles.sectionDesc}>Tell us about your organization so we can tailor the diagnostic.</p>
+
+      <SlackFormBanner onParsed={handleSlackFormParsed} />
 
       {visibleQuestions.map((q) => (
         <div key={q.key} style={styles.question}>

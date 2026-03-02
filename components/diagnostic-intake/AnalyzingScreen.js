@@ -1,5 +1,5 @@
 /**
- * AnalyzingScreen — Progress UI shown while downloading Salesforce metadata
+ * AnalyzingScreen — Progress UI shown while downloading CRM metadata
  * and running intake inference.
  *
  * Shows 3 animated steps, then calls onComplete with the preFill map.
@@ -9,12 +9,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const STEPS = [
-  { key: 'connect', label: 'Connecting to Salesforce...' },
+  { key: 'connect', label: 'Connecting to your CRM...' },
   { key: 'download', label: 'Downloading org metadata...' },
   { key: 'analyze', label: 'Analyzing your configuration...' },
 ];
 
-export default function AnalyzingScreen({ customerId, onComplete, onError }) {
+export default function AnalyzingScreen({ customerId, crmType = 'salesforce', onComplete, onError }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
 
@@ -38,14 +38,15 @@ export default function AnalyzingScreen({ customerId, onComplete, onError }) {
 
       // Step 3: Run inference
       try {
-        const res = await fetch('/api/salesforce/infer', {
+        const inferUrl = crmType === 'hubspot' ? '/api/hubspot/infer' : '/api/salesforce/infer';
+        const res = await fetch(inferUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ customerId }),
         });
 
         if (!res.ok) {
-          throw new Error('Failed to analyze Salesforce data');
+          throw new Error('Failed to analyze CRM data');
         }
 
         const data = await res.json();
@@ -78,7 +79,7 @@ export default function AnalyzingScreen({ customerId, onComplete, onError }) {
           style={styles.spinner}
         />
       </div>
-      <h2 style={styles.title}>Analyzing Salesforce Org</h2>
+      <h2 style={styles.title}>Analyzing Your CRM</h2>
       <p style={styles.subtitle}>This takes a few seconds...</p>
 
       <div style={styles.steps}>

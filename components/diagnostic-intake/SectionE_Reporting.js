@@ -35,7 +35,7 @@ const POWER_10_OPTIONS = ['Automated', 'Manual calc', "Can't report"];
 export default function SectionE_Reporting({ answers, skipRules, preFill = {}, onComplete, onBack }) {
   // Filter reporting questions based on CRM-adaptive visibility
   const visibleReporting = REPORTING_QUESTIONS.filter((q) => {
-    if (q.hideWhenAutoDetected && skipRules.hasSalesforceSignals) return false;
+    if (q.hideWhenAutoDetected && (skipRules.hasSalesforceSignals || skipRules.hasHubSpotSignals)) return false;
     return true;
   });
 

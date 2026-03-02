@@ -22,11 +22,12 @@ import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
 import IntakeContextPanel from './IntakeContextPanel';
 
-const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
+const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
+  'hs-analyzing': 'Analyzing',
   B: 'GTM Tools',
   C: 'Team & Organization',
   D: 'Process Maturity',
@@ -115,6 +116,7 @@ export default function IntakeForm() {
         signalsReady: true,
       }));
       setHubspotError(null);
+      setCurrentSection('hs-analyzing');
     } else if (hubspot === 'error') {
       setHubspotError(reason || 'HubSpot connection failed. You can continue without it or try again.');
     }
@@ -171,12 +173,14 @@ export default function IntakeForm() {
       // Navigate to next section
       if (section === 'A' && sectionAnswers.A1 === 'Salesforce') {
         setCurrentSection('sf-connect');
+      } else if (section === 'A' && sectionAnswers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+        setCurrentSection('hs-analyzing');
       } else {
         const idx = SECTIONS.indexOf(currentSection);
         if (idx < SECTIONS.length - 1) {
           let nextIdx = idx + 1;
           // Skip utility sections (sf-connect, sf-analyzing) when navigating forward
-          while (nextIdx < SECTIONS.length - 1 && ['sf-connect', 'sf-analyzing'].includes(SECTIONS[nextIdx])) {
+          while (nextIdx < SECTIONS.length - 1 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
             nextIdx++;
           }
           setCurrentSection(SECTIONS[nextIdx]);
@@ -254,6 +258,10 @@ export default function IntakeForm() {
       setCurrentSection('A');
       return;
     }
+    if (currentSection === 'B' && answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+      setCurrentSection('A');
+      return;
+    }
     // Skip sf-analyzing and sf-connect when navigating backward
     if (currentSection === 'B') {
       setCurrentSection('A');
@@ -263,7 +271,7 @@ export default function IntakeForm() {
     if (idx > 0) {
       let prevIdx = idx - 1;
       // Skip utility sections when going back
-      while (prevIdx > 0 && ['sf-connect', 'sf-analyzing'].includes(SECTIONS[prevIdx])) {
+      while (prevIdx > 0 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
         prevIdx--;
       }
       setCurrentSection(SECTIONS[prevIdx]);
@@ -324,7 +332,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing'].includes(s))}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -394,6 +402,7 @@ export default function IntakeForm() {
           {currentSection === 'sf-analyzing' && (
             <AnalyzingScreen
               customerId={customer?.id}
+              crmType="salesforce"
               onComplete={(inferredPreFill) => {
                 // Merge CRM inference on top of any existing Slack form pre-fills
                 // CRM inference takes precedence for overlapping fields
@@ -405,6 +414,24 @@ export default function IntakeForm() {
               }}
               onError={(errMsg) => {
                 setSalesforceError(errMsg);
+                setCurrentSection('B');
+              }}
+            />
+          )}
+
+          {currentSection === 'hs-analyzing' && (
+            <AnalyzingScreen
+              customerId={customer?.id}
+              crmType="hubspot"
+              onComplete={(inferredPreFill) => {
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
+                if (inferredPreFill.A2) {
+                  setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
+                }
+                setCurrentSection('B');
+              }}
+              onError={(errMsg) => {
+                setHubspotError(errMsg);
                 setCurrentSection('B');
               }}
             />
@@ -428,6 +455,7 @@ export default function IntakeForm() {
               <IntakeContextPanel contextNotes={contextNotes} />
               <SectionC
                 answers={answers}
+                preFill={preFill}
                 onComplete={(a) => handleSectionComplete('C', a)}
                 onBack={handleBack}
               />
@@ -465,6 +493,7 @@ export default function IntakeForm() {
               <IntakeContextPanel contextNotes={contextNotes} />
               <SectionF
                 answers={answers}
+                preFill={preFill}
                 onComplete={(a) => handleSectionComplete('F', a)}
                 onBack={handleBack}
               />

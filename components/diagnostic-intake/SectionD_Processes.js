@@ -51,7 +51,7 @@ export default function SectionD_Processes({ answers, skipRules, preFill = {}, o
   // Filter questions based on skip rules + CRM-adaptive visibility
   const questions = ALL_QUESTIONS.filter((q) => {
     if (skipRules.skipPartnerQuestions && q.tags?.includes('partner')) return false;
-    if (q.hideWhenAutoDetected && skipRules.hasSalesforceSignals) return false;
+    if (q.hideWhenAutoDetected && (skipRules.hasSalesforceSignals || skipRules.hasHubSpotSignals)) return false;
     return true;
   });
 

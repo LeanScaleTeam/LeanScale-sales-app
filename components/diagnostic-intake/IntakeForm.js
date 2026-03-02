@@ -12,22 +12,26 @@ import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
-import SectionC from './SectionC_Processes';
-import SectionD from './SectionD_Reporting';
+import SectionC from './SectionC_TeamOrg';
+import SectionD from './SectionD_Processes';
+import SectionE from './SectionE_Reporting';
+import SectionF from './SectionF_PlanningEnablement';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
 import IntakeContextPanel from './IntakeContextPanel';
 
-const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'review'];
+const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
   B: 'GTM Tools',
-  C: 'Processes',
-  D: 'Reporting & Metrics',
+  C: 'Team & Organization',
+  D: 'Process Maturity',
+  E: 'Reporting & Metrics',
+  F: 'Planning & Enablement',
   review: 'Review & Submit',
 };
 
@@ -49,7 +53,8 @@ export default function IntakeForm() {
   const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
 
-  const skipRules = getSkipRules(answers);
+  const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
+  const skipRules = getSkipRules(answers, crmMetadataExists);
 
   // Load existing intake answers on mount
   useEffect(() => {
@@ -169,7 +174,12 @@ export default function IntakeForm() {
       } else {
         const idx = SECTIONS.indexOf(currentSection);
         if (idx < SECTIONS.length - 1) {
-          setCurrentSection(SECTIONS[idx + 1]);
+          let nextIdx = idx + 1;
+          // Skip utility sections (sf-connect, sf-analyzing) when navigating forward
+          while (nextIdx < SECTIONS.length - 1 && ['sf-connect', 'sf-analyzing'].includes(SECTIONS[nextIdx])) {
+            nextIdx++;
+          }
+          setCurrentSection(SECTIONS[nextIdx]);
         }
       }
     },
@@ -244,8 +254,20 @@ export default function IntakeForm() {
       setCurrentSection('A');
       return;
     }
+    // Skip sf-analyzing and sf-connect when navigating backward
+    if (currentSection === 'B') {
+      setCurrentSection('A');
+      return;
+    }
     const idx = SECTIONS.indexOf(currentSection);
-    if (idx > 0) setCurrentSection(SECTIONS[idx - 1]);
+    if (idx > 0) {
+      let prevIdx = idx - 1;
+      // Skip utility sections when going back
+      while (prevIdx > 0 && ['sf-connect', 'sf-analyzing'].includes(SECTIONS[prevIdx])) {
+        prevIdx--;
+      }
+      setCurrentSection(SECTIONS[prevIdx]);
+    }
   };
 
   if (loadingIntake) {
@@ -406,10 +428,8 @@ export default function IntakeForm() {
               <IntakeContextPanel contextNotes={contextNotes} />
               <SectionC
                 answers={answers}
-                skipRules={skipRules}
                 onComplete={(a) => handleSectionComplete('C', a)}
                 onBack={handleBack}
-                preFill={preFill}
               />
             </>
           )}
@@ -423,6 +443,30 @@ export default function IntakeForm() {
                 onComplete={(a) => handleSectionComplete('D', a)}
                 onBack={handleBack}
                 preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'E' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionE
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('E', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'F' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionF
+                answers={answers}
+                onComplete={(a) => handleSectionComplete('F', a)}
+                onBack={handleBack}
               />
             </>
           )}

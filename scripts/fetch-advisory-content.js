@@ -1,8 +1,13 @@
 /**
- * Fetches advisory content from playbooks.leanscale.team for all playbooks
- * and updates data/playbook-advisory.json with the structured content.
+ * Fetches playbook content from playbooks.leanscale.team for all playbooks.
+ * Supports three content types: advisory, methodology, implementation.
  *
- * Usage: node scripts/fetch-advisory-content.js
+ * Usage:
+ *   node scripts/fetch-advisory-content.js                  # fetch advisory only (default)
+ *   node scripts/fetch-advisory-content.js --type methodology
+ *   node scripts/fetch-advisory-content.js --type implementation
+ *   node scripts/fetch-advisory-content.js --type all       # fetch all three
+ *   node scripts/fetch-advisory-content.js --force           # refetch existing files
  */
 const https = require('https');
 const fs = require('fs');
@@ -40,10 +45,10 @@ function getTier(siteId) {
   return CORE_IDS.includes(siteId) ? 'core' : 'extended';
 }
 
-function getAdvisoryUrl(localId) {
+function getContentUrl(localId, contentType) {
   const siteId = getSiteId(localId);
   const tier = getTier(siteId);
-  return `${BASE_URL}/docs/${tier}/${siteId}/advisory`;
+  return `${BASE_URL}/docs/${tier}/${siteId}/${contentType}`;
 }
 
 function fetchPage(url) {
@@ -212,10 +217,34 @@ async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const CONTENT_TYPES = ['advisory', 'methodology', 'implementation'];
+
+function getContentTypes() {
+  const typeArg = process.argv.find(a => a.startsWith('--type='));
+  if (typeArg) {
+    const val = typeArg.split('=')[1];
+    if (val === 'all') return CONTENT_TYPES;
+    if (CONTENT_TYPES.includes(val)) return [val];
+  }
+  const typeIdx = process.argv.indexOf('--type');
+  if (typeIdx !== -1 && process.argv[typeIdx + 1]) {
+    const val = process.argv[typeIdx + 1];
+    if (val === 'all') return CONTENT_TYPES;
+    if (CONTENT_TYPES.includes(val)) return [val];
+  }
+  return ['advisory']; // default
+}
+
 async function main() {
-  const advisoryDir = path.join(__dirname, '..', 'data', 'advisory');
-  if (!fs.existsSync(advisoryDir)) {
-    fs.mkdirSync(advisoryDir, { recursive: true });
+  const types = getContentTypes();
+  const force = process.argv.includes('--force');
+
+  // Ensure all output directories exist
+  for (const type of types) {
+    const dir = path.join(__dirname, '..', 'data', type);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
   }
 
   // Read existing playbook content to get the list of IDs
@@ -228,53 +257,56 @@ async function main() {
   const localIds = idMatches.map(m => m.match(/'([^']+)'/)[1]);
 
   console.log(`Found ${localIds.length} playbook IDs in playbook-content.js`);
+  console.log(`Fetching content types: ${types.join(', ')}`);
 
-  let successCount = 0;
-  let errorCount = 0;
-  let skipCount = 0;
+  for (const contentType of types) {
+    console.log(`\n--- ${contentType.toUpperCase()} ---`);
+    const outputDir = path.join(__dirname, '..', 'data', contentType);
 
-  for (const localId of localIds) {
-    if (SKIP_IDS.includes(localId)) {
-      console.log(`  SKIP: ${localId} (no advisory page)`);
-      skipCount++;
-      continue;
-    }
+    let successCount = 0;
+    let errorCount = 0;
+    let skipCount = 0;
 
-    // Skip if markdown file already exists (use --force to refetch)
-    const mdPath = path.join(advisoryDir, `${localId}.md`);
-    if (fs.existsSync(mdPath) && !process.argv.includes('--force')) {
-      console.log(`  EXISTS: ${localId} (use --force to refetch)`);
-      skipCount++;
-      continue;
-    }
-
-    const url = getAdvisoryUrl(localId);
-    process.stdout.write(`  Fetching: ${localId}... `);
-
-    try {
-      const html = await fetchPage(url);
-      const article = extractArticleContent(html);
-      const markdown = htmlToText(article);
-
-      if (markdown.length > 100) {
-        fs.writeFileSync(mdPath, markdown);
-        console.log(`OK (${markdown.length} chars) -> ${localId}.md`);
-        successCount++;
-      } else {
-        console.log('WARN: content too short, skipping');
+    for (const localId of localIds) {
+      if (SKIP_IDS.includes(localId)) {
+        console.log(`  SKIP: ${localId} (no page)`);
+        skipCount++;
+        continue;
       }
-    } catch (err) {
-      console.log(`ERROR: ${err.message}`);
-      errorCount++;
+
+      const mdPath = path.join(outputDir, `${localId}.md`);
+      if (fs.existsSync(mdPath) && !force) {
+        skipCount++;
+        continue;
+      }
+
+      const url = getContentUrl(localId, contentType);
+      process.stdout.write(`  Fetching: ${localId} (${contentType})... `);
+
+      try {
+        const html = await fetchPage(url);
+        const article = extractArticleContent(html);
+        const markdown = htmlToText(article);
+
+        if (markdown.length > 100) {
+          fs.writeFileSync(mdPath, markdown);
+          console.log(`OK (${markdown.length} chars)`);
+          successCount++;
+        } else {
+          console.log('WARN: content too short, skipping');
+        }
+      } catch (err) {
+        console.log(`ERROR: ${err.message}`);
+        errorCount++;
+      }
+
+      await sleep(200);
     }
 
-    // Rate limit: 200ms between requests
-    await sleep(200);
+    console.log(`${contentType}: ${successCount} fetched, ${skipCount} skipped, ${errorCount} errors`);
   }
 
-  console.log(`\nFetch complete! ${successCount} fetched, ${skipCount} skipped, ${errorCount} errors`);
-  console.log(`Markdown files saved to data/advisory/`);
-  console.log(`\nRun 'node scripts/build-advisory-json.js' to compile into JSON`);
+  console.log(`\nRun 'node scripts/build-playbook-content-json.js' to compile into JSON`);
 }
 
 main().catch(console.error);

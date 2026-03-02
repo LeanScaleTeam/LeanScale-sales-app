@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { playbooks } from '../../data/services-catalog';
 import { playbookContent } from '../../data/playbook-content';
 import advisoryData from '../../data/playbook-advisory.json';
+import extendedData from '../../data/playbook-extended.json';
 import { useCustomer } from '../../context/CustomerContext';
 
 function formatInlineText(text) {
@@ -241,14 +243,43 @@ function renderMarkdownContent(text) {
   return elements;
 }
 
+function renderSectionCard(icon, title, markdownContent) {
+  if (!markdownContent) return null;
+  return (
+    <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+      <h2 style={{
+        fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+      }}>
+        <span style={{ fontSize: '1.25rem' }}>{icon}</span> {title}
+      </h2>
+      <div style={{ color: '#374151' }}>
+        {renderMarkdownContent(markdownContent)}
+      </div>
+    </section>
+  );
+}
+
+function renderRawSections(sections) {
+  if (!sections) return null;
+  return Object.entries(sections).map(([title, content]) => (
+    renderSectionCard('', title, content)
+  ));
+}
+
 export default function PlaybookDetail() {
   const router = useRouter();
   const { id } = router.query;
   const { customerPath } = useCustomer();
-  
+  const [activeTab, setActiveTab] = useState('advisory');
+
   const playbook = id ? playbooks.find(p => p.id === id) : null;
   const content = id ? playbookContent[id] : null;
   const advisory = id ? advisoryData[id] : null;
+  const extended = id ? extendedData[id] : null;
+
+  const hasMethodology = extended && (extended.methodology || extended.methodologyRaw);
+  const hasImplementation = extended && (extended.implementation || extended.implementationRaw);
 
   if (!router.isReady) {
     return (
@@ -314,7 +345,41 @@ export default function PlaybookDetail() {
           </p>
         </div>
 
-        {content && (
+        {(hasMethodology || hasImplementation) && (
+          <div style={{
+            display: 'flex',
+            gap: '0',
+            marginBottom: '2rem',
+            borderBottom: '2px solid #e5e7eb',
+          }}>
+            {[
+              { key: 'advisory', label: 'Advisory' },
+              hasMethodology && { key: 'methodology', label: 'Methodology' },
+              hasImplementation && { key: 'implementation', label: 'Implementation' },
+            ].filter(Boolean).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeTab === tab.key ? '2px solid #7c3aed' : '2px solid transparent',
+                  marginBottom: '-2px',
+                  cursor: 'pointer',
+                  fontWeight: activeTab === tab.key ? 600 : 400,
+                  color: activeTab === tab.key ? '#7c3aed' : '#6b7280',
+                  fontSize: '0.95rem',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {content && activeTab === 'advisory' && (
           <>
             {content.definition && (content.definition.whatItIs || content.definition.whatItIsNot) && (
               <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
@@ -452,7 +517,7 @@ export default function PlaybookDetail() {
           </>
         )}
 
-        {advisory && advisory.sections && (
+        {advisory && advisory.sections && activeTab === 'advisory' && (
           <>
             {advisory.sections.projectOverview && (
               <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
@@ -560,6 +625,63 @@ export default function PlaybookDetail() {
                 marginBottom: '1rem',
               }}>
                 Source: <a href={advisory.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'methodology' && extended && (
+          <>
+            {extended.methodology ? (
+              <>
+                {renderSectionCard('🧠', 'Core Concepts', extended.methodology.coreConcepts)}
+                {renderSectionCard('🔀', 'Decision Frameworks', extended.methodology.decisionFrameworks)}
+                {renderSectionCard('📏', 'Benchmarks & Standards', extended.methodology.benchmarks)}
+                {renderSectionCard('🔢', 'Calculations & Scoring', extended.methodology.calculations)}
+                {renderSectionCard('🔎', 'Edge Cases', extended.methodology.edgeCases)}
+                {extended.methodology.references && renderSectionCard('📚', 'References', extended.methodology.references)}
+              </>
+            ) : extended.methodologyRaw ? (
+              renderRawSections(extended.methodologyRaw)
+            ) : null}
+            {extended.sourceUrls && extended.sourceUrls.methodology && (
+              <div style={{
+                textAlign: 'right',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginBottom: '1rem',
+              }}>
+                Source: <a href={extended.sourceUrls.methodology} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'implementation' && extended && (
+          <>
+            {extended.implementation ? (
+              <>
+                {renderSectionCard('📋', 'Project One-Pager', extended.implementation.projectOnePager)}
+                {renderSectionCard('🎯', 'Phase 1: Strategy', extended.implementation.phaseStrategy)}
+                {renderSectionCard('⚙️', 'Phase 2: Engineering', extended.implementation.phaseEngineering)}
+                {renderSectionCard('📚', 'Phase 3: Enablement', extended.implementation.phaseEnablement)}
+                {renderSectionCard('🤝', 'Phase 4: Handoff', extended.implementation.phaseHandoff)}
+                {extended.implementation.deliverables && renderSectionCard('📦', 'Deliverables', extended.implementation.deliverables)}
+                {extended.implementation.references && renderSectionCard('📚', 'References', extended.implementation.references)}
+              </>
+            ) : extended.implementationRaw ? (
+              renderRawSections(extended.implementationRaw)
+            ) : null}
+            {extended.sourceUrls && extended.sourceUrls.implementation && (
+              <div style={{
+                textAlign: 'right',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginBottom: '1rem',
+              }}>
+                Source: <a href={extended.sourceUrls.implementation} target="_blank" rel="noopener noreferrer"
                   style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
               </div>
             )}

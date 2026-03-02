@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { playbooks } from '../../data/services-catalog';
 import { playbookContent } from '../../data/playbook-content';
+import advisoryData from '../../data/playbook-advisory.json';
 import { useCustomer } from '../../context/CustomerContext';
 
 function formatInlineText(text) {
@@ -58,13 +59,84 @@ function renderMarkdownContent(text) {
     }
   };
   
+  // Table rendering helper
+  const flushTable = (tableRows) => {
+    if (tableRows.length < 2) return;
+    const headers = tableRows[0];
+    const dataRows = tableRows.slice(2); // skip separator row
+    elements.push(
+      <div key={elements.length} style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
+        <table style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+        }}>
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} style={{
+                  padding: '0.5rem 0.75rem',
+                  borderBottom: '2px solid #e5e7eb',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: '#f9fafb',
+                }}>
+                  {formatInlineText(h.trim())}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {dataRows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => (
+                  <td key={ci} style={{
+                    padding: '0.5rem 0.75rem',
+                    borderBottom: '1px solid #f3f4f6',
+                    color: '#4b5563',
+                  }}>
+                    {formatInlineText(cell.trim())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  let tableRows = [];
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
+    // Table row detection
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      flushList();
+      const cells = line.split('|').slice(1, -1); // remove empty first/last from split
+      if (line.match(/^\|[\s-:|]+\|$/)) {
+        // Separator row - just push a marker
+        tableRows.push('separator');
+      } else {
+        tableRows.push(cells);
+      }
+      continue;
+    } else if (tableRows.length > 0) {
+      // End of table
+      const headerAndData = tableRows.filter(r => r !== 'separator');
+      if (headerAndData.length >= 2) {
+        flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
+      }
+      tableRows = [];
+    }
+
     if (line.match(/^---+$/)) {
       flushList();
       elements.push(
-        <hr key={elements.length} style={{ 
+        <hr key={elements.length} style={{
           border: 'none',
           borderTop: '1px solid #e5e7eb',
           margin: '1.5rem 0',
@@ -159,6 +231,13 @@ function renderMarkdownContent(text) {
   }
   
   flushList();
+  // Flush any remaining table
+  if (tableRows.length > 0) {
+    const headerAndData = tableRows.filter(r => r !== 'separator');
+    if (headerAndData.length >= 2) {
+      flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
+    }
+  }
   return elements;
 }
 
@@ -169,6 +248,7 @@ export default function PlaybookDetail() {
   
   const playbook = id ? playbooks.find(p => p.id === id) : null;
   const content = id ? playbookContent[id] : null;
+  const advisory = id ? advisoryData[id] : null;
 
   if (!router.isReady) {
     return (
@@ -372,19 +452,133 @@ export default function PlaybookDetail() {
           </>
         )}
 
+        {advisory && advisory.sections && (
+          <>
+            {advisory.sections.projectOverview && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>🎯</span> Project Overview
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.projectOverview)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.toolsAndSystems && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>🛠️</span> Tools & Systems
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.toolsAndSystems)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.stakeholdersAndRoles && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>👥</span> Stakeholders & Roles
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.stakeholdersAndRoles)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.scoping && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>📐</span> Scoping
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.scoping)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.discoveryQuestions && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>❓</span> Discovery Questions
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.discoveryQuestions)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.beliefBarriers && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>💬</span> Overcoming Belief Barriers
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.beliefBarriers)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sections.metricsImpact && (
+              <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                <h2 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>📊</span> Metrics Impact & Success Measurement
+                </h2>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(advisory.sections.metricsImpact)}
+                </div>
+              </section>
+            )}
+
+            {advisory.sourceUrl && (
+              <div style={{
+                textAlign: 'right',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginBottom: '1rem',
+              }}>
+                Source: <a href={advisory.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+              </div>
+            )}
+          </>
+        )}
+
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <Link 
+          <Link
             href={customerPath("/try-leanscale/start")}
             className="btn btn-primary"
             style={{ marginRight: '1rem' }}
           >
             Start GTM Diagnostic
           </Link>
-          <Link 
-            href={customerPath('/why-leanscale/services')} 
+          <Link
+            href={customerPath('/why-leanscale/services')}
             className="btn"
-            style={{ 
-              background: 'white', 
+            style={{
+              background: 'white',
               border: '1px solid #e5e7eb',
               color: '#374151',
             }}

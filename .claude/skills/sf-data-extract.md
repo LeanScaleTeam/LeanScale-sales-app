@@ -64,13 +64,13 @@ sf data query -q "SELECT MasterLabel, DefaultProbability, IsClosed, IsWon, SortO
 
 sf data query -q "SELECT MasterLabel, SortOrder FROM LeadStatus ORDER BY SortOrder" -o $ORG --json > /tmp/sf-extract/lead-statuses.json
 
-sf data query -q "SELECT Id, DeveloperName, ParentRoleId FROM UserRole" -o $ORG --json > /tmp/sf-extract/roles.json
+sf data query -q "SELECT Id, Name, DeveloperName, ParentRoleId FROM UserRole" -o $ORG --json > /tmp/sf-extract/roles.json
 
 sf data query -q "SELECT Id, Name, FolderName FROM Report LIMIT 200" -o $ORG --json > /tmp/sf-extract/reports.json
 
 sf data query -q "SELECT Id, Title, FolderName FROM Dashboard LIMIT 200" -o $ORG --json > /tmp/sf-extract/dashboards.json
 
-sf data query -q "SELECT SobjectType, COUNT(Id) cnt FROM RecordType GROUP BY SobjectType" -o $ORG --json > /tmp/sf-extract/record-types.json
+sf data query -q "SELECT Id, Name, DeveloperName, SobjectType, IsActive FROM RecordType WHERE IsActive = true" -o $ORG --json > /tmp/sf-extract/record-types.json
 
 sf data query -q "SELECT Id, Name, Type, IsActive, NumberOfContacts, NumberOfOpportunities, NumberOfLeads FROM Campaign WHERE IsActive = true LIMIT 200" -o $ORG --json > /tmp/sf-extract/campaigns.json
 
@@ -90,9 +90,9 @@ sf data query -q "SELECT COUNT(Id) cnt FROM CampaignMember" -o $ORG --json > /tm
 ### Tooling API Queries
 
 ```bash
-sf data query -q "SELECT Id, Status, ProcessType, Label FROM Flow WHERE Status = 'Active'" -o $ORG --use-tooling-api --json > /tmp/sf-extract/flows.json
+sf data query -q "SELECT Id, Status, ProcessType, MasterLabel FROM Flow WHERE Status = 'Active'" -o $ORG --use-tooling-api --json > /tmp/sf-extract/flows.json
 
-sf data query -q "SELECT Id, Name, TableEnumOrId FROM WorkflowRule WHERE Active = true" -o $ORG --use-tooling-api --json > /tmp/sf-extract/workflow-rules.json
+sf data query -q "SELECT Id, Name, TableEnumOrId FROM WorkflowRule" -o $ORG --use-tooling-api --json > /tmp/sf-extract/workflow-rules.json
 
 sf data query -q "SELECT Id, ValidationName, EntityDefinition.QualifiedApiName, Active FROM ValidationRule WHERE Active = true" -o $ORG --use-tooling-api --json > /tmp/sf-extract/validation-rules.json
 
@@ -110,7 +110,7 @@ sf data query -q "SELECT Id, MasterLabel FROM NamedCredential" -o $ORG --use-too
 
 sf data query -q "SELECT Id, SubscriberPackage.Name, SubscriberPackageVersion.Name FROM InstalledSubscriberPackage" -o $ORG --use-tooling-api --json > /tmp/sf-extract/installed-packages.json
 
-sf data query -q "SELECT Id, DeveloperName, SobjectType, IsActive FROM DuplicateRule WHERE IsActive = true" -o $ORG --use-tooling-api --json > /tmp/sf-extract/duplicate-rules.json
+sf data query -q "SELECT Id, DeveloperName, SobjectType, IsActive FROM DuplicateRule WHERE IsActive = true" -o $ORG --use-tooling-api --json > /tmp/sf-extract/duplicate-rules.json 2>/dev/null || echo '{"status":0,"result":{"records":[],"totalSize":0,"done":true}}' > /tmp/sf-extract/duplicate-rules.json
 ```
 
 ### Optional Queries (may fail if feature not enabled)

@@ -514,13 +514,17 @@ export default function DiagnosticResults({ diagnosticType }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: customer.id, overrides: roadmapOverrides }),
       });
-      if (res.ok) {
+      const json = await res.json();
+      if (res.ok && json.success !== false) {
         setRoadmapDirty(false);
         // Update v3Result with new overrides
         setV3Result((prev) => prev ? { ...prev, roadmap_overrides: roadmapOverrides } : prev);
+      } else {
+        alert(`Failed to save roadmap changes: ${json.error || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error saving roadmap overrides:', err);
+      alert(`Error saving roadmap: ${err.message}`);
     } finally {
       setRoadmapSaving(false);
     }
@@ -812,7 +816,7 @@ export default function DiagnosticResults({ diagnosticType }) {
                 })
                   .then((r) => r.json())
                   .then((json) => {
-                    if (json.success && json.data) setV3Result(json.data);
+                    if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
                   });
               }}
               onIntakeExtracted={(preFill) => {
@@ -852,7 +856,7 @@ export default function DiagnosticResults({ diagnosticType }) {
                 })
                   .then((r) => r.json())
                   .then((json) => {
-                    if (json.success && json.data) setV3Result(json.data);
+                    if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
                   });
               }}
             />

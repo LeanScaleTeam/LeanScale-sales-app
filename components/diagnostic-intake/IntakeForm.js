@@ -21,10 +21,12 @@ import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
 import IntakeContextPanel from './IntakeContextPanel';
+import TranscriptUpload from '../diagnostic/v3/TranscriptUpload';
 
-const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
+const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
+  transcript: 'Discovery Transcript',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
   'hs-analyzing': 'Analyzing',
@@ -53,6 +55,7 @@ export default function IntakeForm() {
   const [preFill, setPreFill] = useState({});
   const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
+  const [transcriptUploaded, setTranscriptUploaded] = useState(false);
 
   const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
   const skipRules = getSkipRules(answers, crmMetadataExists);
@@ -171,16 +174,14 @@ export default function IntakeForm() {
       saveSection(section, sectionAnswers);
 
       // Navigate to next section
-      if (section === 'A' && sectionAnswers.A1 === 'Salesforce') {
-        setCurrentSection('sf-connect');
-      } else if (section === 'A' && sectionAnswers.A1 === 'HubSpot' && hubspotStatus?.connected) {
-        setCurrentSection('hs-analyzing');
+      if (section === 'A') {
+        setCurrentSection('transcript');
       } else {
         const idx = SECTIONS.indexOf(currentSection);
         if (idx < SECTIONS.length - 1) {
           let nextIdx = idx + 1;
-          // Skip utility sections (sf-connect, sf-analyzing) when navigating forward
-          while (nextIdx < SECTIONS.length - 1 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
+          // Skip utility sections when navigating forward
+          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
             nextIdx++;
           }
           setCurrentSection(SECTIONS[nextIdx]);
@@ -252,26 +253,33 @@ export default function IntakeForm() {
     }
   }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus]);
 
+  // After transcript step, navigate to CRM connection or Section B
+  const handleTranscriptNext = () => {
+    if (answers.A1 === 'Salesforce') {
+      setCurrentSection('sf-connect');
+    } else if (answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+      setCurrentSection('hs-analyzing');
+    } else {
+      setCurrentSection('B');
+    }
+  };
+
   const handleBack = () => {
-    // When going back from B with Salesforce, skip sf-analyzing and sf-connect
-    if (currentSection === 'B' && answers.A1 === 'Salesforce') {
-      setCurrentSection('A');
+    // From sf-connect, go back to transcript
+    if (currentSection === 'sf-connect') {
+      setCurrentSection('transcript');
       return;
     }
-    if (currentSection === 'B' && answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
-      setCurrentSection('A');
-      return;
-    }
-    // Skip sf-analyzing and sf-connect when navigating backward
+    // From B, go back to transcript (skip CRM utility steps)
     if (currentSection === 'B') {
-      setCurrentSection('A');
+      setCurrentSection('transcript');
       return;
     }
     const idx = SECTIONS.indexOf(currentSection);
     if (idx > 0) {
       let prevIdx = idx - 1;
       // Skip utility sections when going back
-      while (prevIdx > 0 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
+      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
         prevIdx--;
       }
       setCurrentSection(SECTIONS[prevIdx]);
@@ -370,6 +378,56 @@ export default function IntakeForm() {
             />
           )}
 
+          {currentSection === 'transcript' && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
+                Discovery Call Transcript
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                Upload a discovery call transcript to pre-fill the diagnostic form. This is optional &mdash; you can skip if you don&apos;t have one.
+              </p>
+              <TranscriptUpload
+                customerId={customer?.id}
+                onUploadComplete={() => setTranscriptUploaded(true)}
+                onIntakeExtracted={(extractedPreFill) => {
+                  // Transcript pre-fills are base layer (CRM overwrites later)
+                  setPreFill((prev) => {
+                    const merged = { ...prev };
+                    for (const [key, val] of Object.entries(extractedPreFill)) {
+                      if (!merged[key]) merged[key] = val;
+                    }
+                    return merged;
+                  });
+                  // Also set direct answers for Section A fields that were extracted
+                  const directAnswerKeys = ['A1', 'A2', 'A3', 'A4', 'A5'];
+                  setAnswers((prev) => {
+                    const updated = { ...prev };
+                    for (const key of directAnswerKeys) {
+                      if (extractedPreFill[key] && !updated[key]) {
+                        updated[key] = extractedPreFill[key].value;
+                      }
+                    }
+                    return updated;
+                  });
+                }}
+              />
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button
+                  onClick={() => setCurrentSection('A')}
+                  style={{ padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleTranscriptNext}
+                  style={{ padding: '0.75rem 1.5rem', background: 'var(--ls-purple, #6C5CE7)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {transcriptUploaded ? 'Continue' : 'Skip \u2014 No Transcript'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {currentSection === 'sf-connect' && (
             <div style={{ marginTop: '1.5rem' }}>
               <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
@@ -390,7 +448,7 @@ export default function IntakeForm() {
               />
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
                 <button
-                  onClick={() => setCurrentSection('A')}
+                  onClick={() => setCurrentSection('transcript')}
                   style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
                 >
                   Back

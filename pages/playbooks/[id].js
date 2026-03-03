@@ -4,8 +4,6 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { playbooks, resolvePlaybookSlug } from '../../data/services-catalog';
 import { playbookContent } from '../../data/playbook-content';
-import advisoryData from '../../data/playbook-advisory.json';
-import extendedData from '../../data/playbook-extended.json';
 import { useCustomer } from '../../context/CustomerContext';
 import PlaybookTabBar from '../../components/playbook/PlaybookTabBar';
 import PlaybookScoreOverlay from '../../components/playbook/PlaybookScoreOverlay';
@@ -19,12 +17,32 @@ function formatInlineText(text) {
   let keyIdx = 0;
 
   while (remaining.length > 0) {
-    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-    if (boldMatch) {
-      const beforeBold = remaining.slice(0, boldMatch.index);
-      if (beforeBold) parts.push(beforeBold);
-      parts.push(<strong key={keyIdx++}>{boldMatch[1]}</strong>);
-      remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+    // Match bold, italic, inline code, and links
+    const patterns = [
+      { regex: /\*\*(.+?)\*\*/, render: (m, k) => <strong key={k}>{m[1]}</strong> },
+      { regex: /\*(.+?)\*/, render: (m, k) => <em key={k}>{m[1]}</em> },
+      { regex: /`([^`]+)`/, render: (m, k) => <code key={k} style={{ background: '#f3f4f6', padding: '0.1rem 0.3rem', borderRadius: 3, fontSize: '0.85em' }}>{m[1]}</code> },
+      { regex: /\[([^\]]+)\]\(([^)]+)\)/, render: (m, k) => <a key={k} href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>{m[1]}</a> },
+    ];
+
+    let earliest = null;
+    let earliestIdx = remaining.length;
+    let earliestPattern = null;
+
+    for (const p of patterns) {
+      const match = remaining.match(p.regex);
+      if (match && match.index < earliestIdx) {
+        earliest = match;
+        earliestIdx = match.index;
+        earliestPattern = p;
+      }
+    }
+
+    if (earliest && earliestPattern) {
+      const before = remaining.slice(0, earliestIdx);
+      if (before) parts.push(before);
+      parts.push(earliestPattern.render(earliest, keyIdx++));
+      remaining = remaining.slice(earliestIdx + earliest[0].length);
     } else {
       parts.push(remaining);
       break;
@@ -40,57 +58,37 @@ function renderMarkdownContent(text) {
   const elements = [];
   let currentList = [];
   let listType = null;
+  let listIndent = 0;
 
   const flushList = () => {
     if (currentList.length > 0) {
-      if (listType === 'ul') {
-        elements.push(
-          <ul key={elements.length} style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
-            {currentList.map((item, i) => (
-              <li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{formatInlineText(item)}</li>
-            ))}
-          </ul>
-        );
-      } else {
-        elements.push(
-          <ol key={elements.length} style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
-            {currentList.map((item, i) => (
-              <li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{formatInlineText(item)}</li>
-            ))}
-          </ol>
-        );
-      }
+      const Tag = listType === 'ul' ? 'ul' : 'ol';
+      elements.push(
+        <Tag key={elements.length} style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
+          {currentList.map((item, i) => (
+            <li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{formatInlineText(item)}</li>
+          ))}
+        </Tag>
+      );
       currentList = [];
       listType = null;
     }
   };
 
-  // Table rendering helper (PR branch's enhanced version with separator handling)
   const flushTable = (tableRows) => {
     if (tableRows.length < 2) return;
     const headers = tableRows[0];
-    const dataRows = tableRows.slice(2); // skip separator row
+    const dataRows = tableRows.slice(1);
     elements.push(
       <div key={elements.length} style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontSize: '0.85rem',
-          lineHeight: 1.5,
-        }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', lineHeight: 1.5 }}>
           <thead>
             <tr>
               {headers.map((h, i) => (
                 <th key={i} style={{
-                  padding: '0.5rem 0.75rem',
-                  borderBottom: '2px solid #e5e7eb',
-                  textAlign: 'left',
-                  fontWeight: 600,
-                  color: '#374151',
-                  background: '#f9fafb',
-                }}>
-                  {formatInlineText(h.trim())}
-                </th>
+                  padding: '0.5rem 0.75rem', borderBottom: '2px solid #e5e7eb',
+                  textAlign: 'left', fontWeight: 600, color: '#374151', background: '#f9fafb',
+                }}>{formatInlineText(h.trim())}</th>
               ))}
             </tr>
           </thead>
@@ -99,12 +97,8 @@ function renderMarkdownContent(text) {
               <tr key={ri}>
                 {row.map((cell, ci) => (
                   <td key={ci} style={{
-                    padding: '0.5rem 0.75rem',
-                    borderBottom: '1px solid #f3f4f6',
-                    color: '#4b5563',
-                  }}>
-                    {formatInlineText(cell.trim())}
-                  </td>
+                    padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', color: '#4b5563',
+                  }}>{formatInlineText(cell.trim())}</td>
                 ))}
               </tr>
             ))}
@@ -119,135 +113,81 @@ function renderMarkdownContent(text) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Table row detection (PR branch's enhanced separator-aware version)
+    // Table row
     if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
       flushList();
-      const cells = line.split('|').slice(1, -1); // remove empty first/last from split
+      const cells = line.split('|').slice(1, -1);
       if (line.match(/^\|[\s-:|]+\|$/)) {
-        // Separator row - just push a marker
-        tableRows.push('separator');
-      } else {
-        tableRows.push(cells);
+        // Separator row — skip
+        continue;
       }
+      tableRows.push(cells);
       continue;
     } else if (tableRows.length > 0) {
-      // End of table
-      const headerAndData = tableRows.filter(r => r !== 'separator');
-      if (headerAndData.length >= 2) {
-        flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
-      }
+      flushTable(tableRows);
       tableRows = [];
     }
 
     if (line.match(/^---+$/)) {
       flushList();
-      elements.push(
-        <hr key={elements.length} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1.5rem 0' }} />
-      );
-    } else if (line.startsWith('# ') && !line.startsWith('## ')) {
-      flushList();
-      elements.push(
-        <h1 key={elements.length} style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937' }}>
-          {formatInlineText(line.replace(/^#\s*/, ''))}
-        </h1>
-      );
-    } else if (line.startsWith('## ')) {
-      flushList();
-      elements.push(
-        <h2 key={elements.length} style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem' }}>
-          {formatInlineText(line.replace(/^##\s*/, ''))}
-        </h2>
-      );
-    } else if (line.startsWith('### ')) {
-      flushList();
-      elements.push(
-        <h3 key={elements.length} style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', color: '#7c3aed' }}>
-          {formatInlineText(line.replace(/^###\s*/, ''))}
-        </h3>
-      );
-    } else if (line.startsWith('#### ')) {
-      flushList();
-      elements.push(
-        <h4 key={elements.length} style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', color: '#374151' }}>
-          {formatInlineText(line.replace(/^####\s*/, ''))}
-        </h4>
-      );
+      elements.push(<hr key={elements.length} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1.5rem 0' }} />);
     } else if (line.startsWith('##### ')) {
       flushList();
-      elements.push(
-        <h5 key={elements.length} style={{ fontSize: '0.9rem', fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.25rem', color: '#4b5563' }}>
-          {formatInlineText(line.replace(/^#####\s*/, ''))}
-        </h5>
-      );
+      elements.push(<h5 key={elements.length} style={{ fontSize: '0.9rem', fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.25rem', color: '#4b5563' }}>{formatInlineText(line.slice(6))}</h5>);
+    } else if (line.startsWith('#### ')) {
+      flushList();
+      elements.push(<h4 key={elements.length} style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', color: '#374151' }}>{formatInlineText(line.slice(5))}</h4>);
+    } else if (line.startsWith('### ')) {
+      flushList();
+      elements.push(<h3 key={elements.length} style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', color: '#7c3aed' }}>{formatInlineText(line.slice(4))}</h3>);
+    } else if (line.startsWith('## ')) {
+      flushList();
+      elements.push(<h2 key={elements.length} style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem' }}>{formatInlineText(line.slice(3))}</h2>);
+    } else if (line.startsWith('# ') && !line.startsWith('## ')) {
+      flushList();
+      elements.push(<h1 key={elements.length} style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937' }}>{formatInlineText(line.slice(2))}</h1>);
     } else if (line.startsWith('> ')) {
       flushList();
       elements.push(
         <blockquote key={elements.length} style={{ borderLeft: '3px solid #D6BCFA', paddingLeft: '1rem', margin: '1rem 0', color: '#6b7280', fontStyle: 'italic' }}>
-          {formatInlineText(line.replace(/^>\s*/, ''))}
+          {formatInlineText(line.slice(2))}
         </blockquote>
       );
-    } else if (line.match(/^\*\*[^*]+:\*\*/) || line.startsWith('**Step Overview:**') || line.startsWith('**End State:**')) {
-      flushList();
-      elements.push(
-        <p key={elements.length} style={{ margin: '0.5rem 0', lineHeight: 1.6, fontStyle: 'italic', color: '#4b5563' }}>
-          {formatInlineText(line)}
-        </p>
-      );
     } else if (line.match(/^[-*]\s/)) {
-      if (listType !== 'ul') {
-        flushList();
-        listType = 'ul';
-      }
+      if (listType !== 'ul') { flushList(); listType = 'ul'; }
       currentList.push(line.replace(/^[-*]\s/, ''));
     } else if (line.match(/^\d+\.\s/)) {
-      if (listType !== 'ol') {
-        flushList();
-        listType = 'ol';
-      }
+      if (listType !== 'ol') { flushList(); listType = 'ol'; }
       currentList.push(line.replace(/^\d+\.\s/, ''));
     } else if (line.trim()) {
       flushList();
-      elements.push(
-        <p key={elements.length} style={{ margin: '0.5rem 0', lineHeight: 1.6 }}>
-          {formatInlineText(line)}
-        </p>
-      );
+      elements.push(<p key={elements.length} style={{ margin: '0.5rem 0', lineHeight: 1.6 }}>{formatInlineText(line)}</p>);
     }
   }
 
   flushList();
-  // Flush any remaining table
-  if (tableRows.length > 0) {
-    const headerAndData = tableRows.filter(r => r !== 'separator');
-    if (headerAndData.length >= 2) {
-      flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
-    }
-  }
+  if (tableRows.length > 0) flushTable(tableRows);
   return elements;
 }
 
-function renderSectionCard(icon, title, markdownContent) {
-  if (!markdownContent) return null;
-  return (
-    <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-      <h2 style={{
-        fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-        display: 'flex', alignItems: 'center', gap: '0.5rem',
-      }}>
-        <span style={{ fontSize: '1.25rem' }}>{icon}</span> {title}
-      </h2>
-      <div style={{ color: '#374151' }}>
-        {renderMarkdownContent(markdownContent)}
-      </div>
-    </section>
-  );
-}
+// ── Loom Video Embed ──
 
-function renderRawSections(sections) {
-  if (!sections) return null;
-  return Object.entries(sections).map(([title, content]) => (
-    renderSectionCard('', title, content)
-  ));
+function LoomEmbed({ loomId }) {
+  if (!loomId) return null;
+  return (
+    <div style={{
+      position: 'relative', paddingBottom: '56.25%', height: 0,
+      marginBottom: '1.5rem', borderRadius: '0.5rem', overflow: 'hidden',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    }}>
+      <iframe
+        src={`https://www.loom.com/embed/${loomId}`}
+        frameBorder="0"
+        allowFullScreen
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+      />
+    </div>
+  );
 }
 
 // ── Page Component ──
@@ -264,24 +204,9 @@ export default function PlaybookDetail() {
   const { customerPath, diagnosticScores } = useCustomer();
   const [activeTab, setActiveTab] = useState('advisory');
 
-  // Resolve through aliases (from main)
   const slug = id ? resolvePlaybookSlug(id) : null;
   const playbook = id ? playbooks.find(p => p.id === id) : null;
   const content = slug ? (playbookContent[slug] || playbookContent[id]) : null;
-
-  // PR branch data sources
-  const advisory = id ? advisoryData[id] : null;
-  const extended = id ? extendedData[id] : null;
-
-  const hasMethodology = extended && (extended.methodology || extended.methodologyRaw);
-  const hasImplementation = extended && (extended.implementation || extended.implementationRaw);
-
-  // Build tabs dynamically — always show advisory, conditionally show methodology/implementation
-  const availableTabs = [
-    TABS[0], // advisory always
-    ...(hasMethodology ? [TABS[1]] : []),
-    ...(hasImplementation ? [TABS[2]] : []),
-  ];
 
   if (!router.isReady) {
     return (
@@ -299,7 +224,7 @@ export default function PlaybookDetail() {
         <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
           <h1>Playbook Not Found</h1>
           <p style={{ color: '#666', marginBottom: '2rem' }}>
-            The playbook you're looking for doesn't exist or has been moved.
+            The playbook you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
           <Link href={customerPath('/why-leanscale/services')} className="btn btn-primary">
             Browse All Services
@@ -309,7 +234,6 @@ export default function PlaybookDetail() {
     );
   }
 
-  // Stub playbook — no content yet (from main)
   if (!content || content.status === 'stub') {
     return (
       <Layout title={`${playbook.name} Playbook`}>
@@ -334,13 +258,14 @@ export default function PlaybookDetail() {
     );
   }
 
+  const loomId = content.meta?.loomEmbedId;
+
   return (
     <Layout title={`${playbook.name} Playbook`}>
       <div className="container" style={{ maxWidth: 900 }}>
         <BackLink customerPath={customerPath} />
         <PlaybookHeader playbook={playbook} tier={content.meta?.tier} />
 
-        {/* Score overlay banner (only shown during active diagnostic) — from main */}
         {diagnosticScores && content.meta?.competencyIds?.length > 0 && (
           <PlaybookScoreOverlay
             playbookSlug={slug}
@@ -349,288 +274,20 @@ export default function PlaybookDetail() {
           />
         )}
 
-        {/* Tab navigation — use PlaybookTabBar component but with dynamic tabs */}
-        <PlaybookTabBar tabs={availableTabs} active={activeTab} onChange={setActiveTab} />
+        <PlaybookTabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
-        {/* Advisory tab — PR branch's detailed section cards */}
+        {/* Advisory */}
         {activeTab === 'advisory' && (
-          <>
-            {/* Structured content sections from playbookContent */}
-            {content && (
-              <>
-                {content.definition && (content.definition.whatItIs || content.definition.whatItIsNot) && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>📋</span> Definition
-                    </h2>
-                    {content.definition.whatItIs && (
-                      <div style={{ marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', marginBottom: '0.5rem' }}>
-                          What it is:
-                        </h3>
-                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
-                          {content.definition.whatItIs}
-                        </p>
-                      </div>
-                    )}
-                    {content.definition.whatItIsNot && (
-                      <div>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#ef4444', marginBottom: '0.5rem' }}>
-                          What it is NOT:
-                        </h3>
-                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
-                          {content.definition.whatItIsNot}
-                        </p>
-                      </div>
-                    )}
-                  </section>
-                )}
-
-                {content.icpValueProp && (content.icpValueProp.painSolves || content.icpValueProp.outcome) && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>💎</span> ICP Value Proposition
-                    </h2>
-                    {content.icpValueProp.painSolves && (
-                      <div style={{ marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f59e0b', marginBottom: '0.5rem' }}>
-                          Pain it solves:
-                        </h3>
-                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
-                          {content.icpValueProp.painSolves}
-                        </p>
-                      </div>
-                    )}
-                    {content.icpValueProp.outcome && (
-                      <div style={{ marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', marginBottom: '0.5rem' }}>
-                          Outcome delivered:
-                        </h3>
-                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
-                          {content.icpValueProp.outcome}
-                        </p>
-                      </div>
-                    )}
-                    {content.icpValueProp.whoOwns && (
-                      <div>
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#6366f1', marginBottom: '0.5rem' }}>
-                          Who owns it:
-                        </h3>
-                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
-                          {content.icpValueProp.whoOwns}
-                        </p>
-                      </div>
-                    )}
-                  </section>
-                )}
-
-                {content.implementation && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>⚙️</span> Implementation Procedure
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(content.implementation)}
-                    </div>
-                  </section>
-                )}
-
-                {content.dependencies && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>🔗</span> Dependencies & Inputs
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(content.dependencies)}
-                    </div>
-                  </section>
-                )}
-
-                {content.pitfalls && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>⚠️</span> Common Pitfalls
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(content.pitfalls)}
-                    </div>
-                  </section>
-                )}
-              </>
-            )}
-
-            {/* Advisory JSON sections from playbook-advisory.json */}
-            {advisory && advisory.sections && (
-              <>
-                {advisory.sections.projectOverview && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>🎯</span> Project Overview
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.projectOverview)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.toolsAndSystems && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>🛠️</span> Tools & Systems
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.toolsAndSystems)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.stakeholdersAndRoles && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>👥</span> Stakeholders & Roles
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.stakeholdersAndRoles)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.scoping && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>📐</span> Scoping
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.scoping)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.discoveryQuestions && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>❓</span> Discovery Questions
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.discoveryQuestions)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.beliefBarriers && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>💬</span> Overcoming Belief Barriers
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.beliefBarriers)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sections.metricsImpact && (
-                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-                    <h2 style={{
-                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '1.25rem' }}>📊</span> Metrics Impact & Success Measurement
-                    </h2>
-                    <div style={{ color: '#374151' }}>
-                      {renderMarkdownContent(advisory.sections.metricsImpact)}
-                    </div>
-                  </section>
-                )}
-
-                {advisory.sourceUrl && (
-                  <div style={{
-                    textAlign: 'right',
-                    fontSize: '0.75rem',
-                    color: '#9ca3af',
-                    marginBottom: '1rem',
-                  }}>
-                    Source: <a href={advisory.sourceUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Fallback: render advisory from playbookContent markdown if no structured sections */}
-            {!content?.definition && !advisory?.sections && content?.advisory && (
-              <div className="card" style={{ padding: '1.5rem' }}>
-                <div style={{ color: '#374151' }}>
-                  {renderMarkdownContent(content.advisory)}
-                </div>
-              </div>
-            )}
-          </>
+          <div className="card" style={{ padding: '1.5rem' }}>
+            {loomId && <LoomEmbed loomId={loomId} />}
+            <div style={{ color: '#374151' }}>
+              {renderMarkdownContent(content.advisory)}
+            </div>
+          </div>
         )}
 
-        {/* Methodology tab — PR branch's extended data */}
-        {activeTab === 'methodology' && extended && (
-          <>
-            {extended.methodology ? (
-              <>
-                {renderSectionCard('🧠', 'Core Concepts', extended.methodology.coreConcepts)}
-                {renderSectionCard('🔀', 'Decision Frameworks', extended.methodology.decisionFrameworks)}
-                {renderSectionCard('📏', 'Benchmarks & Standards', extended.methodology.benchmarks)}
-                {renderSectionCard('🔢', 'Calculations & Scoring', extended.methodology.calculations)}
-                {renderSectionCard('🔎', 'Edge Cases', extended.methodology.edgeCases)}
-                {extended.methodology.references && renderSectionCard('📚', 'References', extended.methodology.references)}
-              </>
-            ) : extended.methodologyRaw ? (
-              renderRawSections(extended.methodologyRaw)
-            ) : null}
-            {extended.sourceUrls && extended.sourceUrls.methodology && (
-              <div style={{
-                textAlign: 'right',
-                fontSize: '0.75rem',
-                color: '#9ca3af',
-                marginBottom: '1rem',
-              }}>
-                Source: <a href={extended.sourceUrls.methodology} target="_blank" rel="noopener noreferrer"
-                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Fallback: render methodology from playbookContent if no extended data */}
-        {activeTab === 'methodology' && !extended && content?.methodology && (
+        {/* Methodology */}
+        {activeTab === 'methodology' && (
           <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ color: '#374151' }}>
               {renderMarkdownContent(content.methodology)}
@@ -638,38 +295,8 @@ export default function PlaybookDetail() {
           </div>
         )}
 
-        {/* Implementation tab — PR branch's extended data */}
-        {activeTab === 'implementation' && extended && (
-          <>
-            {extended.implementation ? (
-              <>
-                {renderSectionCard('📋', 'Project One-Pager', extended.implementation.projectOnePager)}
-                {renderSectionCard('🎯', 'Phase 1: Strategy', extended.implementation.phaseStrategy)}
-                {renderSectionCard('⚙️', 'Phase 2: Engineering', extended.implementation.phaseEngineering)}
-                {renderSectionCard('📚', 'Phase 3: Enablement', extended.implementation.phaseEnablement)}
-                {renderSectionCard('🤝', 'Phase 4: Handoff', extended.implementation.phaseHandoff)}
-                {extended.implementation.deliverables && renderSectionCard('📦', 'Deliverables', extended.implementation.deliverables)}
-                {extended.implementation.references && renderSectionCard('📚', 'References', extended.implementation.references)}
-              </>
-            ) : extended.implementationRaw ? (
-              renderRawSections(extended.implementationRaw)
-            ) : null}
-            {extended.sourceUrls && extended.sourceUrls.implementation && (
-              <div style={{
-                textAlign: 'right',
-                fontSize: '0.75rem',
-                color: '#9ca3af',
-                marginBottom: '1rem',
-              }}>
-                Source: <a href={extended.sourceUrls.implementation} target="_blank" rel="noopener noreferrer"
-                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Fallback: render implementation from playbookContent if no extended data */}
-        {activeTab === 'implementation' && !extended && content?.implementation && (
+        {/* Implementation */}
+        {activeTab === 'implementation' && (
           <div className="card" style={{ padding: '1.5rem' }}>
             <div style={{ color: '#374151' }}>
               {renderMarkdownContent(content.implementation)}
@@ -678,18 +305,10 @@ export default function PlaybookDetail() {
         )}
 
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <Link
-            href={customerPath('/try-leanscale/start')}
-            className="btn btn-primary"
-            style={{ marginRight: '1rem' }}
-          >
+          <Link href={customerPath('/try-leanscale/start')} className="btn btn-primary" style={{ marginRight: '1rem' }}>
             Start GTM Diagnostic
           </Link>
-          <Link
-            href={customerPath('/why-leanscale/services')}
-            className="btn"
-            style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}
-          >
+          <Link href={customerPath('/why-leanscale/services')} className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
             Browse More Services
           </Link>
         </div>
@@ -718,25 +337,18 @@ function PlaybookHeader({ playbook, tier }) {
     <div className="page-header" style={{ textAlign: 'left' }}>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <span style={{
-          display: 'inline-block',
-          padding: '0.25rem 0.75rem',
+          display: 'inline-block', padding: '0.25rem 0.75rem',
           background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-          color: 'white',
-          borderRadius: '1rem',
-          fontSize: '0.75rem',
-          fontWeight: 600,
+          color: 'white', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600,
         }}>
           ONE-TIME PROJECT
         </span>
         {tier && (
           <span style={{
-            display: 'inline-block',
-            padding: '0.25rem 0.75rem',
+            display: 'inline-block', padding: '0.25rem 0.75rem',
             background: tier === 'core' ? '#EBF8FF' : '#F7FAFC',
             color: tier === 'core' ? '#2B6CB0' : '#718096',
-            borderRadius: '1rem',
-            fontSize: '0.75rem',
-            fontWeight: 600,
+            borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600,
             border: `1px solid ${tier === 'core' ? '#BEE3F8' : '#E2E8F0'}`,
           }}>
             {tier === 'core' ? 'CORE' : 'EXTENDED'}

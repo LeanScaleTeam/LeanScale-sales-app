@@ -18,7 +18,7 @@ const path = require('path');
 const PLAYBOOKS_SITE_PATH = path.join(__dirname, '..', '..', 'Playbooks-Site');
 const OUTPUT_BASE = path.join(__dirname, '..', 'playbooks-content');
 const PLAYBOOKS_DIR = path.join(OUTPUT_BASE, 'playbooks');
-const BRANCH = 'origin/reorganize';
+const BRANCH = 'origin/main';
 
 // ── Complete project registry (from Playbooks-Site src/data/projects.ts) ──
 const PROJECTS = [

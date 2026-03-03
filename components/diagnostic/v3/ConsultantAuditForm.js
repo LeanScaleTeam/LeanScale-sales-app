@@ -14,6 +14,7 @@ import {
   V2_COMPETENCIES,
   expandV2Departments,
   computeAllSuggestedScores,
+  collapseAssessmentsToV2,
 } from '../../../lib/diagnostic-engine/v3/consultant-competencies';
 
 const PILLAR_LABELS = {
@@ -70,15 +71,10 @@ export default function ConsultantAuditForm({
     }
   }
 
-  // Initialize from existing assessments (V1 IDs)
+  // Initialize from existing assessments (V1 IDs → collapsed to V2 keys)
   useEffect(() => {
     if (existingAssessments && existingAssessments.length > 0) {
-      const initial = {};
-      for (const a of existingAssessments) {
-        const key = `${a.competency_id}_${a.department}`;
-        initial[key] = { score: a.score, notes: a.notes || '' };
-      }
-      setAssessments(initial);
+      setAssessments(collapseAssessmentsToV2(existingAssessments));
     }
   }, [existingAssessments]);
 

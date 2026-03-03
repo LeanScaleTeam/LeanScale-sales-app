@@ -641,22 +641,43 @@ export default function DiagnosticResults({ diagnosticType }) {
                 </div>
               )}
               {diagnosticResultId ? (
-                <a
-                  href={customerPath('/diagnostic/intake')}
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.5rem 1.25rem',
-                    background: 'white',
-                    color: 'var(--ls-purple)',
-                    border: '1px solid var(--ls-purple)',
-                    borderRadius: 'var(--radius-md, 8px)',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-semibold)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  Re-run Diagnostic
-                </a>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a
+                    href={customerPath('/diagnostic/intake')}
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.5rem 1.25rem',
+                      background: 'white',
+                      color: 'var(--ls-purple)',
+                      border: '1px solid var(--ls-purple)',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      fontSize: 'var(--text-sm)',
+                      fontWeight: 'var(--font-semibold)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Re-run Diagnostic
+                  </a>
+                  {isV3 && (
+                    <a
+                      href={`/api/diagnostic/v3/export?customerId=${customer?.id}`}
+                      download
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.5rem 1.25rem',
+                        background: 'white',
+                        color: '#4A5568',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-md, 8px)',
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 'var(--font-semibold)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Download Brief
+                    </a>
+                  )}
+                </div>
               ) : (
                 <a
                   href={customerPath('/diagnostic/intake')}

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import Layout from '../../components/Layout';
 import { playbooks, resolvePlaybookSlug } from '../../data/services-catalog';
 import { playbookContent } from '../../data/playbook-content';
@@ -8,166 +10,88 @@ import { useCustomer } from '../../context/CustomerContext';
 import PlaybookTabBar from '../../components/playbook/PlaybookTabBar';
 import PlaybookScoreOverlay from '../../components/playbook/PlaybookScoreOverlay';
 
-// ── Markdown Rendering ──
+// ── Styled Markdown ──
 
-function formatInlineText(text) {
-  if (!text) return text;
-  const parts = [];
-  let remaining = text;
-  let keyIdx = 0;
-
-  while (remaining.length > 0) {
-    // Match bold, italic, inline code, and links
-    const patterns = [
-      { regex: /\*\*(.+?)\*\*/, render: (m, k) => <strong key={k}>{m[1]}</strong> },
-      { regex: /\*(.+?)\*/, render: (m, k) => <em key={k}>{m[1]}</em> },
-      { regex: /`([^`]+)`/, render: (m, k) => <code key={k} style={{ background: '#f3f4f6', padding: '0.1rem 0.3rem', borderRadius: 3, fontSize: '0.85em' }}>{m[1]}</code> },
-      { regex: /\[([^\]]+)\]\(([^)]+)\)/, render: (m, k) => <a key={k} href={m[2]} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>{m[1]}</a> },
-    ];
-
-    let earliest = null;
-    let earliestIdx = remaining.length;
-    let earliestPattern = null;
-
-    for (const p of patterns) {
-      const match = remaining.match(p.regex);
-      if (match && match.index < earliestIdx) {
-        earliest = match;
-        earliestIdx = match.index;
-        earliestPattern = p;
-      }
-    }
-
-    if (earliest && earliestPattern) {
-      const before = remaining.slice(0, earliestIdx);
-      if (before) parts.push(before);
-      parts.push(earliestPattern.render(earliest, keyIdx++));
-      remaining = remaining.slice(earliestIdx + earliest[0].length);
-    } else {
-      parts.push(remaining);
-      break;
-    }
-  }
-  return parts.length === 1 ? parts[0] : parts;
-}
-
-function renderMarkdownContent(text) {
-  if (!text) return null;
-
-  const lines = text.split('\n');
-  const elements = [];
-  let currentList = [];
-  let listType = null;
-  let listIndent = 0;
-
-  const flushList = () => {
-    if (currentList.length > 0) {
-      const Tag = listType === 'ul' ? 'ul' : 'ol';
-      elements.push(
-        <Tag key={elements.length} style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
-          {currentList.map((item, i) => (
-            <li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{formatInlineText(item)}</li>
-          ))}
-        </Tag>
+const markdownComponents = {
+  h1: ({ children }) => (
+    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937' }}>{children}</h1>
+  ),
+  h2: ({ children }) => (
+    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem' }}>{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', color: '#7c3aed' }}>{children}</h3>
+  ),
+  h4: ({ children }) => (
+    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', color: '#374151' }}>{children}</h4>
+  ),
+  h5: ({ children }) => (
+    <h5 style={{ fontSize: '0.9rem', fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.25rem', color: '#4b5563' }}>{children}</h5>
+  ),
+  p: ({ children }) => (
+    <p style={{ margin: '0.5rem 0', lineHeight: 1.6 }}>{children}</p>
+  ),
+  ul: ({ children }) => (
+    <ul style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol style={{ paddingLeft: '1.5rem', margin: '0.5rem 0' }}>{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{children}</li>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote style={{ borderLeft: '3px solid #D6BCFA', paddingLeft: '1rem', margin: '1rem 0', color: '#6b7280', fontStyle: 'italic' }}>{children}</blockquote>
+  ),
+  a: ({ href, children }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>{children}</a>
+  ),
+  code: ({ inline, children, className }) => {
+    if (inline) {
+      return (
+        <code style={{ background: '#f3f4f6', padding: '0.1rem 0.3rem', borderRadius: 3, fontSize: '0.85em' }}>{children}</code>
       );
-      currentList = [];
-      listType = null;
     }
-  };
-
-  const flushTable = (tableRows) => {
-    if (tableRows.length < 2) return;
-    const headers = tableRows[0];
-    const dataRows = tableRows.slice(1);
-    elements.push(
-      <div key={elements.length} style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', lineHeight: 1.5 }}>
-          <thead>
-            <tr>
-              {headers.map((h, i) => (
-                <th key={i} style={{
-                  padding: '0.5rem 0.75rem', borderBottom: '2px solid #e5e7eb',
-                  textAlign: 'left', fontWeight: 600, color: '#374151', background: '#f9fafb',
-                }}>{formatInlineText(h.trim())}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {dataRows.map((row, ri) => (
-              <tr key={ri}>
-                {row.map((cell, ci) => (
-                  <td key={ci} style={{
-                    padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', color: '#4b5563',
-                  }}>{formatInlineText(cell.trim())}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    return (
+      <pre style={{
+        background: '#1f2937', color: '#e5e7eb', padding: '1rem', borderRadius: '0.5rem',
+        overflowX: 'auto', margin: '0.75rem 0', fontSize: '0.85rem', lineHeight: 1.5,
+        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+        whiteSpace: 'pre',
+      }}>
+        <code>{children}</code>
+      </pre>
     );
-  };
+  },
+  pre: ({ children }) => <>{children}</>,
+  table: ({ children }) => (
+    <div style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', lineHeight: 1.5 }}>{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead>{children}</thead>,
+  tbody: ({ children }) => <tbody>{children}</tbody>,
+  tr: ({ children }) => <tr>{children}</tr>,
+  th: ({ children }) => (
+    <th style={{ padding: '0.5rem 0.75rem', borderBottom: '2px solid #e5e7eb', textAlign: 'left', fontWeight: 600, color: '#374151', background: '#f9fafb' }}>{children}</th>
+  ),
+  td: ({ children }) => (
+    <td style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', color: '#4b5563' }}>{children}</td>
+  ),
+  hr: () => (
+    <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1.5rem 0' }} />
+  ),
+  strong: ({ children }) => <strong>{children}</strong>,
+  em: ({ children }) => <em>{children}</em>,
+};
 
-  let tableRows = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Table row
-    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
-      flushList();
-      const cells = line.split('|').slice(1, -1);
-      if (line.match(/^\|[\s-:|]+\|$/)) {
-        // Separator row — skip
-        continue;
-      }
-      tableRows.push(cells);
-      continue;
-    } else if (tableRows.length > 0) {
-      flushTable(tableRows);
-      tableRows = [];
-    }
-
-    if (line.match(/^---+$/)) {
-      flushList();
-      elements.push(<hr key={elements.length} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1.5rem 0' }} />);
-    } else if (line.startsWith('##### ')) {
-      flushList();
-      elements.push(<h5 key={elements.length} style={{ fontSize: '0.9rem', fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.25rem', color: '#4b5563' }}>{formatInlineText(line.slice(6))}</h5>);
-    } else if (line.startsWith('#### ')) {
-      flushList();
-      elements.push(<h4 key={elements.length} style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', color: '#374151' }}>{formatInlineText(line.slice(5))}</h4>);
-    } else if (line.startsWith('### ')) {
-      flushList();
-      elements.push(<h3 key={elements.length} style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', color: '#7c3aed' }}>{formatInlineText(line.slice(4))}</h3>);
-    } else if (line.startsWith('## ')) {
-      flushList();
-      elements.push(<h2 key={elements.length} style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem' }}>{formatInlineText(line.slice(3))}</h2>);
-    } else if (line.startsWith('# ') && !line.startsWith('## ')) {
-      flushList();
-      elements.push(<h1 key={elements.length} style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '2rem', marginBottom: '0.75rem', color: '#1f2937' }}>{formatInlineText(line.slice(2))}</h1>);
-    } else if (line.startsWith('> ')) {
-      flushList();
-      elements.push(
-        <blockquote key={elements.length} style={{ borderLeft: '3px solid #D6BCFA', paddingLeft: '1rem', margin: '1rem 0', color: '#6b7280', fontStyle: 'italic' }}>
-          {formatInlineText(line.slice(2))}
-        </blockquote>
-      );
-    } else if (line.match(/^[-*]\s/)) {
-      if (listType !== 'ul') { flushList(); listType = 'ul'; }
-      currentList.push(line.replace(/^[-*]\s/, ''));
-    } else if (line.match(/^\d+\.\s/)) {
-      if (listType !== 'ol') { flushList(); listType = 'ol'; }
-      currentList.push(line.replace(/^\d+\.\s/, ''));
-    } else if (line.trim()) {
-      flushList();
-      elements.push(<p key={elements.length} style={{ margin: '0.5rem 0', lineHeight: 1.6 }}>{formatInlineText(line)}</p>);
-    }
-  }
-
-  flushList();
-  if (tableRows.length > 0) flushTable(tableRows);
-  return elements;
+function MarkdownContent({ content }) {
+  if (!content) return null;
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 // ── Loom Video Embed ──
@@ -280,27 +204,21 @@ export default function PlaybookDetail() {
         {activeTab === 'advisory' && (
           <div className="card" style={{ padding: '1.5rem' }}>
             {loomId && <LoomEmbed loomId={loomId} />}
-            <div style={{ color: '#374151' }}>
-              {renderMarkdownContent(content.advisory)}
-            </div>
+            <MarkdownContent content={content.advisory} />
           </div>
         )}
 
         {/* Methodology */}
         {activeTab === 'methodology' && (
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ color: '#374151' }}>
-              {renderMarkdownContent(content.methodology)}
-            </div>
+            <MarkdownContent content={content.methodology} />
           </div>
         )}
 
         {/* Implementation */}
         {activeTab === 'implementation' && (
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ color: '#374151' }}>
-              {renderMarkdownContent(content.implementation)}
-            </div>
+            <MarkdownContent content={content.implementation} />
           </div>
         )}
 

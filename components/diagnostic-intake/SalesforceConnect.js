@@ -53,18 +53,41 @@ export default function SalesforceConnect({ customerId, slug, status, onSaveAllA
     try {
       if (onSaveAllAnswers) await onSaveAllAnswers();
 
-      const formData = new FormData();
-      formData.append('customerId', customerId);
-      formData.append('file', file);
+      const isJson = file.name.endsWith('.json') || file.type === 'application/json';
 
-      const res = await fetch('/api/salesforce/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      if (isJson) {
+        // JSON payload from CLI extraction — use upload-json endpoint
+        const text = await file.text();
+        const payload = JSON.parse(text);
+        const res = await fetch('/api/salesforce/upload-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerId,
+            metadata: payload.metadata,
+            enhanced: payload.enhanced,
+          }),
+        });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Upload failed');
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Upload failed');
+        }
+      } else {
+        // ZIP metadata from sf project retrieve — use zip upload endpoint
+        const formData = new FormData();
+        formData.append('customerId', customerId);
+        formData.append('file', file);
+
+        const res = await fetch('/api/salesforce/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Upload failed');
+        }
       }
 
       setUploadSuccess(true);
@@ -137,13 +160,13 @@ export default function SalesforceConnect({ customerId, slug, status, onSaveAllA
           {uploading ? (
             <span>Processing metadata...</span>
           ) : (
-            <span>Drag &amp; drop metadata zip here, or click to browse</span>
+            <span>Drag &amp; drop metadata file here, or click to browse (.zip or .json)</span>
           )}
         </div>
         <input
           ref={fileInputRef}
           type="file"
-          accept=".zip"
+          accept=".zip,.json"
           onChange={handleFileUpload}
           style={{ display: 'none' }}
         />

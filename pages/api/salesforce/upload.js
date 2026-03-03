@@ -45,35 +45,63 @@ export default async function handler(req, res) {
     // Extract signals
     const computedSignals = extractSalesforceSignals(metadata);
 
-    // Store in Supabase
-    const { error: dbError } = await supabaseAdmin.from('salesforce_metadata').upsert(
-      {
-        customer_id: customerId,
-        org_id: 'upload',
-        source: 'upload',
-        objects: metadata.objects,
-        stages: metadata.stages,
-        users: metadata.users,
-        flows: metadata.flows,
-        workflow_rules: metadata.workflowRules,
-        validation_rules: metadata.validationRules,
-        apex_triggers: metadata.apexTriggers,
-        apex_classes: metadata.apexClasses,
-        profiles: metadata.profiles,
-        permission_sets: metadata.permissionSets,
-        roles: metadata.roles,
-        reports: metadata.reports,
-        dashboards: metadata.dashboards,
-        connected_apps: metadata.connectedApps,
-        named_credentials: metadata.namedCredentials,
-        record_types: metadata.recordTypes,
-        computed_signals: computedSignals,
-        fetch_status: { source: 'upload' },
-        fetched_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
+    // Store in Supabase — core columns first, then try with expansion columns
+    const coreRow = {
+      customer_id: customerId,
+      org_id: 'upload',
+      source: 'upload',
+      objects: metadata.objects,
+      stages: metadata.stages,
+      users: metadata.users,
+      flows: metadata.flows,
+      workflow_rules: metadata.workflowRules,
+      validation_rules: metadata.validationRules,
+      apex_triggers: metadata.apexTriggers,
+      apex_classes: metadata.apexClasses,
+      profiles: metadata.profiles,
+      permission_sets: metadata.permissionSets,
+      roles: metadata.roles,
+      reports: metadata.reports,
+      dashboards: metadata.dashboards,
+      connected_apps: metadata.connectedApps,
+      named_credentials: metadata.namedCredentials,
+      record_types: metadata.recordTypes,
+      computed_signals: computedSignals,
+      fetch_status: { source: 'upload' },
+      fetched_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // v3 expansion columns (may not exist on older DBs)
+    const expansionColumns = {
+      campaigns: metadata.campaigns,
+      installed_packages: metadata.installedPackages,
+      territories: metadata.territories,
+      forecasting_types: metadata.forecastingTypes,
+      duplicate_rules: metadata.duplicateRules,
+      report_schedules: metadata.reportSchedules,
+      email_templates: metadata.emailTemplates,
+      task_aggregates: metadata.taskAggregates,
+      event_patterns: metadata.eventPatterns,
+      content_versions: metadata.contentVersions,
+      knowledge_articles: metadata.knowledgeArticles,
+    };
+
+    // Try full upsert first (all columns)
+    let { error: dbError } = await supabaseAdmin.from('salesforce_metadata').upsert(
+      { ...coreRow, ...expansionColumns },
       { onConflict: 'customer_id,org_id' }
     );
+
+    // If full upsert fails (missing columns), fall back to core-only
+    if (dbError) {
+      console.warn('Full upsert failed, trying core columns only:', dbError.message);
+      const fallback = await supabaseAdmin.from('salesforce_metadata').upsert(
+        coreRow,
+        { onConflict: 'customer_id,org_id' }
+      );
+      dbError = fallback.error;
+    }
 
     if (dbError) {
       console.error('Error storing Salesforce upload:', dbError);

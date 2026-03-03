@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 }
 
 async function handleRun(req, res) {
-  const { customerId } = req.body;
+  const { customerId, preserveRoadmap } = req.body;
 
   if (!customerId) {
     return res.status(400).json({ error: 'customerId is required' });
@@ -121,31 +121,34 @@ async function handleRun(req, res) {
       crmType
     );
 
-    // Store result
+    // Store result — when preserveRoadmap is set, only update scores (not roadmap)
+    const upsertData = {
+      customer_id: customerId,
+      version: 3,
+      crm_type: crmType,
+      score_card: result.score_card,
+      pillar_scores: result.pillar_scores,
+      department_scores: result.department_scores,
+      overall_score: result.overall_score,
+      intake_id: intake?.id || null,
+      hubspot_metadata_id: crmType === 'hubspot' ? metadataId : null,
+      salesforce_metadata_id: crmType === 'salesforce' ? metadataId : null,
+      transcript_ids: transcriptIds,
+      company_profile: result.company_profile,
+      data_coverage: result.data_coverage,
+      metadata: result.metadata,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only overwrite the roadmap when not preserving it
+    if (!preserveRoadmap) {
+      upsertData.roadmap = result.roadmap;
+    }
+
     const { data: stored, error } = await supabaseAdmin
       .from('diagnostic_results_v3')
-      .upsert(
-        {
-          customer_id: customerId,
-          version: 3,
-          crm_type: crmType,
-          score_card: result.score_card,
-          pillar_scores: result.pillar_scores,
-          department_scores: result.department_scores,
-          overall_score: result.overall_score,
-          roadmap: result.roadmap,
-          intake_id: intake?.id || null,
-          hubspot_metadata_id: crmType === 'hubspot' ? metadataId : null,
-          salesforce_metadata_id: crmType === 'salesforce' ? metadataId : null,
-          transcript_ids: transcriptIds,
-          company_profile: result.company_profile,
-          data_coverage: result.data_coverage,
-          metadata: result.metadata,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'customer_id' }
-      )
-      .select('id')
+      .upsert(upsertData, { onConflict: 'customer_id' })
+      .select('id, roadmap')
       .single();
 
     if (error) {
@@ -153,9 +156,15 @@ async function handleRun(req, res) {
       return res.status(500).json({ error: 'Failed to store result' });
     }
 
+    // When preserving roadmap, return the existing roadmap from DB instead of the newly generated one
+    const responseData = { id: stored?.id, ...result };
+    if (preserveRoadmap && stored?.roadmap) {
+      responseData.roadmap = stored.roadmap;
+    }
+
     return res.status(200).json({
       success: true,
-      data: { id: stored?.id, ...result },
+      data: responseData,
     });
   } catch (err) {
     console.error('v3 diagnostic run error:', err);
@@ -286,7 +295,7 @@ async function handleUpdate(req, res) {
       crmType
     );
 
-    // Update stored result
+    // Update stored result — preserve existing roadmap (admin overrides are score-only)
     const { error: updateError } = await supabaseAdmin
       .from('diagnostic_results_v3')
       .update({
@@ -294,7 +303,6 @@ async function handleUpdate(req, res) {
         pillar_scores: result.pillar_scores,
         department_scores: result.department_scores,
         overall_score: result.overall_score,
-        roadmap: result.roadmap,
         data_coverage: result.data_coverage,
         metadata: result.metadata,
         updated_at: new Date().toISOString(),

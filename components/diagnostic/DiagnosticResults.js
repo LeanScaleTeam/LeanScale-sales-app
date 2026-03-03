@@ -808,11 +808,11 @@ export default function DiagnosticResults({ diagnosticType }) {
             <TranscriptUpload
               customerId={customer?.id}
               onUploadComplete={() => {
-                // Re-run v3 diagnostic after transcript analysis
+                // Re-run v3 diagnostic after transcript analysis — preserve roadmap customizations
                 fetch('/api/diagnostic/v3/run', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ customerId: customer.id }),
+                  body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
                 })
                   .then((r) => r.json())
                   .then((json) => {
@@ -848,11 +848,11 @@ export default function DiagnosticResults({ diagnosticType }) {
               metadata={v3Result?.metadata || {}}
               existingAssessments={consultantAssessments}
               onSave={() => {
-                // Re-run v3 diagnostic after consultant input
+                // Re-run v3 diagnostic after consultant input — preserve roadmap customizations
                 fetch('/api/diagnostic/v3/run', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ customerId: customer.id }),
+                  body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
                 })
                   .then((r) => r.json())
                   .then((json) => {

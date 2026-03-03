@@ -48,19 +48,19 @@ function resolveSlug(id) {
 }
 
 describe('Playbook ID Resolution', () => {
-  test('registry.json contains 68 entries', () => {
-    expect(registry.playbooks.length).toBe(68);
+  test('registry.json contains 71 entries', () => {
+    expect(registry.playbooks.length).toBe(71);
   });
 
-  test('51 published + 17 stubs = 68', () => {
+  test('69 published + 2 stubs = 71', () => {
     const published = registry.playbooks.filter(p => p.status === 'published');
     const stubs = registry.playbooks.filter(p => p.status === 'stub');
-    expect(published.length).toBe(51);
-    expect(stubs.length).toBe(17);
+    expect(published.length).toBe(69);
+    expect(stubs.length).toBe(2);
   });
 
-  test('id-aliases.json has 6 aliases', () => {
-    expect(Object.keys(aliases.aliases).length).toBe(6);
+  test('id-aliases.json has 7 aliases', () => {
+    expect(Object.keys(aliases.aliases).length).toBe(7);
   });
 
   test('all alias targets exist in registry', () => {
@@ -127,10 +127,10 @@ describe('Playbook ID Resolution', () => {
     }
   });
 
-  test('10 core + 58 extended = 68', () => {
+  test('14 core + 57 extended = 71', () => {
     const core = registry.playbooks.filter(p => p.tier === 'core');
     const extended = registry.playbooks.filter(p => p.tier === 'extended');
-    expect(core.length).toBe(10);
-    expect(extended.length).toBe(58);
+    expect(core.length).toBe(14);
+    expect(extended.length).toBe(57);
   });
 });

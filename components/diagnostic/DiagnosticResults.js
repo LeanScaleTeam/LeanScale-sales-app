@@ -719,7 +719,6 @@ export default function DiagnosticResults({ diagnosticType }) {
                 pillarScores={v3Result.pillar_scores}
                 departmentScores={v3Result.department_scores}
                 companyProfile={v3Result.company_profile}
-                roadmapSummary={v3Result.roadmap?.summary}
                 dataCoverage={v3Result.data_coverage}
               />
               <ScoreCardGrid
@@ -1090,18 +1089,20 @@ export default function DiagnosticResults({ diagnosticType }) {
                 <a href={customerPath('/sow')} className="nav-cta" style={{ textDecoration: 'none' }}>
                   View Statement of Work
                 </a>
-                <a
-                  href={customerPath('/try-leanscale/engagement')}
-                  className="nav-cta"
-                  style={{
-                    textDecoration: 'none',
-                    background: 'transparent',
-                    border: '2px solid var(--primary)',
-                    color: 'var(--primary)',
-                  }}
-                >
-                  View Engagement Overview
-                </a>
+                {!customer?.hideEngagement && (
+                  <a
+                    href={customerPath('/try-leanscale/engagement')}
+                    className="nav-cta"
+                    style={{
+                      textDecoration: 'none',
+                      background: 'transparent',
+                      border: '2px solid var(--primary)',
+                      color: 'var(--primary)',
+                    }}
+                  >
+                    View Engagement Overview
+                  </a>
+                )}
               </>
             ) : (
               <a href={customerPath('/try-leanscale/start')} className="nav-cta" style={{ textDecoration: 'none' }}>

@@ -23,6 +23,7 @@ export default function AdminCustomers() {
     google_slides_embed_url: '',
     assigned_team: '',
     is_demo: false,
+    hide_engagement: false,
     diagnostic_type: 'gtm',
     diagnostic_version: 2,
     customer_type: 'prospect',
@@ -71,6 +72,7 @@ export default function AdminCustomers() {
       google_slides_embed_url: 'https://docs.google.com/presentation/d/e/2PACX-1vSGSLvHvPn9Cus6N3BpGnK6AkZsUiEdh8cARVVBiZ4w54uUCjHHJ-lHfymW8wfPPraAXMfgXtePxIwf/pubembed?start=true&loop=true&delayms=3000',
       assigned_team: 'izzy, brian, dave, kavean',
       is_demo: false,
+      hide_engagement: false,
       diagnostic_type: 'gtm',
       diagnostic_version: 2,
       customer_type: 'active',
@@ -92,6 +94,7 @@ export default function AdminCustomers() {
       google_slides_embed_url: customer.google_slides_embed_url || '',
       assigned_team: (customer.assigned_team || []).join(', '),
       is_demo: customer.is_demo || false,
+      hide_engagement: customer.hide_engagement || false,
       diagnostic_type: customer.diagnostic_type || 'gtm',
       diagnostic_version: customer.diagnostic_version || 2,
       customer_type: customer.customer_type || 'active',
@@ -615,17 +618,31 @@ export default function AdminCustomers() {
                     }}
                   />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', paddingTop: '1.5rem' }}>
-                  <input
-                    type="checkbox"
-                    id="is_demo"
-                    checked={formData.is_demo}
-                    onChange={(e) => setFormData({ ...formData, is_demo: e.target.checked })}
-                    style={{ marginRight: '0.5rem' }}
-                  />
-                  <label htmlFor="is_demo" style={{ fontSize: '0.875rem' }}>
-                    Mark as Demo Account
-                  </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingTop: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type="checkbox"
+                      id="is_demo"
+                      checked={formData.is_demo}
+                      onChange={(e) => setFormData({ ...formData, is_demo: e.target.checked })}
+                      style={{ marginRight: '0.5rem' }}
+                    />
+                    <label htmlFor="is_demo" style={{ fontSize: '0.875rem' }}>
+                      Mark as Demo Account
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type="checkbox"
+                      id="hide_engagement"
+                      checked={formData.hide_engagement}
+                      onChange={(e) => setFormData({ ...formData, hide_engagement: e.target.checked })}
+                      style={{ marginRight: '0.5rem' }}
+                    />
+                    <label htmlFor="hide_engagement" style={{ fontSize: '0.875rem' }}>
+                      Hide Engagement Page
+                    </label>
+                  </div>
                 </div>
               </div>
 

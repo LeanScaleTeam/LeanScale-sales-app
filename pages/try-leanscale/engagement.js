@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { processes as staticProcesses, managedServicesHealth, statusToLabel } from '../../data/diagnostic-data';
@@ -148,10 +149,18 @@ function computePhaseTimeline(roadmap, catalogMap, monthlyHours) {
 }
 
 export default function EngagementOverview() {
+  const router = useRouter();
   const { customer, customerPath, isDemo } = useCustomer();
   const diagnosticType = customer.diagnosticType || 'gtm';
   const configuredVersion = customer?.diagnosticVersion || 2;
   const isV3 = configuredVersion === 3 && diagnosticType === 'gtm';
+
+  // Redirect if engagement page is hidden for this customer
+  useEffect(() => {
+    if (customer?.hideEngagement) {
+      router.replace(customerPath('/try-leanscale'));
+    }
+  }, [customer?.hideEngagement, customerPath, router]);
 
   const [dbProcesses, setDbProcesses] = useState(null);
   const [v3Roadmap, setV3Roadmap] = useState(null);

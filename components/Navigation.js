@@ -102,20 +102,29 @@ export default function Navigation() {
   const showCustomerBranding = !isDemo && displayName;
   const isActive = customerType === 'active';
   const diagnosticType = customer.diagnosticType || 'gtm';
+  const hideEngagement = customer.hideEngagement || false;
   const navItems = useMemo(
     () => {
-      if (isActive) return buildCustomerNav(diagnosticType);
-      // For prospect nav, hide engagement link if customer is non-GTM
-      if (diagnosticType !== 'gtm') {
-        return prospectSections.map(section =>
-          section.name === 'try'
-            ? { ...section, links: section.links.filter(l => l.href !== '/try-leanscale/engagement') }
-            : section
-        );
+      const shouldHideEngagement = hideEngagement || diagnosticType !== 'gtm';
+      const filterEngagement = (sections) =>
+        sections.map(section => {
+          const filtered = { ...section };
+          if (filtered.links) {
+            filtered.links = filtered.links.filter(l => l.href !== '/try-leanscale/engagement');
+          }
+          return filtered;
+        });
+
+      if (isActive) {
+        const nav = buildCustomerNav(diagnosticType);
+        return shouldHideEngagement ? filterEngagement(nav) : nav;
+      }
+      if (shouldHideEngagement) {
+        return filterEngagement(prospectSections);
       }
       return prospectSections;
     },
-    [isActive, diagnosticType]
+    [isActive, diagnosticType, hideEngagement]
   );
 
   return (

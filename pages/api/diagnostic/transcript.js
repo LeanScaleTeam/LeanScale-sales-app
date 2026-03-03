@@ -3,11 +3,13 @@
  *
  * POST /api/diagnostic/transcript — Upload transcript text
  * POST /api/diagnostic/transcript?action=analyze — Run Claude analysis on transcript
+ * POST /api/diagnostic/transcript?action=extract-intake — Extract intake form answers from transcript
  * GET  /api/diagnostic/transcript?customerId=... — List transcripts for customer
  */
 
 import { supabaseAdmin } from '../../../lib/supabase';
 import { analyzeTranscript, mergeTranscriptAssessments } from '../../../lib/diagnostic-engine/v3/transcript-analyzer';
+import { extractIntakeFromTranscript } from '../../../lib/diagnostic-engine/v3/transcript-intake-extractor';
 
 export const config = {
   api: {
@@ -21,6 +23,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') return handleList(req, res);
   if (req.method === 'POST') {
     if (req.query.action === 'analyze') return handleAnalyze(req, res);
+    if (req.query.action === 'extract-intake') return handleExtractIntake(req, res);
     return handleUpload(req, res);
   }
   return res.status(405).json({ error: 'Method not allowed' });
@@ -103,7 +106,7 @@ async function handleAnalyze(req, res) {
       evidence_quotes: a.evidence_quotes,
       assessment: a.assessment,
       reasoning: a.reasoning,
-      model_version: model || 'claude-sonnet-4-6',
+      model_version: model || 'anthropic/claude-sonnet-4',
       analyzed_at: new Date().toISOString(),
     }));
 
@@ -129,6 +132,47 @@ async function handleAnalyze(req, res) {
     });
   } catch (err) {
     console.error('Transcript analysis error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
+
+/**
+ * Extract intake form answers from a transcript.
+ * Body: { transcriptId, customerId }
+ */
+async function handleExtractIntake(req, res) {
+  const { transcriptId, customerId } = req.body;
+
+  if (!transcriptId || !customerId) {
+    return res.status(400).json({ error: 'transcriptId and customerId are required' });
+  }
+
+  try {
+    // Fetch transcript text
+    const { data: transcript, error: fetchError } = await supabaseAdmin
+      .from('diagnostic_transcripts')
+      .select('id, raw_text')
+      .eq('id', transcriptId)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (fetchError || !transcript) {
+      return res.status(404).json({ error: 'Transcript not found' });
+    }
+
+    // Run intake extraction
+    const preFill = await extractIntakeFromTranscript(transcript.raw_text);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transcriptId,
+        preFill,
+        extractedCount: Object.keys(preFill).length,
+      },
+    });
+  } catch (err) {
+    console.error('Transcript intake extraction error:', err);
     return res.status(500).json({ error: err.message || 'Internal server error' });
   }
 }

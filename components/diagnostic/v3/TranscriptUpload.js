@@ -1,7 +1,7 @@
 /**
  * TranscriptUpload — Drag-and-drop upload area for discovery call transcripts
  *
- * Handles text paste and file upload (.txt), shows processing status
+ * Handles text paste and file upload (.txt, .md), shows processing status
  * and results preview after analysis.
  */
 
@@ -102,8 +102,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   }
 
   function readFile(file) {
-    if (!file.name.endsWith('.txt') && !file.type.startsWith('text/')) {
-      setError('Please upload a .txt file');
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md') && !file.type.startsWith('text/')) {
+      setError('Please upload a .txt or .md file');
       return;
     }
 
@@ -134,12 +134,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
             onClick={() => fileInputRef.current?.click()}
           >
             <div style={styles.dropText}>
-              Drop a .txt file here or click to browse
+              Drop a .txt or .md file here or click to browse
             </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".txt,text/plain"
+              accept=".txt,.md,text/plain,text/markdown"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />

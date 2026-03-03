@@ -270,15 +270,7 @@ export function getPlaybookForService(serviceId) {
 export function hasPlaybookContent(serviceId) {
   // These IDs have no playbook content on the reorganize branch
   const STUB_IDS = new Set([
-    'cpq-implementation', 'revenue-recognition', 'renewal-management',
-    'email-operations-nurture-program', 'marketing-database-segmentation',
-    'marketing-reporting-pack', 'email-operations-subscription-and-compliance',
-    'email-operations-templates-and-build-process',
-    'event-operations-lead-list-intake-process',
-    'commission-plan-design-and-implementation', 'commission-tool-implementation',
-    'marketing-to-sales-handoff-and-sla-tracking', 'ai-automated-inbound',
-    'crm-erp-integration', 'gtm-diagnostic', 'revenue-intelligence-process',
-    'opportunity-management-ux-improvements',
+    'quote-to-cash', 'ai-automated-inbound',
   ]);
   return !STUB_IDS.has(serviceId);
 }

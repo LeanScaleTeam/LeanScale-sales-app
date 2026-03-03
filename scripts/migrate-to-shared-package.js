@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * One-time migration script: Playbooks-Site reorganize branch → playbooks-content/
+ * Sync script: Playbooks-Site reorganize branch → playbooks-content/
  *
  * Reads markdown from the Playbooks-Site repo's reorganize branch,
  * strips Docusaurus frontmatter and JSX Loom embeds, and writes
  * clean markdown + structured metadata to playbooks-content/.
+ *
+ * Auto-discovers folders from the branch so re-running syncs all changes.
+ * Usage: node scripts/migrate-to-shared-package.js
  */
 
 const { execSync } = require('child_process');
@@ -87,47 +90,46 @@ const PROJECTS = [
   { numericId: '66', slug: 'gtm-diagnostic', title: 'GTM Diagnostic', description: 'Comprehensive GTM health assessment and roadmap.', tags: { function: ['revops'], team: ['leadership'], outcome: ['visibility'], metric: [], complexity: 'foundational' }, featured: true },
   { numericId: '67', slug: 'revenue-intelligence-process', title: 'Revenue Intelligence Process', description: 'Implement revenue intelligence and deal insights.', tags: { function: ['sales', 'revops'], team: ['sales-team'], outcome: ['visibility'], metric: ['win-rate'], complexity: 'advanced' } },
   { numericId: '68', slug: 'opportunity-management-ux-improvements', title: 'Opportunity Management UX Improvements', description: 'Optimize CRM opportunity management experience.', tags: { function: ['sales', 'revops'], team: ['revops-team'], outcome: ['efficiency'], metric: ['win-rate'], complexity: 'intermediate' } },
+  { numericId: '69', slug: 'pricing-and-packaging', title: 'Pricing and Packaging', description: 'Design and implement pricing models and packaging strategy.', tags: { function: ['revops', 'finance'], team: ['leadership'], outcome: ['efficiency', 'visibility'], metric: ['arr'], complexity: 'advanced' } },
+  { numericId: '70', slug: 'billing', title: 'Billing', description: 'Implement billing processes and systems.', tags: { function: ['finance', 'revops'], team: ['revops-team'], outcome: ['efficiency'], metric: ['arr'], complexity: 'advanced' } },
+  { numericId: '71', slug: 'metering', title: 'Metering', description: 'Implement usage metering for consumption-based pricing.', tags: { function: ['revops', 'finance'], team: ['revops-team'], outcome: ['visibility'], metric: ['arr'], complexity: 'advanced' } },
 ];
 
-// Map from slug → tier (core or extended) based on reorganize branch folders
-const CORE_SLUGS = new Set([
-  'attribution', 'automated-inbound', 'growth-model', 'gtm-lifecycle',
-  'hubspot-sfdc-migration', 'lead-routing', 'market-map', 'quote-to-cash',
-  'sales-territory-design', 'speed-to-lead-sla-tracking',
-]);
+// Auto-discover folders from the reorganize branch (no hardcoded lists)
+function discoverFolders() {
+  const coreSlugs = new Set();
+  const extendedSlugs = new Set();
 
-// Slugs that exist on the reorganize branch (have actual content)
-const REORGANIZE_FOLDERS = new Set([
-  // core
-  'attribution', 'automated-inbound', 'growth-model', 'gtm-lifecycle',
-  'hubspot-sfdc-migration', 'lead-routing', 'market-map', 'quote-to-cash',
-  'sales-territory-design', 'speed-to-lead-sla-tracking',
-  // extended
-  'abm-abs-process-and-system', 'activity-capture', 'arr-reporting',
-  'automated-outbound-process', 'clm-implementation',
-  'conversation-intelligence-platform-implementation',
-  'crm-deduplication-ongoing-tool', 'crm-deduplication',
-  'customer-health-model', 'customer-lifecycle', 'customer-segmentation',
-  'customer-success-platform-implementation', 'e-signature-implementation',
-  'event-operations-platform-implementation', 'executive-reporting-suite',
-  'fed-pubsec-crm-partitioning', 'forecasting-process-implementation',
-  'foundational-automations-and-reporting',
-  'gtm-org-chart-roles-and-hiring-plan', 'inbound-lead-journey-mapping',
-  'lead-lifecycle', 'lead-scoring-model-product-led',
-  'lead-scoring-model-sales-led',
-  'marketing-automation-platform-implementation',
-  'monthly-quarterly-gtm-reporting-pack',
-  'nps-and-voice-of-customer-launch', 'onboarding-and-process-improvement',
-  'partnership-success-platform-implementation',
-  'physical-event-process-and-roi-reporting', 'plg-gtm-design',
-  'quotas-and-target-setting', 'renewal-churn-nrr-grr-reporting',
-  'rules-of-engagement-design', 'sales-enablement-platform-implementation',
-  'sales-engagement-platform', 'sales-lifecycle',
-  'sales-qualification-methodology',
-  'sales-to-cs-handoff-process-implementation',
-  'salesforce-to-hubspot-crm-migration', 'support-system-implementation',
-  'website-lead-capture-and-form-compliance',
-]);
+  // Slug aliases: maps PROJECTS slug → reorganize branch folder name
+  const SLUG_ALIASES = {
+    'revenue-recognition': 'revrec',
+    'foundational-automations-and-reporting': 'foundational-automations-and-reporting-logic',
+    'website-lead-capture-and-form-compliance': 'website-lead-capture-and-form-configuration',
+  };
+
+  for (const tier of ['core', 'extended']) {
+    try {
+      const listing = execSync(`git show "${BRANCH}:docs/${tier}/"`, {
+        cwd: PLAYBOOKS_SITE_PATH,
+        encoding: 'utf8',
+      });
+      // Parse git tree output: lines like "folder/" or "_category_.json"
+      const folders = listing.split('\n')
+        .filter(l => l.endsWith('/'))
+        .map(l => l.replace('/', '').trim())
+        .filter(l => l && !l.startsWith('_') && l !== 'tree');
+      for (const f of folders) {
+        if (tier === 'core') coreSlugs.add(f);
+        else extendedSlugs.add(f);
+      }
+    } catch {
+      console.warn(`  Warning: could not list docs/${tier}/ on ${BRANCH}`);
+    }
+  }
+
+  const allFolders = new Set([...coreSlugs, ...extendedSlugs]);
+  return { coreSlugs, allFolders, SLUG_ALIASES };
+}
 
 // v3 diagnostic competency → serviceIds mapping (for meta.json competencyIds)
 const SERVICE_TO_COMPETENCIES = {
@@ -212,7 +214,7 @@ function cleanMarkdown(markdown) {
 // ── Main ──
 
 function migrate() {
-  console.log('Starting migration from Playbooks-Site reorganize branch...\n');
+  console.log('Syncing from Playbooks-Site reorganize branch...\n');
 
   // Verify Playbooks-Site exists
   if (!fs.existsSync(PLAYBOOKS_SITE_PATH)) {
@@ -220,18 +222,33 @@ function migrate() {
     process.exit(1);
   }
 
+  // Fetch latest from remote
+  try {
+    execSync('git fetch origin', { cwd: PLAYBOOKS_SITE_PATH, stdio: 'pipe' });
+    console.log('  Fetched latest from Playbooks-Site remote\n');
+  } catch {
+    console.warn('  Warning: could not fetch remote, using local state\n');
+  }
+
+  // Auto-discover folders from the branch
+  const { coreSlugs, allFolders, SLUG_ALIASES } = discoverFolders();
+  console.log(`  Discovered ${coreSlugs.size} core + ${allFolders.size - coreSlugs.size} extended folders on ${BRANCH}\n`);
+
   // Ensure output dirs exist
   fs.mkdirSync(PLAYBOOKS_DIR, { recursive: true });
 
   const registryEntries = [];
   let publishedCount = 0;
   let stubCount = 0;
+  let updatedCount = 0;
   const pages = ['advisory', 'methodology', 'implementation'];
 
   for (const project of PROJECTS) {
     const slug = project.slug;
-    const hasContent = REORGANIZE_FOLDERS.has(slug);
-    const tier = CORE_SLUGS.has(slug) ? 'core' : 'extended';
+    // Check if slug exists on branch directly or via alias
+    const branchSlug = SLUG_ALIASES[slug] || slug;
+    const hasContent = allFolders.has(branchSlug);
+    const tier = coreSlugs.has(branchSlug) ? 'core' : 'extended';
     const outDir = path.join(PLAYBOOKS_DIR, slug);
     fs.mkdirSync(outDir, { recursive: true });
 
@@ -239,25 +256,34 @@ function migrate() {
 
     if (hasContent) {
       // Determine which folder on the reorganize branch (core/ or extended/)
-      const branchTier = CORE_SLUGS.has(slug) ? 'core' : 'extended';
+      const branchTier = coreSlugs.has(branchSlug) ? 'core' : 'extended';
+      let anyPageUpdated = false;
 
       for (const page of pages) {
-        const rawMd = gitShow(`docs/${branchTier}/${slug}/${page}.md`);
+        const rawMd = gitShow(`docs/${branchTier}/${branchSlug}/${page}.md`);
         if (rawMd) {
           // Extract Loom ID from advisory page
           if (page === 'advisory' && !loomEmbedId) {
             loomEmbedId = extractLoomId(rawMd);
           }
           const cleanedMd = cleanMarkdown(rawMd);
-          fs.writeFileSync(path.join(outDir, `${page}.md`), cleanedMd);
+          const outFile = path.join(outDir, `${page}.md`);
+          // Check if content changed
+          const existing = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8') : '';
+          if (existing !== cleanedMd) anyPageUpdated = true;
+          fs.writeFileSync(outFile, cleanedMd);
         }
       }
+      if (anyPageUpdated) updatedCount++;
       publishedCount++;
-      console.log(`  [published] ${slug} (${tier})`);
+      console.log(`  [published] ${slug}${branchSlug !== slug ? ` (→ ${branchSlug})` : ''} (${tier})${anyPageUpdated ? ' ★ updated' : ''}`);
     } else {
-      // Create stub entry with empty markdown files
+      // Create stub entry with empty markdown files (only if not already present)
       for (const page of pages) {
-        fs.writeFileSync(path.join(outDir, `${page}.md`), `# ${project.title} — ${page.charAt(0).toUpperCase() + page.slice(1)}\n\n> Content coming soon.\n`);
+        const outFile = path.join(outDir, `${page}.md`);
+        if (!fs.existsSync(outFile)) {
+          fs.writeFileSync(outFile, `# ${project.title} — ${page.charAt(0).toUpperCase() + page.slice(1)}\n\n> Content coming soon.\n`);
+        }
       }
       stubCount++;
       console.log(`  [stub]      ${slug}`);
@@ -302,8 +328,8 @@ function migrate() {
     JSON.stringify(registry, null, 2) + '\n'
   );
 
-  console.log(`\nMigration complete!`);
-  console.log(`  Published: ${publishedCount}`);
+  console.log(`\nSync complete!`);
+  console.log(`  Published: ${publishedCount} (${updatedCount} updated)`);
   console.log(`  Stubs: ${stubCount}`);
   console.log(`  Total: ${registryEntries.length}`);
   console.log(`\nOutput: ${OUTPUT_BASE}/`);

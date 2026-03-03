@@ -82,7 +82,8 @@ export default async function handler(req, res) {
       const roadmap = applyRoadmapOverrides(v3Result.roadmap, v3Result.roadmap_overrides);
 
       // Collect service slugs from all roadmap projects
-      const slugs = [...new Set(roadmap.phases.flatMap(p => p.projects.map(proj => proj.serviceId)))];
+      const phases = roadmap?.phases || [];
+      const slugs = [...new Set(phases.flatMap(p => p.projects.map(proj => proj.serviceId)))];
       const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
 
       generatedSections = generateSectionsFromDiagnosticV3(roadmap, catalogMap);
@@ -246,6 +247,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Error creating SOW from diagnostic:', error);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 }

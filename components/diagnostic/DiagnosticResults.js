@@ -411,9 +411,13 @@ export default function DiagnosticResults({ diagnosticType }) {
       const json = await res.json();
       if (json.success && json.data?.id) {
         router.push(customerPath(`/sow/${json.data.id}`));
+      } else {
+        console.error('SOW creation failed:', json);
+        alert(`SOW creation failed: ${json.error || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error creating SOW from diagnostic:', err);
+      alert(`SOW creation error: ${err.message}`);
     }
   }
 

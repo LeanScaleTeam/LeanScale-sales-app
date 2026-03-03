@@ -44,6 +44,7 @@ export default async function handler(req, res) {
         department_scores: data.department_scores,
         overall_score: data.overall_score,
         roadmap: data.roadmap,
+        roadmap_overrides: data.roadmap_overrides || null,
         company_profile: data.company_profile,
         data_coverage: data.data_coverage,
         metadata: data.metadata,

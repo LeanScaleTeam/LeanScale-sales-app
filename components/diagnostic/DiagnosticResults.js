@@ -27,7 +27,7 @@ import RoadmapView from './v3/RoadmapView';
 import V3Summary from './v3/V3Summary';
 import DataCoverage from './v3/DataCoverage';
 import TranscriptUpload from './v3/TranscriptUpload';
-import ConsultantForm from './v3/ConsultantForm';
+import ConsultantAuditForm from './v3/ConsultantAuditForm';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 
 // CPQ-specific views
@@ -100,8 +100,8 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [v3Result, setV3Result] = useState(null);
   const [v3RunTimestamp, setV3RunTimestamp] = useState(null);
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
-  const [showConsultantForm, setShowConsultantForm] = useState(false);
   const [consultantAssessments, setConsultantAssessments] = useState([]);
+  const [crmSignals, setCrmSignals] = useState({ computedSignals: {}, enhancedSignals: {}, crmType: 'salesforce' });
   const [roadmapEditMode, setRoadmapEditMode] = useState(false);
   const [roadmapOverrides, setRoadmapOverrides] = useState(null);
   const [roadmapDirty, setRoadmapDirty] = useState(false);
@@ -204,6 +204,23 @@ export default function DiagnosticResults({ diagnosticType }) {
     }
 
     loadConsultant();
+  }, [customer?.id, diagnosticVersion, isDemo]);
+
+  // --- Load CRM signals for consultant audit form ---
+  useEffect(() => {
+    if (isDemo || !customer?.id || diagnosticVersion !== 3) return;
+
+    async function loadCrmSignals() {
+      try {
+        const res = await fetch(`/api/diagnostic/v3/crm-signals?customerId=${customer.id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) setCrmSignals(json.data);
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    loadCrmSignals();
   }, [customer?.id, diagnosticVersion, isDemo]);
 
   // --- Load linked SOWs ---
@@ -819,8 +836,12 @@ export default function DiagnosticResults({ diagnosticType }) {
           )}
 
           {isV3 && activeView === 'consultant' && (
-            <ConsultantForm
+            <ConsultantAuditForm
               customerId={customer?.id}
+              crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+              computedSignals={crmSignals.computedSignals || {}}
+              enhancedSignals={crmSignals.enhancedSignals || {}}
+              metadata={v3Result?.metadata || {}}
               existingAssessments={consultantAssessments}
               onSave={() => {
                 // Re-run v3 diagnostic after consultant input

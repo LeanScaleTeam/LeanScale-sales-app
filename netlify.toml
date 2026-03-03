@@ -16,6 +16,12 @@
 # - SUPABASE_SERVICE_ROLE_KEY
 # - SLACK_WEBHOOK_URL
 # - N8N_WEBHOOK_URL
+# - OPENROUTER_API_KEY
+
+# Serverless functions configuration
+# LLM-powered transcript analysis (OpenRouter) needs ~25s per call
+[functions]
+  node_bundler = "esbuild"
 
 # Headers for security and caching
 [[headers]]

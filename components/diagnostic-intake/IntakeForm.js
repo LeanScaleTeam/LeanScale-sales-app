@@ -80,7 +80,7 @@ export default function IntakeForm() {
             setSectionsCompleted(intakeData.sectionsCompleted || []);
             // If returning from OAuth, jump to appropriate section
             if (router.query.hubspot) {
-              setCurrentSection('review');
+              setCurrentSection('hs-analyzing');
             } else if (router.query.salesforce) {
               setCurrentSection('sf-analyzing');
             }

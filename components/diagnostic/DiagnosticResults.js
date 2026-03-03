@@ -604,6 +604,23 @@ export default function DiagnosticResults({ diagnosticType }) {
                     if (json.success && json.data) setV3Result(json.data);
                   });
               }}
+              onIntakeExtracted={(preFill) => {
+                // Merge transcript-extracted answers into intake
+                // Save to Supabase so they persist for the intake form
+                const answerValues = {};
+                for (const [key, data] of Object.entries(preFill)) {
+                  answerValues[key] = data.value;
+                }
+                fetch('/api/diagnostic/intake', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    customerId: customer.id,
+                    answers: answerValues,
+                    merge: true,
+                  }),
+                });
+              }}
             />
           )}
 

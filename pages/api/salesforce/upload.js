@@ -70,6 +70,7 @@ export default async function handler(req, res) {
       enhancedSignals = inferEnhancedAnswers(enhanced, metadata);
     }
 
+
     // Store in Supabase — core columns first, then try with expansion columns
     const coreRow = {
       customer_id: customerId,

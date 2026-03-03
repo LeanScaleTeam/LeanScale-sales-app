@@ -7,7 +7,7 @@
 
 import { useState, useRef } from 'react';
 
-export default function TranscriptUpload({ customerId, onUploadComplete }) {
+export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted }) {
   const [text, setText] = useState('');
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -37,23 +37,50 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
 
       const transcriptId = uploadJson.data.id;
 
-      // Analyze
+      // Run competency analysis + intake extraction in parallel
       setUploading(false);
       setAnalyzing(true);
 
-      const analyzeRes = await fetch('/api/diagnostic/transcript?action=analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcriptId, customerId }),
-      });
+      const [analyzeRes, intakeRes] = await Promise.all([
+        fetch('/api/diagnostic/transcript?action=analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptId, customerId }),
+        }),
+        fetch('/api/diagnostic/transcript?action=extract-intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptId, customerId }),
+        }),
+      ]);
 
       const analyzeJson = await analyzeRes.json();
       if (!analyzeJson.success) {
         throw new Error(analyzeJson.error || 'Analysis failed');
       }
 
-      setResult(analyzeJson.data);
+      // Intake extraction is best-effort — don't fail the whole flow
+      let intakeData = null;
+      try {
+        const intakeJson = await intakeRes.json();
+        if (intakeJson.success) {
+          intakeData = intakeJson.data;
+        }
+      } catch {
+        // Intake extraction failed silently — competency analysis still succeeds
+      }
+
+      const combinedResult = {
+        ...analyzeJson.data,
+        intakeExtracted: intakeData?.extractedCount || 0,
+      };
+
+      setResult(combinedResult);
       onUploadComplete?.(analyzeJson.data);
+
+      if (intakeData?.preFill && Object.keys(intakeData.preFill).length > 0) {
+        onIntakeExtracted?.(intakeData.preFill);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -185,6 +212,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
               <span style={styles.statValue}>{result.lowConfidenceCount}</span>
               <span style={styles.statLabel}>Need Review</span>
             </div>
+            {result.intakeExtracted > 0 && (
+              <div style={styles.stat}>
+                <span style={styles.statValue}>{result.intakeExtracted}</span>
+                <span style={styles.statLabel}>Intake Questions Filled</span>
+              </div>
+            )}
           </div>
           <button
             style={styles.resetBtn}

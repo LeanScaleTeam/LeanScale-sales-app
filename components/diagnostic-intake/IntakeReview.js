@@ -70,38 +70,17 @@ export default function IntakeReview({
         </div>
       ))}
 
-      {/* HubSpot connection — shown after form is complete */}
-      {showHubSpotConnect && (
-        <div style={isHubSpotConnected ? styles.hubspotConnected : styles.hubspotPrompt}>
-          {isHubSpotConnected ? (
-            <>
-              <div style={styles.hubspotConnectedIcon}>&#10003;</div>
-              <div>
-                <div style={styles.hubspotConnectedTitle}>HubSpot Connected</div>
-                <div style={styles.hubspotConnectedDetail}>
-                  Portal: {hubspotStatus.portalName || hubspotStatus.portalId}
-                  {hubspotStatus.signalsReady && ' — CRM data downloaded'}
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ flex: 1 }}>
-                <div style={styles.hubspotPromptTitle}>Connect your HubSpot portal (optional)</div>
-                <div style={styles.hubspotPromptDesc}>
-                  Connecting HubSpot lets us automatically analyze your CRM setup for more accurate grades on Foundation items.
-                  Your form answers have been saved and will be here when you return.
-                </div>
-              </div>
-              <button
-                onClick={handleConnectHubSpot}
-                disabled={savingForOAuth}
-                style={{ ...styles.hubspotBtn, opacity: savingForOAuth ? 0.6 : 1 }}
-              >
-                {savingForOAuth ? 'Saving...' : 'Connect HubSpot'}
-              </button>
-            </>
-          )}
+      {/* HubSpot status — shown if already connected (connect step is now mid-form) */}
+      {showHubSpotConnect && isHubSpotConnected && (
+        <div style={styles.hubspotConnected}>
+          <div style={styles.hubspotConnectedIcon}>&#10003;</div>
+          <div>
+            <div style={styles.hubspotConnectedTitle}>HubSpot Connected</div>
+            <div style={styles.hubspotConnectedDetail}>
+              Portal: {hubspotStatus.portalName || hubspotStatus.portalId}
+              {hubspotStatus.signalsReady && ' — CRM data downloaded'}
+            </div>
+          </div>
         </div>
       )}
 

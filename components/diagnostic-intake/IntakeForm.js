@@ -19,16 +19,18 @@ import SectionF from './SectionF_PlanningEnablement';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
+import HubSpotConnect from './HubSpotConnect';
 import AnalyzingScreen from './AnalyzingScreen';
 import IntakeContextPanel from './IntakeContextPanel';
 import TranscriptUpload from '../diagnostic/v3/TranscriptUpload';
 
-const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
+const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
   transcript: 'Discovery Transcript',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
+  'hs-connect': 'Connect CRM',
   'hs-analyzing': 'Analyzing',
   B: 'GTM Tools',
   C: 'Team & Organization',
@@ -181,7 +183,7 @@ export default function IntakeForm() {
         if (idx < SECTIONS.length - 1) {
           let nextIdx = idx + 1;
           // Skip utility sections when navigating forward
-          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
+          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
             nextIdx++;
           }
           setCurrentSection(SECTIONS[nextIdx]);
@@ -257,16 +259,20 @@ export default function IntakeForm() {
   const handleTranscriptNext = () => {
     if (answers.A1 === 'Salesforce') {
       setCurrentSection('sf-connect');
-    } else if (answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
-      setCurrentSection('hs-analyzing');
+    } else if (answers.A1 === 'HubSpot') {
+      if (hubspotStatus?.connected) {
+        setCurrentSection('hs-analyzing');
+      } else {
+        setCurrentSection('hs-connect');
+      }
     } else {
       setCurrentSection('B');
     }
   };
 
   const handleBack = () => {
-    // From sf-connect, go back to transcript
-    if (currentSection === 'sf-connect') {
+    // From CRM connect steps, go back to transcript
+    if (currentSection === 'sf-connect' || currentSection === 'hs-connect') {
       setCurrentSection('transcript');
       return;
     }
@@ -279,7 +285,7 @@ export default function IntakeForm() {
     if (idx > 0) {
       let prevIdx = idx - 1;
       // Skip utility sections when going back
-      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
+      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
         prevIdx--;
       }
       setCurrentSection(SECTIONS[prevIdx]);
@@ -340,7 +346,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(s))}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -475,6 +481,38 @@ export default function IntakeForm() {
                 setCurrentSection('B');
               }}
             />
+          )}
+
+          {currentSection === 'hs-connect' && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
+                Connect HubSpot
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                Connect to the customer&apos;s HubSpot portal so we can pre-fill the diagnostic form.
+                This typically takes about 15 seconds after you authorize.
+              </p>
+              <HubSpotConnect
+                customerId={customer?.id}
+                slug={customer?.slug}
+                status={hubspotStatus}
+                onSaveAllAnswers={() => saveSection('A', answers)}
+              />
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
+                <button
+                  onClick={() => setCurrentSection('transcript')}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setCurrentSection('B')}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                >
+                  Skip — Connect Later
+                </button>
+              </div>
+            </div>
           )}
 
           {currentSection === 'hs-analyzing' && (

@@ -2,7 +2,7 @@
  * HubSpotConnect — OAuth button + connection status badge
  */
 
-export default function HubSpotConnect({ customerId, slug, status }) {
+export default function HubSpotConnect({ customerId, slug, status, onSaveAllAnswers }) {
   const isConnected = status?.connected;
 
   if (isConnected) {
@@ -22,16 +22,25 @@ export default function HubSpotConnect({ customerId, slug, status }) {
 
   const authorizeUrl = `/api/hubspot/authorize?customerId=${customerId}&slug=${slug}`;
 
+  const handleConnect = async (e) => {
+    // Save current answers before OAuth redirect so they aren't lost
+    if (onSaveAllAnswers) {
+      e.preventDefault();
+      await onSaveAllAnswers();
+      window.location.href = authorizeUrl;
+    }
+  };
+
   return (
     <div style={styles.connectBanner}>
       <div style={{ marginBottom: '0.5rem' }}>
         <div style={styles.connectTitle}>Connect your HubSpot portal</div>
         <div style={styles.connectDesc}>
-          We'll automatically analyze your CRM setup to grade Foundation items.
+          We&apos;ll automatically analyze your CRM setup to pre-fill the diagnostic form.
           This takes about 15 seconds after you authorize.
         </div>
       </div>
-      <a href={authorizeUrl} style={styles.connectBtn}>
+      <a href={authorizeUrl} onClick={handleConnect} style={styles.connectBtn}>
         Connect HubSpot
       </a>
     </div>

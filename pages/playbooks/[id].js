@@ -105,7 +105,7 @@ function LoomEmbed({ loomId }) {
       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     }}>
       <iframe
-        src={`https://www.loom.com/embed/${loomId}`}
+        src={`https://www.loom.com/embed/${loomId}?hideEmbedTopBar=true&hide_share=true`}
         frameBorder="0"
         allowFullScreen
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}

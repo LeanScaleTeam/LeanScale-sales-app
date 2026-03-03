@@ -156,9 +156,11 @@ async function handleRun(req, res) {
       return res.status(500).json({ error: 'Failed to store result' });
     }
 
-    // When preserving roadmap, return the existing roadmap from DB instead of the newly generated one
+    // When preserving roadmap, return the existing roadmap from DB
+    // but also include the freshly generated one as suggestedRoadmap for diffing
     const responseData = { id: stored?.id, ...result };
     if (preserveRoadmap && stored?.roadmap) {
+      responseData.suggestedRoadmap = result.roadmap;
       responseData.roadmap = stored.roadmap;
     }
 

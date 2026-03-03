@@ -28,6 +28,7 @@ import V3Summary from './v3/V3Summary';
 import DataCoverage from './v3/DataCoverage';
 import TranscriptUpload from './v3/TranscriptUpload';
 import ConsultantAuditForm from './v3/ConsultantAuditForm';
+import SuggestedProjects, { findNewSuggestedProjects } from './v3/SuggestedProjects';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 
 // CPQ-specific views
@@ -106,6 +107,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [roadmapOverrides, setRoadmapOverrides] = useState(null);
   const [roadmapDirty, setRoadmapDirty] = useState(false);
   const [roadmapSaving, setRoadmapSaving] = useState(false);
+  const [suggestedProjects, setSuggestedProjects] = useState([]);
 
   if (!config) {
     return (
@@ -547,6 +549,35 @@ export default function DiagnosticResults({ diagnosticType }) {
     return allProjects.filter((p) => roadmapOverrides.removedProjects.includes(p.serviceId));
   })();
 
+  // Handle re-run response: update state and compute suggested projects
+  function handleRerunResponse(json) {
+    if (!json.success || !json.data) return;
+    const { suggestedRoadmap, ...rest } = json.data;
+    setV3Result((prev) => ({ ...prev, ...rest }));
+    // If the engine suggested a new roadmap, diff it against the current one
+    if (suggestedRoadmap && rest.roadmap) {
+      const newSuggestions = findNewSuggestedProjects(rest.roadmap, suggestedRoadmap);
+      if (newSuggestions.length > 0) {
+        setSuggestedProjects(newSuggestions);
+      }
+    }
+  }
+
+  // Add a suggested project to the roadmap via overrides
+  function handleAddSuggestion(proj) {
+    handleRoadmapChange({
+      type: 'addCustom',
+      phase: proj.suggestedPhase,
+      project: {
+        id: proj.serviceId,
+        name: proj.service?.name || proj.serviceId,
+        description: proj.service?.description || '',
+        hours: null,
+      },
+    });
+    setSuggestedProjects((prev) => prev.filter((s) => s.serviceId !== proj.serviceId));
+  }
+
   // --- Computed data ---
   // Stats use ALL processes (health score reflects full picture)
   const processStats = countStatuses(processes);
@@ -743,6 +774,15 @@ export default function DiagnosticResults({ diagnosticType }) {
                 </button>
               </div>
 
+              {suggestedProjects.length > 0 && (
+                <SuggestedProjects
+                  suggestions={suggestedProjects}
+                  onAdd={handleAddSuggestion}
+                  onDismiss={() => {}}
+                  onDismissAll={() => setSuggestedProjects([])}
+                />
+              )}
+
               <RoadmapView
                 roadmap={mergedRoadmap}
                 editMode={roadmapEditMode}
@@ -808,16 +848,14 @@ export default function DiagnosticResults({ diagnosticType }) {
             <TranscriptUpload
               customerId={customer?.id}
               onUploadComplete={() => {
-                // Re-run v3 diagnostic after transcript analysis — preserve roadmap customizations
+                // Re-run v3 diagnostic after transcript analysis — preserve roadmap, surface suggestions
                 fetch('/api/diagnostic/v3/run', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
                 })
                   .then((r) => r.json())
-                  .then((json) => {
-                    if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
-                  });
+                  .then(handleRerunResponse);
               }}
               onIntakeExtracted={(preFill) => {
                 // Merge transcript-extracted answers into intake
@@ -848,16 +886,14 @@ export default function DiagnosticResults({ diagnosticType }) {
               metadata={v3Result?.metadata || {}}
               existingAssessments={consultantAssessments}
               onSave={() => {
-                // Re-run v3 diagnostic after consultant input — preserve roadmap customizations
+                // Re-run v3 diagnostic after consultant input — preserve roadmap, surface suggestions
                 fetch('/api/diagnostic/v3/run', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
                 })
                   .then((r) => r.json())
-                  .then((json) => {
-                    if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
-                  });
+                  .then(handleRerunResponse);
               }}
             />
           )}

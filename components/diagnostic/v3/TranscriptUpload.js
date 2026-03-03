@@ -34,6 +34,39 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
     return res.json();
   }
 
+  /**
+   * Call OpenRouter directly from the browser using a prepared prompt config.
+   * This avoids Netlify function timeouts (~26s) since the browser has no timeout.
+   */
+  async function callOpenRouterDirect(apiKey, config) {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://leanscale.team',
+        'X-Title': 'LeanScale Diagnostic',
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: 4096,
+        messages: [
+          { role: 'system', content: config.systemPrompt },
+          { role: 'user', content: config.userMessage },
+        ],
+        tools: config.tools,
+        tool_choice: config.toolChoice,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`AI analysis error (${response.status}): ${errorText.slice(0, 200)}`);
+    }
+
+    return response.json();
+  }
+
   async function handleUpload() {
     if (!text.trim() || !customerId) return;
 
@@ -41,7 +74,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
     setError(null);
 
     try {
-      // Upload transcript
+      // Step 1: Upload transcript text to server (fast)
       const uploadRes = await fetch('/api/diagnostic/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,37 +88,86 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
 
       const transcriptId = uploadJson.data.id;
 
-      // Run competency analysis + intake extraction in parallel
+      // Step 2: Get prompt configs + API key from server (fast — no LLM calls)
       setUploading(false);
       setAnalyzing(true);
 
-      const [analyzeRes, intakeRes] = await Promise.all([
-        fetch('/api/diagnostic/transcript?action=analyze', {
+      const [prepAnalyzeRes, prepIntakeRes] = await Promise.all([
+        fetch('/api/diagnostic/transcript?action=prepare-analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcriptId, customerId }),
         }),
-        fetch('/api/diagnostic/transcript?action=extract-intake', {
+        fetch('/api/diagnostic/transcript?action=prepare-intake', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcriptId, customerId }),
         }),
       ]);
 
-      const analyzeJson = await safeJson(analyzeRes, 'Analysis');
-      if (!analyzeJson.success) {
-        throw new Error(analyzeJson.error || 'Analysis failed');
+      const prepAnalyze = await safeJson(prepAnalyzeRes, 'Prepare analysis');
+      const prepIntake = await safeJson(prepIntakeRes, 'Prepare intake');
+
+      if (!prepAnalyze.success || !prepIntake.success) {
+        throw new Error('Failed to prepare analysis');
       }
 
-      // Intake extraction is best-effort — don't fail the whole flow
+      // Step 3: Call OpenRouter directly from browser (no timeout!)
+      const [analyzeOpenRouter, intakeOpenRouter] = await Promise.allSettled([
+        callOpenRouterDirect(prepAnalyze.data.apiKey, prepAnalyze.data.config),
+        callOpenRouterDirect(prepIntake.data.apiKey, prepIntake.data.config),
+      ]);
+
+      if (analyzeOpenRouter.status === 'rejected') {
+        throw new Error(analyzeOpenRouter.reason?.message || 'Competency analysis failed');
+      }
+
+      // Step 4: Send raw LLM responses to server for validation + storage (fast)
+      const storePromises = [
+        fetch('/api/diagnostic/transcript?action=store-analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcriptId,
+            customerId,
+            openRouterResponse: analyzeOpenRouter.value,
+          }),
+        }),
+      ];
+
+      // Intake extraction is best-effort
+      if (intakeOpenRouter.status === 'fulfilled') {
+        storePromises.push(
+          fetch('/api/diagnostic/transcript?action=store-intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              transcriptId,
+              customerId,
+              openRouterResponse: intakeOpenRouter.value,
+            }),
+          })
+        );
+      }
+
+      const storeResults = await Promise.all(storePromises);
+      const analyzeJson = await safeJson(storeResults[0], 'Store analysis');
+
+      if (!analyzeJson.success) {
+        throw new Error(analyzeJson.error || 'Failed to store analysis');
+      }
+
+      // Intake store is best-effort
       let intakeData = null;
-      try {
-        const intakeJson = await safeJson(intakeRes, 'Intake extraction');
-        if (intakeJson.success) {
-          intakeData = intakeJson.data;
+      if (storeResults[1]) {
+        try {
+          const intakeJson = await safeJson(storeResults[1], 'Store intake');
+          if (intakeJson.success) {
+            intakeData = intakeJson.data;
+          }
+        } catch {
+          // Intake storage failed silently — competency analysis still succeeds
         }
-      } catch {
-        // Intake extraction failed silently — competency analysis still succeeds
       }
 
       const combinedResult = {

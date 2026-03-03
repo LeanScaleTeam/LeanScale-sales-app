@@ -16,6 +16,24 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Safely parse JSON from a fetch response, throwing a clear error if HTML/non-JSON
+  async function safeJson(res, label) {
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok) {
+      const body = contentType.includes('json')
+        ? await res.json().catch(() => ({}))
+        : await res.text().catch(() => '');
+      throw new Error(
+        (typeof body === 'object' ? body.error : null) ||
+        `${label} failed (${res.status})`
+      );
+    }
+    if (!contentType.includes('json')) {
+      throw new Error(`${label} returned unexpected response (${res.status})`);
+    }
+    return res.json();
+  }
+
   async function handleUpload() {
     if (!text.trim() || !customerId) return;
 
@@ -30,7 +48,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
         body: JSON.stringify({ customerId, text: text.trim() }),
       });
 
-      const uploadJson = await uploadRes.json();
+      const uploadJson = await safeJson(uploadRes, 'Upload');
       if (!uploadJson.success) {
         throw new Error(uploadJson.error || 'Upload failed');
       }
@@ -54,7 +72,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
         }),
       ]);
 
-      const analyzeJson = await analyzeRes.json();
+      const analyzeJson = await safeJson(analyzeRes, 'Analysis');
       if (!analyzeJson.success) {
         throw new Error(analyzeJson.error || 'Analysis failed');
       }
@@ -62,7 +80,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       // Intake extraction is best-effort — don't fail the whole flow
       let intakeData = null;
       try {
-        const intakeJson = await intakeRes.json();
+        const intakeJson = await safeJson(intakeRes, 'Intake extraction');
         if (intakeJson.success) {
           intakeData = intakeJson.data;
         }

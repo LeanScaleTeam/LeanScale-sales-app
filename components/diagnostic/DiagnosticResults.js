@@ -28,6 +28,7 @@ import V3Summary from './v3/V3Summary';
 import DataCoverage from './v3/DataCoverage';
 import TranscriptUpload from './v3/TranscriptUpload';
 import ConsultantForm from './v3/ConsultantForm';
+import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 
 // CPQ-specific views
 import LifecycleView from './views/LifecycleView';
@@ -101,6 +102,10 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
   const [showConsultantForm, setShowConsultantForm] = useState(false);
   const [consultantAssessments, setConsultantAssessments] = useState([]);
+  const [roadmapEditMode, setRoadmapEditMode] = useState(false);
+  const [roadmapOverrides, setRoadmapOverrides] = useState(null);
+  const [roadmapDirty, setRoadmapDirty] = useState(false);
+  const [roadmapSaving, setRoadmapSaving] = useState(false);
 
   if (!config) {
     return (
@@ -388,14 +393,16 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   // --- Build SOW handler ---
   async function handleBuildSow() {
+    const isV3Now = diagnosticVersion === 3 && v3Result;
     try {
       const res = await fetch('/api/sow/from-diagnostic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerId: customer.id,
-          diagnosticResultId,
+          diagnosticResultId: isV3Now ? v3Result.id : diagnosticResultId,
           diagnosticType,
+          diagnosticVersion: isV3Now ? 3 : diagnosticVersion,
           customerName: customer.customerName,
           sowType: diagnosticType === 'clay' ? 'clay' : diagnosticType === 'cpq' ? 'q2c' : 'embedded',
           createdBy: 'sales-app',
@@ -409,6 +416,111 @@ export default function DiagnosticResults({ diagnosticType }) {
       console.error('Error creating SOW from diagnostic:', err);
     }
   }
+
+  // --- Roadmap edit handlers ---
+  // Initialize overrides from stored v3 result
+  useEffect(() => {
+    if (v3Result?.roadmap_overrides) {
+      setRoadmapOverrides(v3Result.roadmap_overrides);
+    }
+  }, [v3Result?.roadmap_overrides]);
+
+  function handleRoadmapChange(action) {
+    setRoadmapDirty(true);
+    setRoadmapOverrides((prev) => {
+      const overrides = prev ? structuredClone(prev) : {
+        removedProjects: [],
+        phaseOverrides: {},
+        orderOverrides: {},
+        customProjects: [],
+      };
+
+      switch (action.type) {
+        case 'movePhase':
+          overrides.phaseOverrides[action.serviceId] = action.newPhase;
+          break;
+
+        case 'reorder': {
+          // Get current phase order (with overrides applied)
+          const merged = applyRoadmapOverrides(v3Result?.roadmap, overrides);
+          const phase = merged?.phases?.find((p) => p.key === action.phase);
+          if (!phase) break;
+          const ids = phase.projects.map((p) => p.serviceId);
+          const idx = ids.indexOf(action.serviceId);
+          if (idx === -1) break;
+          const swapIdx = action.direction === 'up' ? idx - 1 : idx + 1;
+          if (swapIdx < 0 || swapIdx >= ids.length) break;
+          [ids[idx], ids[swapIdx]] = [ids[swapIdx], ids[idx]];
+          overrides.orderOverrides[action.phase] = ids;
+          break;
+        }
+
+        case 'remove':
+          if (!overrides.removedProjects.includes(action.serviceId)) {
+            overrides.removedProjects.push(action.serviceId);
+          }
+          break;
+
+        case 'restore':
+          overrides.removedProjects = overrides.removedProjects.filter((id) => id !== action.serviceId);
+          break;
+
+        case 'addCustom':
+          overrides.customProjects.push({
+            id: action.project.id,
+            name: action.project.name,
+            description: action.project.description,
+            phase: action.phase,
+            hours: action.project.hours,
+          });
+          break;
+
+        case 'removeCustom':
+          overrides.customProjects = overrides.customProjects.filter((p) => p.id !== action.projectId);
+          break;
+      }
+
+      return overrides;
+    });
+  }
+
+  async function handleRoadmapSave() {
+    if (!customer?.id || !roadmapOverrides) return;
+    setRoadmapSaving(true);
+    try {
+      const res = await fetch('/api/diagnostic/v3/roadmap', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: customer.id, overrides: roadmapOverrides }),
+      });
+      if (res.ok) {
+        setRoadmapDirty(false);
+        // Update v3Result with new overrides
+        setV3Result((prev) => prev ? { ...prev, roadmap_overrides: roadmapOverrides } : prev);
+      }
+    } catch (err) {
+      console.error('Error saving roadmap overrides:', err);
+    } finally {
+      setRoadmapSaving(false);
+    }
+  }
+
+  function handleRoadmapDiscard() {
+    setRoadmapOverrides(v3Result?.roadmap_overrides || null);
+    setRoadmapDirty(false);
+  }
+
+  // Compute merged roadmap for display
+  const mergedRoadmap = v3Result?.roadmap
+    ? applyRoadmapOverrides(v3Result.roadmap, roadmapOverrides)
+    : null;
+
+  // Collect removed projects info for the "Removed" section in RoadmapView
+  const removedProjectsList = (() => {
+    if (!roadmapOverrides?.removedProjects?.length || !v3Result?.roadmap?.phases) return [];
+    const allProjects = v3Result.roadmap.phases.flatMap((p) => p.projects);
+    return allProjects.filter((p) => roadmapOverrides.removedProjects.includes(p.serviceId));
+  })();
 
   // --- Computed data ---
   // Stats use ALL processes (health score reflects full picture)
@@ -586,7 +698,85 @@ export default function DiagnosticResults({ diagnosticType }) {
           )}
 
           {isV3 && activeView === 'roadmap' && (
-            <RoadmapView roadmap={v3Result.roadmap} />
+            <>
+              {/* Edit mode toolbar */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setRoadmapEditMode(!roadmapEditMode)}
+                  style={{
+                    padding: '0.4rem 1rem',
+                    fontSize: '0.8rem',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    border: roadmapEditMode ? '1px solid #E53E3E' : '1px solid var(--border-color)',
+                    background: roadmapEditMode ? '#FFF5F5' : 'white',
+                    color: roadmapEditMode ? '#E53E3E' : '#4A5568',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  {roadmapEditMode ? 'Exit Edit Mode' : 'Edit Roadmap'}
+                </button>
+              </div>
+
+              <RoadmapView
+                roadmap={mergedRoadmap}
+                editMode={roadmapEditMode}
+                onRoadmapChange={handleRoadmapChange}
+                removedProjects={removedProjectsList}
+              />
+
+              {/* Save/Discard bar */}
+              {roadmapDirty && (
+                <div style={{
+                  position: 'sticky',
+                  bottom: '1rem',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1.5rem',
+                  background: 'white',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-lg, 12px)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                  zIndex: 50,
+                }}>
+                  <span style={{ fontSize: '0.85rem', color: '#4A5568', alignSelf: 'center' }}>
+                    Unsaved roadmap changes
+                  </span>
+                  <button
+                    onClick={handleRoadmapSave}
+                    disabled={roadmapSaving}
+                    style={{
+                      padding: '0.4rem 1.25rem',
+                      fontSize: '0.85rem',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      border: 'none',
+                      background: '#6C5CE7',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      opacity: roadmapSaving ? 0.6 : 1,
+                    }}
+                  >
+                    {roadmapSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button
+                    onClick={handleRoadmapDiscard}
+                    style={{
+                      padding: '0.4rem 1rem',
+                      fontSize: '0.85rem',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      border: '1px solid var(--border-color)',
+                      background: 'white',
+                      color: '#718096',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Discard
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {isV3 && activeView === 'transcript' && (

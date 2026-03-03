@@ -9,6 +9,7 @@
 
 import { supabaseAdmin } from '../../../lib/supabase';
 import { inferIntakeAnswers } from '../../../lib/diagnostic-engine/intake-inferrer-sf';
+import { inferEnhancedAnswers } from '../../../lib/diagnostic-engine/intake-inferrer-sf-enhanced';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -52,11 +53,33 @@ export default async function handler(req, res) {
       connectedApps: row.connected_apps,
       namedCredentials: row.named_credentials,
       recordTypes: row.record_types,
+      campaigns: row.campaigns,
+      installedPackages: row.installed_packages,
+      territories: row.territories,
+      forecastingTypes: row.forecasting_types,
+      duplicateRules: row.duplicate_rules,
+      reportSchedules: row.report_schedules,
+      emailTemplates: row.email_templates,
+      taskAggregates: row.task_aggregates,
+      eventPatterns: row.event_patterns,
+      contentVersions: row.content_versions,
+      knowledgeArticles: row.knowledge_articles,
     };
 
     const preFill = inferIntakeAnswers(metadata);
 
-    return res.status(200).json({ success: true, preFill });
+    // Merge enhanced signals if available (from CLI upload)
+    let enhancedPreFill = {};
+    if (row.enhanced_data) {
+      enhancedPreFill = inferEnhancedAnswers(row.enhanced_data, metadata);
+    } else if (row.enhanced_signals) {
+      enhancedPreFill = row.enhanced_signals;
+    }
+
+    // Enhanced pre-fills override standard ones (higher quality data)
+    const merged = { ...preFill, ...enhancedPreFill };
+
+    return res.status(200).json({ success: true, preFill: merged });
   } catch (err) {
     console.error('Salesforce infer error:', err);
     return res.status(500).json({ error: 'Failed to infer intake answers' });

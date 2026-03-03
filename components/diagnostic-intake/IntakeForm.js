@@ -12,21 +12,27 @@ import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
-import SectionC from './SectionC_Processes';
-import SectionD from './SectionD_Reporting';
+import SectionC from './SectionC_TeamOrg';
+import SectionD from './SectionD_Processes';
+import SectionE from './SectionE_Reporting';
+import SectionF from './SectionF_PlanningEnablement';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
+import IntakeContextPanel from './IntakeContextPanel';
 
-const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'review'];
+const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
+  'hs-analyzing': 'Analyzing',
   B: 'GTM Tools',
-  C: 'Processes',
-  D: 'Reporting & Metrics',
+  C: 'Team & Organization',
+  D: 'Process Maturity',
+  E: 'Reporting & Metrics',
+  F: 'Planning & Enablement',
   review: 'Review & Submit',
 };
 
@@ -45,9 +51,11 @@ export default function IntakeForm() {
   const [salesforceStatus, setSalesforceStatus] = useState(null);
   const [salesforceError, setSalesforceError] = useState(null);
   const [preFill, setPreFill] = useState({});
+  const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
 
-  const skipRules = getSkipRules(answers);
+  const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
+  const skipRules = getSkipRules(answers, crmMetadataExists);
 
   // Load existing intake answers on mount
   useEffect(() => {
@@ -108,6 +116,7 @@ export default function IntakeForm() {
         signalsReady: true,
       }));
       setHubspotError(null);
+      setCurrentSection('hs-analyzing');
     } else if (hubspot === 'error') {
       setHubspotError(reason || 'HubSpot connection failed. You can continue without it or try again.');
     }
@@ -164,10 +173,17 @@ export default function IntakeForm() {
       // Navigate to next section
       if (section === 'A' && sectionAnswers.A1 === 'Salesforce') {
         setCurrentSection('sf-connect');
+      } else if (section === 'A' && sectionAnswers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+        setCurrentSection('hs-analyzing');
       } else {
         const idx = SECTIONS.indexOf(currentSection);
         if (idx < SECTIONS.length - 1) {
-          setCurrentSection(SECTIONS[idx + 1]);
+          let nextIdx = idx + 1;
+          // Skip utility sections (sf-connect, sf-analyzing) when navigating forward
+          while (nextIdx < SECTIONS.length - 1 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
+            nextIdx++;
+          }
+          setCurrentSection(SECTIONS[nextIdx]);
         }
       }
     },
@@ -209,8 +225,12 @@ export default function IntakeForm() {
         return;
       }
 
-      // Run the diagnostic engine
-      const runRes = await fetch('/api/diagnostic/run', {
+      // Run the diagnostic engine (version determined by admin config)
+      const diagVersion = customer.diagnosticVersion || 2;
+      const runUrl = diagVersion === 3
+        ? '/api/diagnostic/v3/run'
+        : '/api/diagnostic/run';
+      const runRes = await fetch(runUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: customer.id }),
@@ -221,8 +241,9 @@ export default function IntakeForm() {
         throw new Error(errData.error || 'Diagnostic engine failed');
       }
 
-      // Navigate to results
-      router.push(customerPath('/try-leanscale/diagnostic?view=layers'));
+      // Navigate to results (v3 defaults to scorecard, v2 to layers)
+      const defaultView = diagVersion === 3 ? 'scorecard' : 'layers';
+      router.push(customerPath(`/try-leanscale/diagnostic?view=${defaultView}`));
     } catch (err) {
       console.error('Error submitting diagnostic:', err);
       setError(err.message || 'Something went wrong. Please try again.');
@@ -237,8 +258,24 @@ export default function IntakeForm() {
       setCurrentSection('A');
       return;
     }
+    if (currentSection === 'B' && answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+      setCurrentSection('A');
+      return;
+    }
+    // Skip sf-analyzing and sf-connect when navigating backward
+    if (currentSection === 'B') {
+      setCurrentSection('A');
+      return;
+    }
     const idx = SECTIONS.indexOf(currentSection);
-    if (idx > 0) setCurrentSection(SECTIONS[idx - 1]);
+    if (idx > 0) {
+      let prevIdx = idx - 1;
+      // Skip utility sections when going back
+      while (prevIdx > 0 && ['sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
+        prevIdx--;
+      }
+      setCurrentSection(SECTIONS[prevIdx]);
+    }
   };
 
   if (loadingIntake) {
@@ -295,7 +332,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing'].includes(s))}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -314,6 +351,22 @@ export default function IntakeForm() {
             <SectionA
               answers={answers}
               onComplete={(a) => handleSectionComplete('A', a)}
+              onSlackFormParsed={(result) => {
+                // Merge parsed answers into current answers
+                setAnswers((prev) => ({ ...prev, ...result.answers }));
+                // Merge preFill (Slack form is lower priority than CRM inference)
+                setPreFill((prev) => {
+                  const merged = { ...prev };
+                  for (const [key, val] of Object.entries(result.preFill)) {
+                    if (!merged[key]) merged[key] = val;
+                  }
+                  return merged;
+                });
+                // Store context notes
+                if (result.contextNotes && Object.keys(result.contextNotes).length > 0) {
+                  setContextNotes(result.contextNotes);
+                }
+              }}
             />
           )}
 
@@ -330,6 +383,10 @@ export default function IntakeForm() {
                 slug={customer?.slug}
                 status={salesforceStatus}
                 onSaveAllAnswers={() => saveSection('A', answers)}
+                onUploadSuccess={() => {
+                  setSalesforceStatus((prev) => ({ ...prev, connected: true, signalsReady: true, source: 'upload' }));
+                  setCurrentSection('sf-analyzing');
+                }}
               />
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
                 <button
@@ -345,8 +402,11 @@ export default function IntakeForm() {
           {currentSection === 'sf-analyzing' && (
             <AnalyzingScreen
               customerId={customer?.id}
+              crmType="salesforce"
               onComplete={(inferredPreFill) => {
-                setPreFill(inferredPreFill);
+                // Merge CRM inference on top of any existing Slack form pre-fills
+                // CRM inference takes precedence for overlapping fields
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
@@ -359,34 +419,85 @@ export default function IntakeForm() {
             />
           )}
 
-          {currentSection === 'B' && (
-            <SectionB
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('B', a)}
-              onBack={handleBack}
-              preFill={preFill}
+          {currentSection === 'hs-analyzing' && (
+            <AnalyzingScreen
+              customerId={customer?.id}
+              crmType="hubspot"
+              onComplete={(inferredPreFill) => {
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
+                if (inferredPreFill.A2) {
+                  setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
+                }
+                setCurrentSection('B');
+              }}
+              onError={(errMsg) => {
+                setHubspotError(errMsg);
+                setCurrentSection('B');
+              }}
             />
+          )}
+
+          {currentSection === 'B' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionB
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('B', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
           )}
 
           {currentSection === 'C' && (
-            <SectionC
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('C', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionC
+                answers={answers}
+                preFill={preFill}
+                onComplete={(a) => handleSectionComplete('C', a)}
+                onBack={handleBack}
+              />
+            </>
           )}
 
           {currentSection === 'D' && (
-            <SectionD
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('D', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionD
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('D', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'E' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionE
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('E', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'F' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionF
+                answers={answers}
+                preFill={preFill}
+                onComplete={(a) => handleSectionComplete('F', a)}
+                onBack={handleBack}
+              />
+            </>
           )}
 
           {currentSection === 'review' && (

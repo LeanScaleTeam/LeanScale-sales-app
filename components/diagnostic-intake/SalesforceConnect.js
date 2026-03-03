@@ -4,7 +4,7 @@
 
 import { useState, useRef } from 'react';
 
-export default function SalesforceConnect({ customerId, slug, status, onSaveAllAnswers }) {
+export default function SalesforceConnect({ customerId, slug, status, onSaveAllAnswers, onUploadSuccess }) {
   const [isSandbox, setIsSandbox] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
@@ -68,6 +68,7 @@ export default function SalesforceConnect({ customerId, slug, status, onSaveAllA
       }
 
       setUploadSuccess(true);
+      if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
       setUploadError(err.message);
     } finally {

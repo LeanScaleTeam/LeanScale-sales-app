@@ -24,6 +24,7 @@ export default function AdminCustomers() {
     assigned_team: '',
     is_demo: false,
     diagnostic_type: 'gtm',
+    diagnostic_version: 2,
     customer_type: 'prospect',
   });
   const [saving, setSaving] = useState(false);
@@ -71,6 +72,7 @@ export default function AdminCustomers() {
       assigned_team: 'izzy, brian, dave, kavean',
       is_demo: false,
       diagnostic_type: 'gtm',
+      diagnostic_version: 2,
       customer_type: 'active',
     });
     setError(null);
@@ -91,6 +93,7 @@ export default function AdminCustomers() {
       assigned_team: (customer.assigned_team || []).join(', '),
       is_demo: customer.is_demo || false,
       diagnostic_type: customer.diagnostic_type || 'gtm',
+      diagnostic_version: customer.diagnostic_version || 2,
       customer_type: customer.customer_type || 'active',
     });
     setError(null);
@@ -361,8 +364,21 @@ export default function AdminCustomers() {
                           {customer.customer_type || 'active'}
                         </span>
                       </td>
-                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', textTransform: 'uppercase' }}>
-                        {customer.diagnostic_type || 'gtm'}
+                      <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>
+                        <span style={{ textTransform: 'uppercase' }}>{customer.diagnostic_type || 'gtm'}</span>
+                        {customer.diagnostic_type === 'gtm' && (
+                          <span style={{
+                            marginLeft: '0.35rem',
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            background: customer.diagnostic_version === 3 ? '#f3e8ff' : customer.diagnostic_version === 1 ? '#f3f4f6' : '#dbeafe',
+                            color: customer.diagnostic_version === 3 ? '#7c3aed' : customer.diagnostic_version === 1 ? '#666' : '#1d4ed8',
+                          }}>
+                            v{customer.diagnostic_version || 2}
+                          </span>
+                        )}
                       </td>
                       <td style={{ padding: '0.75rem 1rem' }}>
                         <a
@@ -650,11 +666,51 @@ export default function AdminCustomers() {
                     }}
                   >
                     <option value="prospect">Prospect</option>
-                    <option value="active">Active Customer</option>
+                    <option value="active">Active Diagnostic</option>
                     <option value="churned">Churned</option>
                   </select>
                 </div>
               </div>
+
+              {/* Diagnostic Version — only shown for GTM customers */}
+              {formData.diagnostic_type === 'gtm' && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>
+                    Diagnostic Version
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {[
+                      { value: 1, label: 'v1 — Manual', desc: 'Markdown import, manual scoring' },
+                      { value: 2, label: 'v2 — CRM', desc: 'Automated CRM signal analysis' },
+                      { value: 3, label: 'v3 — Full', desc: '6-pillar assessment + transcripts' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, diagnostic_version: opt.value })}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          border: formData.diagnostic_version === opt.value
+                            ? '2px solid #7c3aed'
+                            : '1px solid #ddd',
+                          borderRadius: '8px',
+                          background: formData.diagnostic_version === opt.value ? '#f3e8ff' : 'white',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: formData.diagnostic_version === opt.value ? '#7c3aed' : '#333' }}>
+                          {opt.label}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.15rem' }}>
+                          {opt.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div style={{ marginTop: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>

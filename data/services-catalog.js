@@ -238,6 +238,47 @@ export const functionLabels = {
   partnerships: 'Partnerships',
 };
 
+// ── Playbook ID Resolution ──
+// Maps old sales-app IDs to canonical slugs from playbooks-content/
+const PLAYBOOK_ALIASES = {
+  'lead-and-opportunity-attribution': 'attribution',
+  'automated-inbound-data-enrichment': 'automated-inbound',
+  'hubspot-to-salesforce-crm-migration': 'hubspot-sfdc-migration',
+  'foundational-automations-and-reporting-logic': 'foundational-automations-and-reporting',
+  'speed-to-lead': 'speed-to-lead-sla-tracking',
+  'website-lead-capture-and-form-configuration': 'website-lead-capture-and-form-compliance',
+};
+
+/**
+ * Resolve a service ID to its canonical playbook slug.
+ * Handles direct matches and aliases from the reorganize branch.
+ */
+export function resolvePlaybookSlug(serviceId) {
+  if (!serviceId) return null;
+  if (PLAYBOOK_ALIASES[serviceId]) return PLAYBOOK_ALIASES[serviceId];
+  return serviceId;
+}
+
 export function getPlaybookForService(serviceId) {
   return playbooks.find(p => p.id === serviceId);
+}
+
+/**
+ * Check whether a service ID has published playbook content.
+ * Returns false for stubs and unmatched IDs.
+ */
+export function hasPlaybookContent(serviceId) {
+  // These IDs have no playbook content on the reorganize branch
+  const STUB_IDS = new Set([
+    'cpq-implementation', 'revenue-recognition', 'renewal-management',
+    'email-operations-nurture-program', 'marketing-database-segmentation',
+    'marketing-reporting-pack', 'email-operations-subscription-and-compliance',
+    'email-operations-templates-and-build-process',
+    'event-operations-lead-list-intake-process',
+    'commission-plan-design-and-implementation', 'commission-tool-implementation',
+    'marketing-to-sales-handoff-and-sla-tracking', 'ai-automated-inbound',
+    'crm-erp-integration', 'gtm-diagnostic', 'revenue-intelligence-process',
+    'opportunity-management-ux-improvements',
+  ]);
+  return !STUB_IDS.has(serviceId);
 }

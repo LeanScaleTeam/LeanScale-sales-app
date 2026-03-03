@@ -8,7 +8,7 @@ const ALL_QUESTIONS = [
   { key: 'C1', label: 'How do inbound leads reach your CRM?', options: ['CRM forms (HubSpot/SF)', 'Website → API', 'Manual entry', 'Mix'] },
   { key: 'C2', label: 'What is your typical response time to new inbound leads?', options: ['<5 minutes', '<1 hour', 'Same day', '>24 hours', "Don't know"] },
   { key: 'C3', label: 'Do you have a documented MQL definition?', options: ['Yes, with lead scoring', 'Yes, criteria-based', 'Informal', 'No'] },
-  { key: 'C4', label: 'Do you use a sales qualification methodology?', options: ['MEDDIC/MEDDPICC', 'BANT', 'SPICED', 'Custom framework', 'None'] },
+  { key: 'C4', label: 'Do you use a sales qualification methodology?', options: ['MEDDIC/MEDDPICC', 'BANT', 'SPICED', 'Custom framework', 'Multiple', 'None'] },
   { key: 'C5', label: 'Are deal stage transitions enforced with required fields?', options: ['Yes, all stages', 'Some stages', 'No required fields'] },
   { key: 'C6', label: 'Do you track closed-lost reasons?', options: ['Required field', 'Optional field', 'Not tracked'] },
   { key: 'C7', label: 'Is there a formal sales-to-CS handoff process?', options: ['Documented + automated', 'Documented', 'Informal', 'None'] },
@@ -24,6 +24,14 @@ const ALL_QUESTIONS = [
   { key: 'M4_model', label: 'What attribution model do you use?', options: ['Multi-touch', 'First-touch', 'Last-touch', 'None'] },
   // Win/Loss
   { key: 'R4_winloss', label: 'Do you conduct win/loss analysis?', options: ['Formal process', 'Ad hoc', 'No'] },
+  // Planning & cadence (v3 Phase 4)
+  { key: 'C13', label: 'Do you have a documented operating/GTM plan?', options: ['Yes quarterly', 'Yes annual', 'Informal', 'No'] },
+  { key: 'C14', label: 'Is there a headcount/capacity model?', options: ['Yes with revenue tie', 'Basic', 'No'] },
+  { key: 'C15', label: 'How often are business reviews held?', options: ['D/W/M/Q', 'W/M/Q', 'Monthly', 'Quarterly', 'None'] },
+  // Dashboards & coaching (v3 Phase 4)
+  { key: 'C16', label: 'Do managers have dedicated dashboards?', options: ['Yes per team', 'Shared', 'No'] },
+  { key: 'C17', label: 'Do ICs use CRM daily?', options: ['Yes with personal views', 'Yes basic', 'No'] },
+  { key: 'C18', label: 'Is there a documented coaching program?', options: ['Yes with CI', 'Yes informal', 'No'] },
 ];
 
 export default function SectionC({ answers, skipRules, preFill = {}, onComplete, onBack }) {
@@ -79,7 +87,7 @@ export default function SectionC({ answers, skipRules, preFill = {}, onComplete,
             </div>
             {showBadge && (
               <div style={styles.autoDetectedHint}>
-                Auto-detected: {pf.evidence}
+                {pf.source === 'slack-form' ? 'From intake form' : `Auto-detected: ${pf.evidence}`}
               </div>
             )}
           </div>

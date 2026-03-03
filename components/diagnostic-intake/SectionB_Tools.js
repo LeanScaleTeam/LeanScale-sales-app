@@ -13,11 +13,23 @@ const TOOL_CATEGORIES = [
   { key: 'esign', label: 'E-signature (DocuSign, PandaDoc, HubSpot e-sign)' },
   { key: 'bi_analytics', label: 'BI/Analytics (Tableau, Looker, Power BI)' },
   { key: 'support', label: 'Support/Ticketing (Zendesk, Intercom, Freshdesk)' },
+  { key: 'enablement_platform', label: 'Enablement platform (Seismic, Highspot, Showpad, Guru)', tags: ['enterprise'] },
+  { key: 'forecasting_tool', label: 'Forecasting tool (Clari, Aviso, BoostUp)', tags: ['enterprise'] },
+  { key: 'abm_tool', label: 'ABM platform (6sense, Demandbase, Terminus)' },
+  { key: 'prm_tool', label: 'PRM / Partner portal (PartnerStack, Crossbeam, Reveal)', tags: ['partner'] },
+  { key: 'lms', label: 'LMS / Training (Lessonly, WorkRamp, Docebo)', tags: ['enterprise'] },
 ];
 
 const ADOPTION_OPTIONS = ['Fully adopted by team', 'Partial adoption', 'Just implemented'];
 
 export default function SectionB({ answers, skipRules, preFill = {}, onComplete, onBack }) {
+  // Filter tool categories based on skip rules
+  const visibleTools = TOOL_CATEGORIES.filter((tool) => {
+    if (skipRules.skipPartnerQuestions && tool.tags?.includes('partner')) return false;
+    if (skipRules.skipEnterpriseQuestions && tool.tags?.includes('enterprise')) return false;
+    return true;
+  });
+
   const [selectedTools, setSelectedTools] = useState(() => {
     const saved = answers.B1_tools || [];
     const savedArr = Array.isArray(saved) ? saved : [];
@@ -55,7 +67,7 @@ export default function SectionB({ answers, skipRules, preFill = {}, onComplete,
       <p style={styles.sectionDesc}>Which of these tools do you use? (check all that apply)</p>
 
       <div style={{ marginBottom: '1.5rem' }}>
-        {TOOL_CATEGORIES.map((tool) => {
+        {visibleTools.map((tool) => {
           const isPreFilled = preFill.B1_tools?.value?.includes(tool.key) && !overriddenTools.has(tool.key);
           return (
           <div key={tool.key}>
@@ -68,7 +80,9 @@ export default function SectionB({ answers, skipRules, preFill = {}, onComplete,
               />
               <span style={{ fontSize: 'var(--text-sm)' }}>{tool.label}</span>
               {isPreFilled && (
-                <span style={styles.autoDetectedBadge}>Auto-detected</span>
+                <span style={styles.autoDetectedBadge}>
+                  {preFill.B1_tools?.source === 'slack-form' ? 'From intake form' : 'Auto-detected'}
+                </span>
               )}
             </label>
 

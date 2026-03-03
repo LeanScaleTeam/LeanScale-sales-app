@@ -12,21 +12,29 @@ import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
-import SectionC from './SectionC_Processes';
-import SectionD from './SectionD_Reporting';
+import SectionC from './SectionC_TeamOrg';
+import SectionD from './SectionD_Processes';
+import SectionE from './SectionE_Reporting';
+import SectionF from './SectionF_PlanningEnablement';
 import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import AnalyzingScreen from './AnalyzingScreen';
+import IntakeContextPanel from './IntakeContextPanel';
+import TranscriptUpload from '../diagnostic/v3/TranscriptUpload';
 
-const SECTIONS = ['A', 'sf-connect', 'sf-analyzing', 'B', 'C', 'D', 'review'];
+const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
+  transcript: 'Discovery Transcript',
   'sf-connect': 'Connect CRM',
   'sf-analyzing': 'Analyzing',
+  'hs-analyzing': 'Analyzing',
   B: 'GTM Tools',
-  C: 'Processes',
-  D: 'Reporting & Metrics',
+  C: 'Team & Organization',
+  D: 'Process Maturity',
+  E: 'Reporting & Metrics',
+  F: 'Planning & Enablement',
   review: 'Review & Submit',
 };
 
@@ -45,9 +53,12 @@ export default function IntakeForm() {
   const [salesforceStatus, setSalesforceStatus] = useState(null);
   const [salesforceError, setSalesforceError] = useState(null);
   const [preFill, setPreFill] = useState({});
+  const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
+  const [transcriptUploaded, setTranscriptUploaded] = useState(false);
 
-  const skipRules = getSkipRules(answers);
+  const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
+  const skipRules = getSkipRules(answers, crmMetadataExists);
 
   // Load existing intake answers on mount
   useEffect(() => {
@@ -108,6 +119,7 @@ export default function IntakeForm() {
         signalsReady: true,
       }));
       setHubspotError(null);
+      setCurrentSection('hs-analyzing');
     } else if (hubspot === 'error') {
       setHubspotError(reason || 'HubSpot connection failed. You can continue without it or try again.');
     }
@@ -162,12 +174,17 @@ export default function IntakeForm() {
       saveSection(section, sectionAnswers);
 
       // Navigate to next section
-      if (section === 'A' && sectionAnswers.A1 === 'Salesforce') {
-        setCurrentSection('sf-connect');
+      if (section === 'A') {
+        setCurrentSection('transcript');
       } else {
         const idx = SECTIONS.indexOf(currentSection);
         if (idx < SECTIONS.length - 1) {
-          setCurrentSection(SECTIONS[idx + 1]);
+          let nextIdx = idx + 1;
+          // Skip utility sections when navigating forward
+          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
+            nextIdx++;
+          }
+          setCurrentSection(SECTIONS[nextIdx]);
         }
       }
     },
@@ -236,14 +253,37 @@ export default function IntakeForm() {
     }
   }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus]);
 
+  // After transcript step, navigate to CRM connection or Section B
+  const handleTranscriptNext = () => {
+    if (answers.A1 === 'Salesforce') {
+      setCurrentSection('sf-connect');
+    } else if (answers.A1 === 'HubSpot' && hubspotStatus?.connected) {
+      setCurrentSection('hs-analyzing');
+    } else {
+      setCurrentSection('B');
+    }
+  };
+
   const handleBack = () => {
-    // When going back from B with Salesforce, skip sf-analyzing and sf-connect
-    if (currentSection === 'B' && answers.A1 === 'Salesforce') {
-      setCurrentSection('A');
+    // From sf-connect, go back to transcript
+    if (currentSection === 'sf-connect') {
+      setCurrentSection('transcript');
+      return;
+    }
+    // From B, go back to transcript (skip CRM utility steps)
+    if (currentSection === 'B') {
+      setCurrentSection('transcript');
       return;
     }
     const idx = SECTIONS.indexOf(currentSection);
-    if (idx > 0) setCurrentSection(SECTIONS[idx - 1]);
+    if (idx > 0) {
+      let prevIdx = idx - 1;
+      // Skip utility sections when going back
+      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
+        prevIdx--;
+      }
+      setCurrentSection(SECTIONS[prevIdx]);
+    }
   };
 
   if (loadingIntake) {
@@ -300,7 +340,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing'].includes(s))}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -319,7 +359,73 @@ export default function IntakeForm() {
             <SectionA
               answers={answers}
               onComplete={(a) => handleSectionComplete('A', a)}
+              onSlackFormParsed={(result) => {
+                // Merge parsed answers into current answers
+                setAnswers((prev) => ({ ...prev, ...result.answers }));
+                // Merge preFill (Slack form is lower priority than CRM inference)
+                setPreFill((prev) => {
+                  const merged = { ...prev };
+                  for (const [key, val] of Object.entries(result.preFill)) {
+                    if (!merged[key]) merged[key] = val;
+                  }
+                  return merged;
+                });
+                // Store context notes
+                if (result.contextNotes && Object.keys(result.contextNotes).length > 0) {
+                  setContextNotes(result.contextNotes);
+                }
+              }}
             />
+          )}
+
+          {currentSection === 'transcript' && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
+                Discovery Call Transcript
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                Upload a discovery call transcript to pre-fill the diagnostic form. This is optional &mdash; you can skip if you don&apos;t have one.
+              </p>
+              <TranscriptUpload
+                customerId={customer?.id}
+                onUploadComplete={() => setTranscriptUploaded(true)}
+                onIntakeExtracted={(extractedPreFill) => {
+                  // Transcript pre-fills are base layer (CRM overwrites later)
+                  setPreFill((prev) => {
+                    const merged = { ...prev };
+                    for (const [key, val] of Object.entries(extractedPreFill)) {
+                      if (!merged[key]) merged[key] = val;
+                    }
+                    return merged;
+                  });
+                  // Also set direct answers for Section A fields that were extracted
+                  const directAnswerKeys = ['A1', 'A2', 'A3', 'A4', 'A5'];
+                  setAnswers((prev) => {
+                    const updated = { ...prev };
+                    for (const key of directAnswerKeys) {
+                      if (extractedPreFill[key] && !updated[key]) {
+                        updated[key] = extractedPreFill[key].value;
+                      }
+                    }
+                    return updated;
+                  });
+                }}
+              />
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button
+                  onClick={() => setCurrentSection('A')}
+                  style={{ padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleTranscriptNext}
+                  style={{ padding: '0.75rem 1.5rem', background: 'var(--ls-purple, #6C5CE7)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {transcriptUploaded ? 'Continue' : 'Skip \u2014 No Transcript'}
+                </button>
+              </div>
+            </div>
           )}
 
           {currentSection === 'sf-connect' && (
@@ -335,10 +441,14 @@ export default function IntakeForm() {
                 slug={customer?.slug}
                 status={salesforceStatus}
                 onSaveAllAnswers={() => saveSection('A', answers)}
+                onUploadSuccess={() => {
+                  setSalesforceStatus((prev) => ({ ...prev, connected: true, signalsReady: true, source: 'upload' }));
+                  setCurrentSection('sf-analyzing');
+                }}
               />
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
                 <button
-                  onClick={() => setCurrentSection('A')}
+                  onClick={() => setCurrentSection('transcript')}
                   style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
                 >
                   Back
@@ -350,8 +460,11 @@ export default function IntakeForm() {
           {currentSection === 'sf-analyzing' && (
             <AnalyzingScreen
               customerId={customer?.id}
+              crmType="salesforce"
               onComplete={(inferredPreFill) => {
-                setPreFill(inferredPreFill);
+                // Merge CRM inference on top of any existing Slack form pre-fills
+                // CRM inference takes precedence for overlapping fields
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
@@ -364,34 +477,85 @@ export default function IntakeForm() {
             />
           )}
 
-          {currentSection === 'B' && (
-            <SectionB
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('B', a)}
-              onBack={handleBack}
-              preFill={preFill}
+          {currentSection === 'hs-analyzing' && (
+            <AnalyzingScreen
+              customerId={customer?.id}
+              crmType="hubspot"
+              onComplete={(inferredPreFill) => {
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
+                if (inferredPreFill.A2) {
+                  setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
+                }
+                setCurrentSection('B');
+              }}
+              onError={(errMsg) => {
+                setHubspotError(errMsg);
+                setCurrentSection('B');
+              }}
             />
+          )}
+
+          {currentSection === 'B' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionB
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('B', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
           )}
 
           {currentSection === 'C' && (
-            <SectionC
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('C', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionC
+                answers={answers}
+                preFill={preFill}
+                onComplete={(a) => handleSectionComplete('C', a)}
+                onBack={handleBack}
+              />
+            </>
           )}
 
           {currentSection === 'D' && (
-            <SectionD
-              answers={answers}
-              skipRules={skipRules}
-              onComplete={(a) => handleSectionComplete('D', a)}
-              onBack={handleBack}
-              preFill={preFill}
-            />
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionD
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('D', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'E' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionE
+                answers={answers}
+                skipRules={skipRules}
+                onComplete={(a) => handleSectionComplete('E', a)}
+                onBack={handleBack}
+                preFill={preFill}
+              />
+            </>
+          )}
+
+          {currentSection === 'F' && (
+            <>
+              <IntakeContextPanel contextNotes={contextNotes} />
+              <SectionF
+                answers={answers}
+                preFill={preFill}
+                onComplete={(a) => handleSectionComplete('F', a)}
+                onBack={handleBack}
+              />
+            </>
           )}
 
           {currentSection === 'review' && (

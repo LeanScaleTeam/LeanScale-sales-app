@@ -2,12 +2,18 @@
  * Transcript Management API
  *
  * POST /api/diagnostic/transcript — Upload transcript text
- * POST /api/diagnostic/transcript?action=analyze — Run Claude analysis on transcript
+ * POST /api/diagnostic/transcript?action=prepare-analyze — Get prompt config for client-side competency analysis
+ * POST /api/diagnostic/transcript?action=prepare-intake — Get prompt config for client-side intake extraction
+ * POST /api/diagnostic/transcript?action=store-analyze — Store competency analysis results from client
+ * POST /api/diagnostic/transcript?action=store-intake — Validate + return intake extraction results from client
+ * POST /api/diagnostic/transcript?action=analyze — (Legacy) Run server-side Claude analysis
+ * POST /api/diagnostic/transcript?action=extract-intake — (Legacy) Run server-side intake extraction
  * GET  /api/diagnostic/transcript?customerId=... — List transcripts for customer
  */
 
 import { supabaseAdmin } from '../../../lib/supabase';
-import { analyzeTranscript, mergeTranscriptAssessments } from '../../../lib/diagnostic-engine/v3/transcript-analyzer';
+import { analyzeTranscript, buildAnalyzePromptConfig, parseExtractionResponse } from '../../../lib/diagnostic-engine/v3/transcript-analyzer';
+import { extractIntakeFromTranscript, buildIntakePromptConfig, parseIntakeResponse } from '../../../lib/diagnostic-engine/v3/transcript-intake-extractor';
 
 export const config = {
   api: {
@@ -20,7 +26,12 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method === 'GET') return handleList(req, res);
   if (req.method === 'POST') {
+    if (req.query.action === 'prepare-analyze') return handlePrepareAnalyze(req, res);
+    if (req.query.action === 'prepare-intake') return handlePrepareIntake(req, res);
+    if (req.query.action === 'store-analyze') return handleStoreAnalyze(req, res);
+    if (req.query.action === 'store-intake') return handleStoreIntake(req, res);
     if (req.query.action === 'analyze') return handleAnalyze(req, res);
+    if (req.query.action === 'extract-intake') return handleExtractIntake(req, res);
     return handleUpload(req, res);
   }
   return res.status(405).json({ error: 'Method not allowed' });
@@ -103,7 +114,7 @@ async function handleAnalyze(req, res) {
       evidence_quotes: a.evidence_quotes,
       assessment: a.assessment,
       reasoning: a.reasoning,
-      model_version: model || 'claude-sonnet-4-6',
+      model_version: model || 'anthropic/claude-sonnet-4',
       analyzed_at: new Date().toISOString(),
     }));
 
@@ -129,6 +140,206 @@ async function handleAnalyze(req, res) {
     });
   } catch (err) {
     console.error('Transcript analysis error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
+
+/**
+ * Extract intake form answers from a transcript.
+ * Body: { transcriptId, customerId }
+ */
+async function handleExtractIntake(req, res) {
+  const { transcriptId, customerId } = req.body;
+
+  if (!transcriptId || !customerId) {
+    return res.status(400).json({ error: 'transcriptId and customerId are required' });
+  }
+
+  try {
+    // Fetch transcript text
+    const { data: transcript, error: fetchError } = await supabaseAdmin
+      .from('diagnostic_transcripts')
+      .select('id, raw_text')
+      .eq('id', transcriptId)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (fetchError || !transcript) {
+      return res.status(404).json({ error: 'Transcript not found' });
+    }
+
+    // Run intake extraction
+    const preFill = await extractIntakeFromTranscript(transcript.raw_text);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transcriptId,
+        preFill,
+        extractedCount: Object.keys(preFill).length,
+      },
+    });
+  } catch (err) {
+    console.error('Transcript intake extraction error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
+
+// ── Client-side LLM pattern (avoids Netlify function timeout) ──
+
+/**
+ * Return prompt config + API key for client-side competency analysis.
+ * Body: { transcriptId, customerId }
+ */
+async function handlePrepareAnalyze(req, res) {
+  const { transcriptId, customerId } = req.body;
+  if (!transcriptId || !customerId) {
+    return res.status(400).json({ error: 'transcriptId and customerId are required' });
+  }
+
+  try {
+    const { data: transcript, error } = await supabaseAdmin
+      .from('diagnostic_transcripts')
+      .select('id, raw_text')
+      .eq('id', transcriptId)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (error || !transcript) {
+      return res.status(404).json({ error: 'Transcript not found' });
+    }
+
+    const config = buildAnalyzePromptConfig(transcript.raw_text);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        apiKey: process.env.OPENROUTER_API_KEY,
+        config,
+      },
+    });
+  } catch (err) {
+    console.error('Prepare analyze error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Return prompt config + API key for client-side intake extraction.
+ * Body: { transcriptId, customerId }
+ */
+async function handlePrepareIntake(req, res) {
+  const { transcriptId, customerId } = req.body;
+  if (!transcriptId || !customerId) {
+    return res.status(400).json({ error: 'transcriptId and customerId are required' });
+  }
+
+  try {
+    const { data: transcript, error } = await supabaseAdmin
+      .from('diagnostic_transcripts')
+      .select('id, raw_text')
+      .eq('id', transcriptId)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (error || !transcript) {
+      return res.status(404).json({ error: 'Transcript not found' });
+    }
+
+    const config = buildIntakePromptConfig(transcript.raw_text);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        apiKey: process.env.OPENROUTER_API_KEY,
+        config,
+      },
+    });
+  } catch (err) {
+    console.error('Prepare intake error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Validate and store competency analysis results from client-side OpenRouter call.
+ * Body: { transcriptId, customerId, openRouterResponse }
+ */
+async function handleStoreAnalyze(req, res) {
+  const { transcriptId, customerId, openRouterResponse } = req.body;
+  if (!transcriptId || !customerId || !openRouterResponse) {
+    return res.status(400).json({ error: 'transcriptId, customerId, and openRouterResponse are required' });
+  }
+
+  try {
+    // Validate the LLM response using the same parser as server-side analysis
+    const assessments = parseExtractionResponse(openRouterResponse);
+
+    // Store assessments
+    const rows = assessments.map((a) => ({
+      transcript_id: transcriptId,
+      customer_id: customerId,
+      competency_id: a.competency_id,
+      department: a.department,
+      score: a.score,
+      confidence: a.confidence,
+      evidence_quotes: a.evidence_quotes,
+      assessment: a.assessment,
+      reasoning: a.reasoning,
+      model_version: 'anthropic/claude-sonnet-4',
+      analyzed_at: new Date().toISOString(),
+    }));
+
+    if (rows.length > 0) {
+      const { error: insertError } = await supabaseAdmin
+        .from('transcript_assessments')
+        .insert(rows);
+
+      if (insertError) {
+        console.error('Error storing transcript assessments:', insertError);
+        return res.status(500).json({ error: 'Failed to store assessments' });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transcriptId,
+        assessmentCount: assessments.length,
+        assessments,
+        lowConfidenceCount: assessments.filter((a) => a.confidence < 0.5).length,
+      },
+    });
+  } catch (err) {
+    console.error('Store analyze error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
+
+/**
+ * Validate and return intake extraction results from client-side OpenRouter call.
+ * Body: { transcriptId, customerId, openRouterResponse }
+ */
+async function handleStoreIntake(req, res) {
+  const { transcriptId, customerId, openRouterResponse } = req.body;
+  if (!transcriptId || !customerId || !openRouterResponse) {
+    return res.status(400).json({ error: 'transcriptId, customerId, and openRouterResponse are required' });
+  }
+
+  try {
+    // Validate the LLM response using the same parser as server-side extraction
+    const preFill = parseIntakeResponse(openRouterResponse);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transcriptId,
+        preFill,
+        extractedCount: Object.keys(preFill).length,
+      },
+    });
+  } catch (err) {
+    console.error('Store intake error:', err);
     return res.status(500).json({ error: err.message || 'Internal server error' });
   }
 }

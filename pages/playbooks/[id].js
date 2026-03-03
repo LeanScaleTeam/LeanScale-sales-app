@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { playbooks, resolvePlaybookSlug } from '../../data/services-catalog';
 import { playbookContent } from '../../data/playbook-content';
+import advisoryData from '../../data/playbook-advisory.json';
+import extendedData from '../../data/playbook-extended.json';
 import { useCustomer } from '../../context/CustomerContext';
 import PlaybookTabBar from '../../components/playbook/PlaybookTabBar';
 import PlaybookScoreOverlay from '../../components/playbook/PlaybookScoreOverlay';
@@ -38,8 +40,6 @@ function renderMarkdownContent(text) {
   const elements = [];
   let currentList = [];
   let listType = null;
-  let inTable = false;
-  let tableRows = [];
 
   const flushList = () => {
     if (currentList.length > 0) {
@@ -65,53 +65,78 @@ function renderMarkdownContent(text) {
     }
   };
 
-  const flushTable = () => {
-    if (tableRows.length > 0) {
-      const headerRow = tableRows[0];
-      const dataRows = tableRows.slice(2); // skip separator row
-      elements.push(
-        <div key={elements.length} style={{ overflowX: 'auto', margin: '1rem 0' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead>
-              <tr>
-                {headerRow.map((cell, i) => (
-                  <th key={i} style={{ padding: '0.5rem', borderBottom: '2px solid #e5e7eb', textAlign: 'left', fontWeight: 600, color: '#374151' }}>
+  // Table rendering helper (PR branch's enhanced version with separator handling)
+  const flushTable = (tableRows) => {
+    if (tableRows.length < 2) return;
+    const headers = tableRows[0];
+    const dataRows = tableRows.slice(2); // skip separator row
+    elements.push(
+      <div key={elements.length} style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
+        <table style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+        }}>
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} style={{
+                  padding: '0.5rem 0.75rem',
+                  borderBottom: '2px solid #e5e7eb',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                  color: '#374151',
+                  background: '#f9fafb',
+                }}>
+                  {formatInlineText(h.trim())}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {dataRows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => (
+                  <td key={ci} style={{
+                    padding: '0.5rem 0.75rem',
+                    borderBottom: '1px solid #f3f4f6',
+                    color: '#4b5563',
+                  }}>
                     {formatInlineText(cell.trim())}
-                  </th>
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {dataRows.map((row, ri) => (
-                <tr key={ri}>
-                  {row.map((cell, ci) => (
-                    <td key={ci} style={{ padding: '0.5rem', borderBottom: '1px solid #f3f4f6', color: '#4b5563' }}>
-                      {formatInlineText(cell.trim())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-      tableRows = [];
-      inTable = false;
-    }
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
+
+  let tableRows = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Table detection
-    if (line.match(/^\|.+\|$/)) {
+    // Table row detection (PR branch's enhanced separator-aware version)
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
       flushList();
-      inTable = true;
-      const cells = line.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
-      tableRows.push(cells);
+      const cells = line.split('|').slice(1, -1); // remove empty first/last from split
+      if (line.match(/^\|[\s-:|]+\|$/)) {
+        // Separator row - just push a marker
+        tableRows.push('separator');
+      } else {
+        tableRows.push(cells);
+      }
       continue;
-    } else if (inTable) {
-      flushTable();
+    } else if (tableRows.length > 0) {
+      // End of table
+      const headerAndData = tableRows.filter(r => r !== 'separator');
+      if (headerAndData.length >= 2) {
+        flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
+      }
+      tableRows = [];
     }
 
     if (line.match(/^---+$/)) {
@@ -146,6 +171,13 @@ function renderMarkdownContent(text) {
         <h4 key={elements.length} style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', color: '#374151' }}>
           {formatInlineText(line.replace(/^####\s*/, ''))}
         </h4>
+      );
+    } else if (line.startsWith('##### ')) {
+      flushList();
+      elements.push(
+        <h5 key={elements.length} style={{ fontSize: '0.9rem', fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.25rem', color: '#4b5563' }}>
+          {formatInlineText(line.replace(/^#####\s*/, ''))}
+        </h5>
       );
     } else if (line.startsWith('> ')) {
       flushList();
@@ -184,8 +216,38 @@ function renderMarkdownContent(text) {
   }
 
   flushList();
-  if (inTable) flushTable();
+  // Flush any remaining table
+  if (tableRows.length > 0) {
+    const headerAndData = tableRows.filter(r => r !== 'separator');
+    if (headerAndData.length >= 2) {
+      flushTable([headerAndData[0], 'separator', ...headerAndData.slice(1)]);
+    }
+  }
   return elements;
+}
+
+function renderSectionCard(icon, title, markdownContent) {
+  if (!markdownContent) return null;
+  return (
+    <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+      <h2 style={{
+        fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+      }}>
+        <span style={{ fontSize: '1.25rem' }}>{icon}</span> {title}
+      </h2>
+      <div style={{ color: '#374151' }}>
+        {renderMarkdownContent(markdownContent)}
+      </div>
+    </section>
+  );
+}
+
+function renderRawSections(sections) {
+  if (!sections) return null;
+  return Object.entries(sections).map(([title, content]) => (
+    renderSectionCard('', title, content)
+  ));
 }
 
 // ── Page Component ──
@@ -202,10 +264,24 @@ export default function PlaybookDetail() {
   const { customerPath, diagnosticScores } = useCustomer();
   const [activeTab, setActiveTab] = useState('advisory');
 
-  // Resolve through aliases
+  // Resolve through aliases (from main)
   const slug = id ? resolvePlaybookSlug(id) : null;
   const playbook = id ? playbooks.find(p => p.id === id) : null;
   const content = slug ? (playbookContent[slug] || playbookContent[id]) : null;
+
+  // PR branch data sources
+  const advisory = id ? advisoryData[id] : null;
+  const extended = id ? extendedData[id] : null;
+
+  const hasMethodology = extended && (extended.methodology || extended.methodologyRaw);
+  const hasImplementation = extended && (extended.implementation || extended.implementationRaw);
+
+  // Build tabs dynamically — always show advisory, conditionally show methodology/implementation
+  const availableTabs = [
+    TABS[0], // advisory always
+    ...(hasMethodology ? [TABS[1]] : []),
+    ...(hasImplementation ? [TABS[2]] : []),
+  ];
 
   if (!router.isReady) {
     return (
@@ -233,7 +309,7 @@ export default function PlaybookDetail() {
     );
   }
 
-  // Stub playbook — no content yet
+  // Stub playbook — no content yet (from main)
   if (!content || content.status === 'stub') {
     return (
       <Layout title={`${playbook.name} Playbook`}>
@@ -258,16 +334,13 @@ export default function PlaybookDetail() {
     );
   }
 
-  // Published playbook — 3-tab view
-  const tabContent = content[activeTab];
-
   return (
     <Layout title={`${playbook.name} Playbook`}>
       <div className="container" style={{ maxWidth: 900 }}>
         <BackLink customerPath={customerPath} />
         <PlaybookHeader playbook={playbook} tier={content.meta?.tier} />
 
-        {/* Score overlay banner (only shown during active diagnostic) */}
+        {/* Score overlay banner (only shown during active diagnostic) — from main */}
         {diagnosticScores && content.meta?.competencyIds?.length > 0 && (
           <PlaybookScoreOverlay
             playbookSlug={slug}
@@ -276,15 +349,333 @@ export default function PlaybookDetail() {
           />
         )}
 
-        {/* Tab navigation */}
-        <PlaybookTabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
+        {/* Tab navigation — use PlaybookTabBar component but with dynamic tabs */}
+        <PlaybookTabBar tabs={availableTabs} active={activeTab} onChange={setActiveTab} />
 
-        {/* Tab content */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ color: '#374151' }}>
-            {renderMarkdownContent(tabContent)}
+        {/* Advisory tab — PR branch's detailed section cards */}
+        {activeTab === 'advisory' && (
+          <>
+            {/* Structured content sections from playbookContent */}
+            {content && (
+              <>
+                {content.definition && (content.definition.whatItIs || content.definition.whatItIsNot) && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>📋</span> Definition
+                    </h2>
+                    {content.definition.whatItIs && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', marginBottom: '0.5rem' }}>
+                          What it is:
+                        </h3>
+                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
+                          {content.definition.whatItIs}
+                        </p>
+                      </div>
+                    )}
+                    {content.definition.whatItIsNot && (
+                      <div>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#ef4444', marginBottom: '0.5rem' }}>
+                          What it is NOT:
+                        </h3>
+                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
+                          {content.definition.whatItIsNot}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                )}
+
+                {content.icpValueProp && (content.icpValueProp.painSolves || content.icpValueProp.outcome) && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>💎</span> ICP Value Proposition
+                    </h2>
+                    {content.icpValueProp.painSolves && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f59e0b', marginBottom: '0.5rem' }}>
+                          Pain it solves:
+                        </h3>
+                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
+                          {content.icpValueProp.painSolves}
+                        </p>
+                      </div>
+                    )}
+                    {content.icpValueProp.outcome && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981', marginBottom: '0.5rem' }}>
+                          Outcome delivered:
+                        </h3>
+                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
+                          {content.icpValueProp.outcome}
+                        </p>
+                      </div>
+                    )}
+                    {content.icpValueProp.whoOwns && (
+                      <div>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#6366f1', marginBottom: '0.5rem' }}>
+                          Who owns it:
+                        </h3>
+                        <p style={{ color: '#374151', lineHeight: 1.6, margin: 0 }}>
+                          {content.icpValueProp.whoOwns}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                )}
+
+                {content.implementation && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>⚙️</span> Implementation Procedure
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(content.implementation)}
+                    </div>
+                  </section>
+                )}
+
+                {content.dependencies && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>🔗</span> Dependencies & Inputs
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(content.dependencies)}
+                    </div>
+                  </section>
+                )}
+
+                {content.pitfalls && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>⚠️</span> Common Pitfalls
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(content.pitfalls)}
+                    </div>
+                  </section>
+                )}
+              </>
+            )}
+
+            {/* Advisory JSON sections from playbook-advisory.json */}
+            {advisory && advisory.sections && (
+              <>
+                {advisory.sections.projectOverview && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>🎯</span> Project Overview
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.projectOverview)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.toolsAndSystems && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>🛠️</span> Tools & Systems
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.toolsAndSystems)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.stakeholdersAndRoles && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>👥</span> Stakeholders & Roles
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.stakeholdersAndRoles)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.scoping && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>📐</span> Scoping
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.scoping)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.discoveryQuestions && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>❓</span> Discovery Questions
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.discoveryQuestions)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.beliefBarriers && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>💬</span> Overcoming Belief Barriers
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.beliefBarriers)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sections.metricsImpact && (
+                  <section className="card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+                    <h2 style={{
+                      fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    }}>
+                      <span style={{ fontSize: '1.25rem' }}>📊</span> Metrics Impact & Success Measurement
+                    </h2>
+                    <div style={{ color: '#374151' }}>
+                      {renderMarkdownContent(advisory.sections.metricsImpact)}
+                    </div>
+                  </section>
+                )}
+
+                {advisory.sourceUrl && (
+                  <div style={{
+                    textAlign: 'right',
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    marginBottom: '1rem',
+                  }}>
+                    Source: <a href={advisory.sourceUrl} target="_blank" rel="noopener noreferrer"
+                      style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Fallback: render advisory from playbookContent markdown if no structured sections */}
+            {!content?.definition && !advisory?.sections && content?.advisory && (
+              <div className="card" style={{ padding: '1.5rem' }}>
+                <div style={{ color: '#374151' }}>
+                  {renderMarkdownContent(content.advisory)}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Methodology tab — PR branch's extended data */}
+        {activeTab === 'methodology' && extended && (
+          <>
+            {extended.methodology ? (
+              <>
+                {renderSectionCard('🧠', 'Core Concepts', extended.methodology.coreConcepts)}
+                {renderSectionCard('🔀', 'Decision Frameworks', extended.methodology.decisionFrameworks)}
+                {renderSectionCard('📏', 'Benchmarks & Standards', extended.methodology.benchmarks)}
+                {renderSectionCard('🔢', 'Calculations & Scoring', extended.methodology.calculations)}
+                {renderSectionCard('🔎', 'Edge Cases', extended.methodology.edgeCases)}
+                {extended.methodology.references && renderSectionCard('📚', 'References', extended.methodology.references)}
+              </>
+            ) : extended.methodologyRaw ? (
+              renderRawSections(extended.methodologyRaw)
+            ) : null}
+            {extended.sourceUrls && extended.sourceUrls.methodology && (
+              <div style={{
+                textAlign: 'right',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginBottom: '1rem',
+              }}>
+                Source: <a href={extended.sourceUrls.methodology} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Fallback: render methodology from playbookContent if no extended data */}
+        {activeTab === 'methodology' && !extended && content?.methodology && (
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <div style={{ color: '#374151' }}>
+              {renderMarkdownContent(content.methodology)}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Implementation tab — PR branch's extended data */}
+        {activeTab === 'implementation' && extended && (
+          <>
+            {extended.implementation ? (
+              <>
+                {renderSectionCard('📋', 'Project One-Pager', extended.implementation.projectOnePager)}
+                {renderSectionCard('🎯', 'Phase 1: Strategy', extended.implementation.phaseStrategy)}
+                {renderSectionCard('⚙️', 'Phase 2: Engineering', extended.implementation.phaseEngineering)}
+                {renderSectionCard('📚', 'Phase 3: Enablement', extended.implementation.phaseEnablement)}
+                {renderSectionCard('🤝', 'Phase 4: Handoff', extended.implementation.phaseHandoff)}
+                {extended.implementation.deliverables && renderSectionCard('📦', 'Deliverables', extended.implementation.deliverables)}
+                {extended.implementation.references && renderSectionCard('📚', 'References', extended.implementation.references)}
+              </>
+            ) : extended.implementationRaw ? (
+              renderRawSections(extended.implementationRaw)
+            ) : null}
+            {extended.sourceUrls && extended.sourceUrls.implementation && (
+              <div style={{
+                textAlign: 'right',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                marginBottom: '1rem',
+              }}>
+                Source: <a href={extended.sourceUrls.implementation} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#7c3aed' }}>playbooks.leanscale.team</a>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Fallback: render implementation from playbookContent if no extended data */}
+        {activeTab === 'implementation' && !extended && content?.implementation && (
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <div style={{ color: '#374151' }}>
+              {renderMarkdownContent(content.implementation)}
+            </div>
+          </div>
+        )}
 
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
           <Link

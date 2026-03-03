@@ -19,7 +19,9 @@ import { createSow, updateSow } from '../../../lib/sow';
 import { getDiagnosticResult } from '../../../lib/diagnostics';
 import { bulkCreateSections } from '../../../lib/sow-sections';
 import { getServicesBySlugs } from '../../../lib/service-catalog';
-import { generateSectionsFromDiagnostic, generateExecutiveSummary, generateSectionsFromDiagnosticV2, generateExecutiveSummaryV2 } from '../../../lib/sow-auto-generate';
+import { generateSectionsFromDiagnostic, generateExecutiveSummary, generateSectionsFromDiagnosticV2, generateExecutiveSummaryV2, generateSectionsFromDiagnosticV3, generateExecutiveSummaryV3 } from '../../../lib/sow-auto-generate';
+import { supabaseAdmin } from '../../../lib/supabase';
+import { applyRoadmapOverrides } from '../../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 
 const VALID_SOW_TYPES = ['clay', 'q2c', 'embedded', 'custom'];
 
@@ -33,6 +35,7 @@ export default async function handler(req, res) {
       customerId,
       diagnosticResultId,
       diagnosticType,
+      diagnosticVersion: requestedVersion,
       customerName,
       sowType,
       createdBy,
@@ -51,62 +54,124 @@ export default async function handler(req, res) {
       });
     }
 
-    // Fetch the diagnostic result to get processes data
-    const diagnosticResult = await getDiagnosticResult(customerId, diagnosticType || 'gtm');
-
-    if (!diagnosticResult) {
-      return res.status(404).json({
-        success: false,
-        error: 'Diagnostic result not found for this customer',
-      });
-    }
-
-    // Detect v1 vs v2
-    const isV2 = diagnosticResult.version === 2 && diagnosticResult.items;
-
     let overallRating;
     let generatedSections;
     let executiveSummary;
     let processes;
+    let diagnosticSnapshot;
+    let isV3 = false;
 
-    if (isV2) {
-      // --- v2 path ---
-      const items = diagnosticResult.items || [];
-      const scores = diagnosticResult.scores || {};
+    // --- v3 path ---
+    if (requestedVersion === 3) {
+      const { data: v3Result, error: v3Error } = await supabaseAdmin
+        .from('diagnostic_results_v3')
+        .select('*')
+        .eq('customer_id', customerId)
+        .single();
 
-      overallRating = scores.overallStatus || 'moderate';
+      if (v3Error || !v3Result) {
+        return res.status(404).json({
+          success: false,
+          error: 'No v3 diagnostic result found for this customer',
+        });
+      }
 
-      // Collect all serviceIds from v2 items
-      const slugs = [...new Set(items.flatMap(it => it.serviceIds || []))];
+      isV3 = true;
+
+      // Apply roadmap overrides if present
+      const roadmap = applyRoadmapOverrides(v3Result.roadmap, v3Result.roadmap_overrides);
+
+      // Collect service slugs from all roadmap projects
+      const phases = roadmap?.phases || [];
+      const slugs = [...new Set(phases.flatMap(p => p.projects.map(proj => proj.serviceId)))];
       const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
 
-      generatedSections = generateSectionsFromDiagnosticV2(items, catalogMap);
-      executiveSummary = generateExecutiveSummaryV2(items, scores, customerName);
-      processes = items; // for snapshot
+      generatedSections = generateSectionsFromDiagnosticV3(roadmap, catalogMap);
+      executiveSummary = generateExecutiveSummaryV3(roadmap, v3Result.pillar_scores, customerName);
+
+      overallRating = v3Result.overall_score >= 3.5 ? 'healthy'
+        : v3Result.overall_score >= 2.5 ? 'moderate'
+        : 'critical';
+
+      processes = v3Result.score_card; // for snapshot
+
+      diagnosticSnapshot = {
+        version: 3,
+        overall_score: v3Result.overall_score,
+        pillar_scores: v3Result.pillar_scores,
+        department_scores: v3Result.department_scores,
+        roadmapSummary: {
+          totalProjects: roadmap.totalProjects,
+          byPhase: roadmap.summary?.byPhase,
+        },
+        snapshotAt: new Date().toISOString(),
+      };
     } else {
-      // --- v1 path ---
-      processes = diagnosticResult.processes || [];
-      const statusCounts = { warning: 0, unable: 0, careful: 0, healthy: 0 };
-      processes.forEach(p => {
-        if (statusCounts[p.status] !== undefined) {
-          statusCounts[p.status]++;
-        }
-      });
+      // v1/v2 path — fetch from existing table
+      const diagnosticResult = await getDiagnosticResult(customerId, diagnosticType || 'gtm');
 
-      overallRating = 'healthy';
-      const criticalPct = (statusCounts.warning + statusCounts.unable) / (processes.length || 1);
-      if (criticalPct > 0.5) overallRating = 'critical';
-      else if (criticalPct > 0.3) overallRating = 'warning';
-      else if (criticalPct > 0.1) overallRating = 'moderate';
+      if (!diagnosticResult) {
+        return res.status(404).json({
+          success: false,
+          error: 'Diagnostic result not found for this customer',
+        });
+      }
 
-      // Look up service catalog entries by slug for auto-generation
-      const slugs = [...new Set(processes.filter(p => p.serviceId).map(p => p.serviceId))];
-      const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+      const isV2 = diagnosticResult.version === 2 && diagnosticResult.items;
 
-      generatedSections = generateSectionsFromDiagnostic(processes, catalogMap);
-      executiveSummary = generateExecutiveSummary(
-        processes, customerName, diagnosticType, overallRating
-      );
+      if (isV2) {
+        // --- v2 path ---
+        const items = diagnosticResult.items || [];
+        const scores = diagnosticResult.scores || {};
+
+        overallRating = scores.overallStatus || 'moderate';
+
+        const slugs = [...new Set(items.flatMap(it => it.serviceIds || []))];
+        const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+
+        generatedSections = generateSectionsFromDiagnosticV2(items, catalogMap);
+        executiveSummary = generateExecutiveSummaryV2(items, scores, customerName);
+        processes = items;
+
+        diagnosticSnapshot = {
+          version: 2,
+          items: processes.map(it => ({ id: it.id, name: it.name, layer: it.layer, status: it.status })),
+          scores: diagnosticResult.scores,
+          snapshotAt: new Date().toISOString(),
+        };
+      } else {
+        // --- v1 path ---
+        processes = diagnosticResult.processes || [];
+        const statusCounts = { warning: 0, unable: 0, careful: 0, healthy: 0 };
+        processes.forEach(p => {
+          if (statusCounts[p.status] !== undefined) {
+            statusCounts[p.status]++;
+          }
+        });
+
+        overallRating = 'healthy';
+        const criticalPct = (statusCounts.warning + statusCounts.unable) / (processes.length || 1);
+        if (criticalPct > 0.5) overallRating = 'critical';
+        else if (criticalPct > 0.3) overallRating = 'warning';
+        else if (criticalPct > 0.1) overallRating = 'moderate';
+
+        const slugs = [...new Set(processes.filter(p => p.serviceId).map(p => p.serviceId))];
+        const catalogMap = slugs.length > 0 ? await getServicesBySlugs(slugs) : new Map();
+
+        generatedSections = generateSectionsFromDiagnostic(processes, catalogMap);
+        executiveSummary = generateExecutiveSummary(
+          processes, customerName, diagnosticType, overallRating
+        );
+
+        diagnosticSnapshot = {
+          processes: processes.map(p => ({
+            name: p.name,
+            status: p.status,
+            addToEngagement: p.addToEngagement,
+          })),
+          snapshotAt: new Date().toISOString(),
+        };
+      }
     }
 
     // Auto-generate title
@@ -151,23 +216,6 @@ export default async function handler(req, res) {
       if (s.hours && s.rate) totalInvestment += s.hours * s.rate;
     }
 
-    // Build diagnostic snapshot (v1 vs v2)
-    const diagnosticSnapshot = isV2
-      ? {
-          version: 2,
-          items: processes.map(it => ({ id: it.id, name: it.name, layer: it.layer, status: it.status })),
-          scores: diagnosticResult.scores,
-          snapshotAt: new Date().toISOString(),
-        }
-      : {
-          processes: processes.map(p => ({
-            name: p.name,
-            status: p.status,
-            addToEngagement: p.addToEngagement,
-          })),
-          snapshotAt: new Date().toISOString(),
-        };
-
     // Calculate SOW-level dates from section dates
     const sectionStarts = generatedSections.filter(s => s.startDate).map(s => new Date(s.startDate));
     const sectionEnds = generatedSections.filter(s => s.endDate).map(s => new Date(s.endDate));
@@ -199,6 +247,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Error creating SOW from diagnostic:', error);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 }

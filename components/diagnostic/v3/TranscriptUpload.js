@@ -1,13 +1,13 @@
 /**
  * TranscriptUpload — Drag-and-drop upload area for discovery call transcripts
  *
- * Handles text paste and file upload (.txt), shows processing status
+ * Handles text paste and file upload (.txt, .md), shows processing status
  * and results preview after analysis.
  */
 
 import { useState, useRef } from 'react';
 
-export default function TranscriptUpload({ customerId, onUploadComplete }) {
+export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted }) {
   const [text, setText] = useState('');
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -16,6 +16,57 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Safely parse JSON from a fetch response, throwing a clear error if HTML/non-JSON
+  async function safeJson(res, label) {
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok) {
+      const body = contentType.includes('json')
+        ? await res.json().catch(() => ({}))
+        : await res.text().catch(() => '');
+      throw new Error(
+        (typeof body === 'object' ? body.error : null) ||
+        `${label} failed (${res.status})`
+      );
+    }
+    if (!contentType.includes('json')) {
+      throw new Error(`${label} returned unexpected response (${res.status})`);
+    }
+    return res.json();
+  }
+
+  /**
+   * Call OpenRouter directly from the browser using a prepared prompt config.
+   * This avoids Netlify function timeouts (~26s) since the browser has no timeout.
+   */
+  async function callOpenRouterDirect(apiKey, config) {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://leanscale.team',
+        'X-Title': 'LeanScale Diagnostic',
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: 4096,
+        messages: [
+          { role: 'system', content: config.systemPrompt },
+          { role: 'user', content: config.userMessage },
+        ],
+        tools: config.tools,
+        tool_choice: config.toolChoice,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`AI analysis error (${response.status}): ${errorText.slice(0, 200)}`);
+    }
+
+    return response.json();
+  }
+
   async function handleUpload() {
     if (!text.trim() || !customerId) return;
 
@@ -23,37 +74,113 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
     setError(null);
 
     try {
-      // Upload transcript
+      // Step 1: Upload transcript text to server (fast)
       const uploadRes = await fetch('/api/diagnostic/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId, text: text.trim() }),
       });
 
-      const uploadJson = await uploadRes.json();
+      const uploadJson = await safeJson(uploadRes, 'Upload');
       if (!uploadJson.success) {
         throw new Error(uploadJson.error || 'Upload failed');
       }
 
       const transcriptId = uploadJson.data.id;
 
-      // Analyze
+      // Step 2: Get prompt configs + API key from server (fast — no LLM calls)
       setUploading(false);
       setAnalyzing(true);
 
-      const analyzeRes = await fetch('/api/diagnostic/transcript?action=analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcriptId, customerId }),
-      });
+      const [prepAnalyzeRes, prepIntakeRes] = await Promise.all([
+        fetch('/api/diagnostic/transcript?action=prepare-analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptId, customerId }),
+        }),
+        fetch('/api/diagnostic/transcript?action=prepare-intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptId, customerId }),
+        }),
+      ]);
 
-      const analyzeJson = await analyzeRes.json();
-      if (!analyzeJson.success) {
-        throw new Error(analyzeJson.error || 'Analysis failed');
+      const prepAnalyze = await safeJson(prepAnalyzeRes, 'Prepare analysis');
+      const prepIntake = await safeJson(prepIntakeRes, 'Prepare intake');
+
+      if (!prepAnalyze.success || !prepIntake.success) {
+        throw new Error('Failed to prepare analysis');
       }
 
-      setResult(analyzeJson.data);
+      // Step 3: Call OpenRouter directly from browser (no timeout!)
+      const [analyzeOpenRouter, intakeOpenRouter] = await Promise.allSettled([
+        callOpenRouterDirect(prepAnalyze.data.apiKey, prepAnalyze.data.config),
+        callOpenRouterDirect(prepIntake.data.apiKey, prepIntake.data.config),
+      ]);
+
+      if (analyzeOpenRouter.status === 'rejected') {
+        throw new Error(analyzeOpenRouter.reason?.message || 'Competency analysis failed');
+      }
+
+      // Step 4: Send raw LLM responses to server for validation + storage (fast)
+      const storePromises = [
+        fetch('/api/diagnostic/transcript?action=store-analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcriptId,
+            customerId,
+            openRouterResponse: analyzeOpenRouter.value,
+          }),
+        }),
+      ];
+
+      // Intake extraction is best-effort
+      if (intakeOpenRouter.status === 'fulfilled') {
+        storePromises.push(
+          fetch('/api/diagnostic/transcript?action=store-intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              transcriptId,
+              customerId,
+              openRouterResponse: intakeOpenRouter.value,
+            }),
+          })
+        );
+      }
+
+      const storeResults = await Promise.all(storePromises);
+      const analyzeJson = await safeJson(storeResults[0], 'Store analysis');
+
+      if (!analyzeJson.success) {
+        throw new Error(analyzeJson.error || 'Failed to store analysis');
+      }
+
+      // Intake store is best-effort
+      let intakeData = null;
+      if (storeResults[1]) {
+        try {
+          const intakeJson = await safeJson(storeResults[1], 'Store intake');
+          if (intakeJson.success) {
+            intakeData = intakeJson.data;
+          }
+        } catch {
+          // Intake storage failed silently — competency analysis still succeeds
+        }
+      }
+
+      const combinedResult = {
+        ...analyzeJson.data,
+        intakeExtracted: intakeData?.extractedCount || 0,
+      };
+
+      setResult(combinedResult);
       onUploadComplete?.(analyzeJson.data);
+
+      if (intakeData?.preFill && Object.keys(intakeData.preFill).length > 0) {
+        onIntakeExtracted?.(intakeData.preFill);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,8 +202,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
   }
 
   function readFile(file) {
-    if (!file.name.endsWith('.txt') && !file.type.startsWith('text/')) {
-      setError('Please upload a .txt file');
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md') && !file.type.startsWith('text/')) {
+      setError('Please upload a .txt or .md file');
       return;
     }
 
@@ -107,12 +234,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
             onClick={() => fileInputRef.current?.click()}
           >
             <div style={styles.dropText}>
-              Drop a .txt file here or click to browse
+              Drop a .txt or .md file here or click to browse
             </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".txt,text/plain"
+              accept=".txt,.md,text/plain,text/markdown"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
@@ -185,6 +312,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete }) {
               <span style={styles.statValue}>{result.lowConfidenceCount}</span>
               <span style={styles.statLabel}>Need Review</span>
             </div>
+            {result.intakeExtracted > 0 && (
+              <div style={styles.stat}>
+                <span style={styles.statValue}>{result.intakeExtracted}</span>
+                <span style={styles.statLabel}>Intake Questions Filled</span>
+              </div>
+            )}
           </div>
           <button
             style={styles.resetBtn}

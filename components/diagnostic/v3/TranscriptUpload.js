@@ -1,11 +1,12 @@
 /**
  * TranscriptUpload — Drag-and-drop upload area for discovery call transcripts
  *
- * Handles text paste and file upload (.txt, .md), shows processing status
- * and results preview after analysis.
+ * Handles text paste and file upload (.docx, .pdf, .txt, .md), shows processing
+ * status and results preview after analysis.
  */
 
 import { useState, useRef } from 'react';
+import { parseDocument } from '../../../lib/client/parse-document';
 
 export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted }) {
   const [text, setText] = useState('');
@@ -14,6 +15,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [lastFileType, setLastFileType] = useState(null);
   const fileInputRef = useRef(null);
 
   // Safely parse JSON from a fetch response, throwing a clear error if HTML/non-JSON
@@ -78,7 +81,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       const uploadRes = await fetch('/api/diagnostic/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, text: text.trim() }),
+        body: JSON.stringify({ customerId, text: text.trim(), source: lastFileType || 'paste' }),
       });
 
       const uploadJson = await safeJson(uploadRes, 'Upload');
@@ -201,23 +204,32 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
     if (file) readFile(file);
   }
 
-  function readFile(file) {
-    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md') && !file.type.startsWith('text/')) {
-      setError('Please upload a .txt or .md file');
+  async function readFile(file) {
+    const name = file.name.toLowerCase();
+    const supported = ['.txt', '.md', '.docx', '.pdf'];
+    const ext = '.' + name.split('.').pop();
+
+    if (!supported.includes(ext) && !file.type.startsWith('text/')) {
+      setError('Please upload a .docx, .pdf, .txt, or .md file');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setText(e.target.result);
+    try {
       setError(null);
-    };
-    reader.readAsText(file);
+      setParsing(true);
+      const text = await parseDocument(file);
+      setText(text);
+      setLastFileType(ext.replace('.', ''));
+    } catch (err) {
+      setError(err.message || 'Failed to parse document');
+    } finally {
+      setParsing(false);
+    }
   }
 
   return (
     <div style={styles.container}>
-      <h4 style={styles.title}>Upload Discovery Call Transcript</h4>
+      <h4 style={styles.title}>Upload Document or Transcript</h4>
 
       {!result && (
         <>
@@ -234,18 +246,18 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
             onClick={() => fileInputRef.current?.click()}
           >
             <div style={styles.dropText}>
-              Drop a .txt or .md file here or click to browse
+              Drop a .docx, .pdf, .txt, or .md file here, or click to browse
             </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".txt,.md,text/plain,text/markdown"
+              accept=".docx,.pdf,.txt,.md,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,text/plain,text/markdown"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
           </div>
 
-          <div style={styles.divider}>or paste transcript text</div>
+          <div style={styles.divider}>or paste text directly</div>
 
           {/* Text area */}
           <textarea
@@ -261,7 +273,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
             <button
               style={styles.uploadBtn}
               onClick={handleUpload}
-              disabled={!text.trim() || uploading || analyzing}
+              disabled={!text.trim() || parsing || uploading || analyzing}
             >
               {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Upload & Analyze'}
             </button>
@@ -275,10 +287,10 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       )}
 
       {/* Processing status */}
-      {(uploading || analyzing) && (
+      {(parsing || uploading || analyzing) && (
         <div style={styles.status}>
           <div style={styles.spinner} />
-          <span>{uploading ? 'Uploading transcript...' : 'Analyzing with Claude AI...'}</span>
+          <span>{parsing ? 'Extracting text from document...' : uploading ? 'Uploading transcript...' : 'Analyzing with Claude AI...'}</span>
         </div>
       )}
 

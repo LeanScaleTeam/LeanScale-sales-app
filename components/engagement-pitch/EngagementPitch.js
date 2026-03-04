@@ -98,6 +98,10 @@ const STEPS = [
  * - managedServices: managed services health array
  * - companyProfile: intake answers { arrRange, repCount, gtmMotion }
  * - onBuildSow: callback to create SOW
+ * - editMode: boolean for edit toggle
+ * - engagementOverrides: persisted overrides object
+ * - onOverridesChange: callback to save overrides
+ * - customerPath: function to build customer-scoped URLs
  */
 export default function EngagementPitch({
   diagnosticVersion,
@@ -108,11 +112,32 @@ export default function EngagementPitch({
   managedServices,
   companyProfile,
   onBuildSow,
+  editMode,
+  engagementOverrides,
+  onOverridesChange,
+  customerPath,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(null);
 
+  // Override state — initialized from persisted overrides
+  const [overrides, setOverrides] = useState(
+    engagementOverrides || { power10: {}, findings: {}, roadmap: {} }
+  );
+
   const context = parseIntakeContext(companyProfile);
+
+  // Helper to update a section of overrides and notify parent
+  function updateOverrides(section, key, value) {
+    setOverrides(prev => {
+      const next = {
+        ...prev,
+        [section]: { ...prev[section], [key]: { ...prev[section]?.[key], ...value } },
+      };
+      onOverridesChange?.(next);
+      return next;
+    });
+  }
 
   // Determine items for findings (v3 competencies, v2 items, or v1 processes)
   const items = useMemo(() => {
@@ -151,6 +176,40 @@ export default function EngagementPitch({
     }
     return buildEngagementRoadmapV1(processes || [], activeTier, managedServices || []);
   }, [diagnosticVersion, v2Result, v3Result, items, processes, managedServices, activeTier]);
+
+  // Apply roadmap overrides (phase reassignment, exclusions)
+  const effectiveRoadmap = useMemo(() => {
+    if (!roadmap?.phases || !overrides?.roadmap) return roadmap;
+    const roadmapOv = overrides.roadmap;
+    if (Object.keys(roadmapOv).length === 0) return roadmap;
+
+    const phases = roadmap.phases.map(phase => ({
+      ...phase,
+      projects: phase.projects
+        .filter(p => !roadmapOv[p.serviceId]?.excluded)
+        .slice(), // shallow copy
+    }));
+
+    // Handle phase reassignments
+    for (const [serviceId, ov] of Object.entries(roadmapOv)) {
+      if (!ov.phase || ov.excluded) continue;
+      // Find and move the project
+      let movedProject = null;
+      for (const phase of phases) {
+        const idx = phase.projects.findIndex(p => p.serviceId === serviceId);
+        if (idx !== -1) {
+          movedProject = phase.projects.splice(idx, 1)[0];
+          break;
+        }
+      }
+      if (movedProject) {
+        const target = phases.find(p => p.id === ov.phase);
+        if (target) target.projects.push(movedProject);
+      }
+    }
+
+    return { ...roadmap, phases };
+  }, [roadmap, overrides?.roadmap]);
 
   // Cost of inaction
   const costOfInaction = useMemo(() => {
@@ -225,6 +284,9 @@ export default function EngagementPitch({
             <Power10Anchor
               power10Data={power10Data}
               costOfInaction={costOfInaction}
+              editMode={editMode}
+              overrides={overrides}
+              onOverride={updateOverrides}
             />
           )}
 
@@ -232,11 +294,20 @@ export default function EngagementPitch({
             <FindingsWalkthrough
               items={items}
               companyProfile={companyProfile}
+              editMode={editMode}
+              overrides={overrides}
+              onOverride={updateOverrides}
+              customerPath={customerPath}
             />
           )}
 
           {step.id === 'roadmap' && (
-            <PhaseRoadmap roadmap={roadmap} />
+            <PhaseRoadmap
+              roadmap={effectiveRoadmap}
+              editMode={editMode}
+              onOverride={updateOverrides}
+              customerPath={customerPath}
+            />
           )}
 
           {step.id === 'tiers' && (
@@ -249,8 +320,9 @@ export default function EngagementPitch({
 
           {step.id === 'start' && (
             <Phase1Scope
-              roadmap={roadmap}
+              roadmap={effectiveRoadmap}
               onBuildSow={onBuildSow}
+              customerPath={customerPath}
             />
           )}
         </motion.div>

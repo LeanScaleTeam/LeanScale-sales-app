@@ -2,11 +2,13 @@ import { motion } from 'framer-motion';
 import { fadeUpItem, staggerContainer } from '../../lib/animations';
 import { calculatePower10Summary } from '../../lib/impact-calculator';
 
+const STATUS_CYCLE = ['healthy', 'careful', 'warning', 'unable'];
+
 /**
- * Power10Anchor — Step 1 of the Engagement Pitch walkthrough.
+ * Power10Anchor — Step 1 of the Engagement Details walkthrough.
  * Shows the 10 key revenue metrics with ability-to-report and performance-to-goal status.
  */
-export default function Power10Anchor({ power10Data, costOfInaction }) {
+export default function Power10Anchor({ power10Data, costOfInaction, editMode, overrides, onOverride }) {
   if (!power10Data || power10Data.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-muted)' }}>
@@ -18,7 +20,21 @@ export default function Power10Anchor({ power10Data, costOfInaction }) {
     );
   }
 
-  const summary = calculatePower10Summary(power10Data);
+  // Merge overrides on top of power10Data
+  const effectiveData = (power10Data || []).map(metric => ({
+    ...metric,
+    ableToReport: overrides?.power10?.[metric.name]?.ableToReport ?? metric.ableToReport,
+    statusAgainstPlan: overrides?.power10?.[metric.name]?.statusAgainstPlan ?? metric.statusAgainstPlan,
+  }));
+
+  const summary = calculatePower10Summary(effectiveData);
+
+  function cycleStatus(metricName, field, currentStatus) {
+    const current = currentStatus || 'unable';
+    const idx = STATUS_CYCLE.indexOf(current);
+    const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+    onOverride('power10', metricName, { [field]: next });
+  }
 
   return (
     <motion.div
@@ -75,11 +91,11 @@ export default function Power10Anchor({ power10Data, costOfInaction }) {
             </tr>
           </thead>
           <tbody>
-            {(power10Data || []).map((metric, idx) => (
+            {effectiveData.map((metric, idx) => (
               <tr
                 key={metric.name}
                 style={{
-                  borderBottom: idx < (power10Data?.length || 0) - 1 ? '1px solid var(--border-color)' : 'none',
+                  borderBottom: idx < effectiveData.length - 1 ? '1px solid var(--border-color)' : 'none',
                   background: idx % 2 === 0 ? 'white' : 'var(--bg-subtle)',
                 }}
               >
@@ -87,10 +103,24 @@ export default function Power10Anchor({ power10Data, costOfInaction }) {
                   {metric.name}
                 </td>
                 <td style={{ textAlign: 'center', padding: 'var(--space-3) var(--space-4)' }}>
-                  <StatusPill status={metric.ableToReport || 'unable'} />
+                  {editMode ? (
+                    <EditablePill
+                      status={metric.ableToReport || 'unable'}
+                      onClick={() => cycleStatus(metric.name, 'ableToReport', metric.ableToReport)}
+                    />
+                  ) : (
+                    <StatusPill status={metric.ableToReport || 'unable'} />
+                  )}
                 </td>
                 <td style={{ textAlign: 'center', padding: 'var(--space-3) var(--space-4)' }}>
-                  <StatusPill status={metric.statusAgainstPlan || 'unable'} />
+                  {editMode ? (
+                    <EditablePill
+                      status={metric.statusAgainstPlan || 'unable'}
+                      onClick={() => cycleStatus(metric.name, 'statusAgainstPlan', metric.statusAgainstPlan)}
+                    />
+                  ) : (
+                    <StatusPill status={metric.statusAgainstPlan || 'unable'} />
+                  )}
                 </td>
               </tr>
             ))}
@@ -113,6 +143,24 @@ export default function Power10Anchor({ power10Data, costOfInaction }) {
         <StatBox label="Blind Spots" value={`${10 - summary.reportable}`} color={10 - summary.reportable <= 3 ? '#22c55e' : '#ef4444'} />
       </motion.div>
     </motion.div>
+  );
+}
+
+function EditablePill({ status, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      title="Click to cycle status"
+      style={{
+        border: '2px dashed var(--border-color)',
+        borderRadius: '9999px',
+        cursor: 'pointer',
+        background: 'none',
+        padding: 0,
+      }}
+    >
+      <StatusPill status={status} />
+    </button>
   );
 }
 

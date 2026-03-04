@@ -49,6 +49,7 @@ export default async function handler(req, res) {
         data_coverage: data.data_coverage,
         metadata: data.metadata,
         transcript_ids: data.transcript_ids,
+        engagement_overrides: data.engagement_overrides || null,
         created_at: data.created_at,
         updated_at: data.updated_at,
       },

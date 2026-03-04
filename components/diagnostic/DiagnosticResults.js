@@ -79,6 +79,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [editableProcesses, setEditableProcesses] = useState(null);
   const [editableTools, setEditableTools] = useState(null);
   const [editablePower10, setEditablePower10] = useState(null);
+  const [engagementOverrides, setEngagementOverrides] = useState(null);
   const [notes, setNotes] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [showImport, setShowImport] = useState(false);
@@ -150,6 +151,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               setV3Result(json.data);
               setDiagnosticResultId(json.data.id);
               setV3RunTimestamp(json.data.updated_at || json.data.created_at);
+              if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
               setActiveView('scorecard');
             }
           }
@@ -170,6 +172,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               });
               setDiagnosticResultId(json.data.id);
               setV2RunTimestamp(json.data.updated_at || json.data.created_at);
+              if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
               setActiveView('layers');
             } else {
               setDiagnosticVersion(1);
@@ -179,6 +182,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
                 setEditablePower10(json.data.power10_metrics);
               }
+              if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
               setDiagnosticResultId(json.data.id);
             }
             setNotes(json.notes || []);
@@ -264,7 +268,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   }, [router.query]);
 
   // --- Auto-save (debounced) ---
-  const saveToApi = useCallback(async (procs, tls, p10) => {
+  const saveToApi = useCallback(async (procs, tls, p10, eo) => {
     if (isDemo || !customer?.id) return;
     setSaving(true);
     try {
@@ -276,6 +280,9 @@ export default function DiagnosticResults({ diagnosticType }) {
       };
       if (p10 !== undefined) {
         payload.power10Metrics = p10;
+      }
+      if (eo !== undefined) {
+        payload.engagementOverrides = eo;
       }
       console.log('[DiagnosticSave] Saving with power10:', p10?.length, 'metrics');
       await fetch(`/api/diagnostics/${diagnosticType}`, {
@@ -298,9 +305,9 @@ export default function DiagnosticResults({ diagnosticType }) {
     }
   }, [customer?.id, diagnosticType, isDemo, customer?.customerName, linkedSows]);
 
-  function scheduleSave(procs, tls, p10) {
+  function scheduleSave(procs, tls, p10, eo) {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => saveToApi(procs, tls, p10), 800);
+    saveTimerRef.current = setTimeout(() => saveToApi(procs, tls, p10, eo), 800);
   }
 
   // --- Edit handlers ---
@@ -318,6 +325,38 @@ export default function DiagnosticResults({ diagnosticType }) {
     );
     setEditableProcesses(updated);
     scheduleSave(updated, editableTools, editablePower10);
+  }
+
+  // --- Engagement overrides handler (works across v1/v2/v3) ---
+  function handleEngagementOverridesChange(overrides) {
+    setEngagementOverrides(overrides);
+    // Save via the appropriate path
+    if (diagnosticVersion === 2 || diagnosticVersion === 3) {
+      // v2/v3: save via the run endpoint
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(async () => {
+        if (!diagnosticResultId || !customer?.id) return;
+        setSaving(true);
+        try {
+          await fetch('/api/diagnostic/run', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              diagnosticResultId,
+              customerId: customer.id,
+              engagementOverrides: overrides,
+            }),
+          });
+        } catch (err) {
+          console.error('Error saving engagement overrides:', err);
+        } finally {
+          setSaving(false);
+        }
+      }, 800);
+    } else {
+      // v1: include in the standard save
+      scheduleSave(editableProcesses, editableTools, editablePower10, overrides);
+    }
   }
 
   // --- v2 edit handler ---
@@ -961,6 +1000,10 @@ export default function DiagnosticResults({ diagnosticType }) {
                 : {}
               }
               onBuildSow={diagnosticResultId ? handleBuildSow : undefined}
+              editMode={editMode}
+              engagementOverrides={engagementOverrides}
+              onOverridesChange={handleEngagementOverridesChange}
+              customerPath={customerPath}
             />
           )}
 

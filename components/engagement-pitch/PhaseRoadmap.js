@@ -8,11 +8,13 @@ const PHASE_COLORS = {
   scale: { bg: '#F0FDF4', border: '#BBF7D0', accent: '#16A34A', text: '#166534' },
 };
 
+const PHASE_IDS = ['stabilize', 'activate', 'optimize', 'scale'];
+
 /**
- * PhaseRoadmap — Step 3 of the Engagement Pitch.
+ * PhaseRoadmap — Step 3 of the Engagement Details.
  * Shows the 4-phase quarterly roadmap with projects and managed services per phase.
  */
-export default function PhaseRoadmap({ roadmap }) {
+export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPath }) {
   if (!roadmap || !roadmap.phases) return null;
 
   return (
@@ -111,7 +113,15 @@ export default function PhaseRoadmap({ roadmap }) {
                     gap: 'var(--space-2)',
                   }}>
                     {phase.projects.map(proj => (
-                      <ProjectRow key={proj.serviceId} project={proj} colors={colors} />
+                      <ProjectRow
+                        key={proj.serviceId}
+                        project={proj}
+                        colors={colors}
+                        currentPhaseId={phase.id}
+                        editMode={editMode}
+                        onOverride={onOverride}
+                        customerPath={customerPath}
+                      />
                     ))}
                   </div>
                 </div>
@@ -163,7 +173,7 @@ export default function PhaseRoadmap({ roadmap }) {
   );
 }
 
-function ProjectRow({ project, colors }) {
+function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, customerPath }) {
   return (
     <div style={{
       display: 'flex',
@@ -203,6 +213,62 @@ function ProjectRow({ project, colors }) {
         }}>
           Critical
         </span>
+      )}
+      {/* Playbook link */}
+      {project.hasPlaybook && customerPath && (
+        <a
+          href={customerPath(`/playbooks/${project.serviceId}`)}
+          onClick={(e) => e.stopPropagation()}
+          title="View Playbook"
+          style={{
+            fontSize: '0.8rem',
+            textDecoration: 'none',
+            flexShrink: 0,
+            lineHeight: 1,
+          }}
+        >
+          📖
+        </a>
+      )}
+      {/* Edit controls */}
+      {editMode && (
+        <>
+          <select
+            value={currentPhaseId}
+            onChange={(e) => onOverride?.('roadmap', project.serviceId, { phase: e.target.value })}
+            style={{
+              fontSize: '0.65rem',
+              padding: '0.15rem 0.3rem',
+              borderRadius: '4px',
+              border: '1px dashed var(--border-color)',
+              background: 'white',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {PHASE_IDS.map(pid => (
+              <option key={pid} value={pid}>
+                {pid.charAt(0).toUpperCase() + pid.slice(1)}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => onOverride?.('roadmap', project.serviceId, { excluded: true })}
+            title="Exclude from roadmap"
+            style={{
+              fontSize: '0.8rem',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '2px',
+              lineHeight: 1,
+              color: '#9CA3AF',
+              flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
+        </>
       )}
     </div>
   );

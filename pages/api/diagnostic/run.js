@@ -120,17 +120,65 @@ async function handleRun(req, res) {
 }
 
 /**
- * Admin override: update individual item statuses.
- * Body: { customerId, items: [{ id: 'F1', status: 'healthy' }, ...] }
+ * Admin override: update individual item statuses and/or engagement overrides.
+ * Body: { customerId, items?: [...], engagementOverrides?: {...}, diagnosticResultId?: string }
  */
 async function handleUpdate(req, res) {
-  const { customerId, items: updatedItems } = req.body;
+  const { customerId, items: updatedItems, engagementOverrides, diagnosticResultId } = req.body;
 
-  if (!customerId || !updatedItems) {
-    return res.status(400).json({ error: 'customerId and items are required' });
+  if (!customerId) {
+    return res.status(400).json({ error: 'customerId is required' });
   }
 
   try {
+    // If only saving engagement overrides (v2/v3), use diagnosticResultId directly
+    if (engagementOverrides && !updatedItems) {
+      // Try v2 table first
+      let table = 'diagnostic_results';
+      let id = diagnosticResultId;
+
+      if (!id) {
+        // Fallback: look up by customerId
+        const { data: existing } = await supabaseAdmin
+          .from('diagnostic_results')
+          .select('id')
+          .eq('customer_id', customerId)
+          .eq('diagnostic_type', 'gtm')
+          .single();
+        id = existing?.id;
+      }
+
+      if (id) {
+        // Try v2 table
+        const { error: v2Error } = await supabaseAdmin
+          .from('diagnostic_results')
+          .update({ engagement_overrides: engagementOverrides })
+          .eq('id', id);
+
+        if (v2Error) {
+          // Might be a v3 result — try v3 table
+          const { error: v3Error } = await supabaseAdmin
+            .from('diagnostic_results_v3')
+            .update({ engagement_overrides: engagementOverrides })
+            .eq('id', id);
+
+          if (v3Error) {
+            console.error('Error saving engagement overrides:', v3Error);
+            return res.status(500).json({ error: 'Failed to save engagement overrides' });
+          }
+        }
+
+        return res.status(200).json({ success: true });
+      }
+
+      return res.status(404).json({ error: 'No diagnostic result found' });
+    }
+
+    // Original v2 item status update flow
+    if (!updatedItems) {
+      return res.status(400).json({ error: 'items or engagementOverrides required' });
+    }
+
     // Get existing result
     const { data: existing, error: fetchError } = await supabaseAdmin
       .from('diagnostic_results')
@@ -160,13 +208,19 @@ async function handleUpdate(req, res) {
     attachRecommendations(currentItems);
     const newScores = computeScores(currentItems, existing.crm_type);
 
+    // Build update payload
+    const updatePayload = {
+      items: currentItems,
+      scores: newScores,
+    };
+    if (engagementOverrides) {
+      updatePayload.engagement_overrides = engagementOverrides;
+    }
+
     // Update
     const { error: updateError } = await supabaseAdmin
       .from('diagnostic_results')
-      .update({
-        items: currentItems,
-        scores: newScores,
-      })
+      .update(updatePayload)
       .eq('id', existing.id);
 
     if (updateError) {

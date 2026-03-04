@@ -5,7 +5,7 @@ import { fadeUpItem, staggerContainer } from '../../lib/animations';
  * Phase1Scope — Step 5 of the Engagement Pitch.
  * Zooms into Phase 1 (Stabilize) with specific projects, milestones, and investment.
  */
-export default function Phase1Scope({ roadmap, onBuildSow }) {
+export default function Phase1Scope({ roadmap, onBuildSow, customerPath }) {
   if (!roadmap || !roadmap.phases) return null;
 
   const phase1 = roadmap.phases[0];
@@ -142,6 +142,21 @@ export default function Phase1Scope({ roadmap, onBuildSow }) {
                 }}>
                   {proj.metric}
                 </span>
+              )}
+              {proj.hasPlaybook && customerPath && (
+                <a
+                  href={customerPath(`/playbooks/${proj.serviceId}`)}
+                  onClick={(e) => e.stopPropagation()}
+                  title="View Playbook"
+                  style={{
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    flexShrink: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  📖
+                </a>
               )}
             </div>
           ))}

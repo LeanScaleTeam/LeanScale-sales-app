@@ -14,7 +14,7 @@ const VIEWS = [
   { id: 'roadmap', label: 'Roadmap', icon: '\uD83D\uDDFA\uFE0F' },
   { id: 'transcript', label: 'Transcripts', icon: '\uD83C\uDFA4' },
   { id: 'consultant', label: 'Consultant', icon: '\uD83D\uDC64' },
-  { id: 'pitch', label: 'Engagement Pitch', icon: '\uD83D\uDCBC' },
+  { id: 'pitch', label: 'Engagement Details', icon: '\uD83D\uDCBC' },
 ];
 
 /**

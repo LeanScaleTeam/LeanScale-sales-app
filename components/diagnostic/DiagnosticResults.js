@@ -597,7 +597,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const isV2 = diagnosticVersion === 2 && v2Result;
 
   const availableViews = isV3
-    ? ['scorecard', 'roadmap', 'transcript', 'consultant', 'table']
+    ? ['scorecard', 'pitch', 'roadmap', 'transcript', 'consultant', 'table']
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {
@@ -951,6 +951,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             <EngagementPitch
               diagnosticVersion={diagnosticVersion}
               v2Result={v2Result}
+              v3Result={v3Result}
               processes={processes}
               power10Data={power10Data}
               managedServices={[]}

@@ -8,6 +8,75 @@ import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
 import { recommendTier } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
+import { getCompetencyById } from '../../lib/diagnostic-engine/v3/constants-v3';
+
+/**
+ * Map v3 pillar to v2-style layer for phase assignment and display.
+ */
+const PILLAR_TO_LAYER = {
+  planning: 'maturity',
+  people: 'maturity',
+  process: 'foundation',
+  systems: 'foundation',
+  reporting: 'maturity',
+  enablement: 'motions',
+};
+
+/**
+ * Derive a primary function from v3 department scores.
+ * Returns the department with the lowest (worst) score, or 'Cross Functional' for multi-dept.
+ */
+function derivePrimaryFunction(departments) {
+  if (!departments) return 'Cross Functional';
+  const scored = Object.entries(departments).filter(([, s]) => s !== null);
+  if (scored.length === 0) return 'Cross Functional';
+  if (scored.length >= 3) return 'Cross Functional';
+
+  const DEPT_LABELS = { marketing: 'Marketing', sales: 'Sales', cs: 'Customer Success', partners: 'Partnerships' };
+  // Return the department with the lowest score (most problematic)
+  scored.sort((a, b) => a[1] - b[1]);
+  return DEPT_LABELS[scored[0][0]] || 'Cross Functional';
+}
+
+/**
+ * Convert v3 competencies into pitch-compatible items.
+ */
+function adaptV3ToPitchItems(competencies) {
+  if (!competencies || competencies.length === 0) return [];
+
+  return competencies.map(comp => {
+    const scores = Object.values(comp.departments || {}).filter(s => s !== null);
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+
+    let status;
+    if (avgScore === null) status = 'healthy'; // unscored = skip
+    else if (avgScore >= 4) status = 'healthy';
+    else if (avgScore >= 2.5) status = 'careful';
+    else status = 'warning';
+
+    // Join with static competency data for description
+    const staticComp = getCompetencyById(comp.id);
+
+    return {
+      id: comp.id,
+      name: comp.name,
+      layer: PILLAR_TO_LAYER[comp.pillar] || 'foundation',
+      pillar: comp.pillar,
+      source: comp.source,
+      status,
+      avgScore,
+      weight: 1,
+      serviceIds: comp.serviceIds || [],
+      primaryFunction: derivePrimaryFunction(comp.departments),
+      description: staticComp?.description || comp.name,
+      // v3 doesn't have these enrichment fields — use description as fallback
+      impactTemplate: null,
+      outcomeStatement: null,
+      outcomes: [],
+      power10Metrics: [],
+    };
+  });
+}
 
 const STEPS = [
   { id: 'power10', label: 'Power 10', icon: '📊' },
@@ -23,6 +92,7 @@ const STEPS = [
  * Props:
  * - diagnosticVersion: 1 | 2 | 3
  * - v2Result: { items, scores, companyProfile, actionableServiceIds }
+ * - v3Result: { competencies, company_profile, roadmap, ... }
  * - processes: v1 process data array
  * - power10Data: Power 10 metrics array
  * - managedServices: managed services health array
@@ -32,6 +102,7 @@ const STEPS = [
 export default function EngagementPitch({
   diagnosticVersion,
   v2Result,
+  v3Result,
   processes,
   power10Data,
   managedServices,
@@ -43,10 +114,16 @@ export default function EngagementPitch({
 
   const context = parseIntakeContext(companyProfile);
 
-  // Determine items for findings (v2 items or v1 processes)
-  const items = diagnosticVersion === 2 && v2Result?.items
-    ? v2Result.items
-    : (processes || []);
+  // Determine items for findings (v3 competencies, v2 items, or v1 processes)
+  const items = useMemo(() => {
+    if (diagnosticVersion === 3 && v3Result?.competencies) {
+      return adaptV3ToPitchItems(v3Result.competencies);
+    }
+    if (diagnosticVersion === 2 && v2Result?.items) {
+      return v2Result.items;
+    }
+    return processes || [];
+  }, [diagnosticVersion, v3Result, v2Result, processes]);
 
   // Auto-recommend tier
   const autoTier = useMemo(() => {
@@ -66,14 +143,14 @@ export default function EngagementPitch({
 
   // Build roadmap
   const roadmap = useMemo(() => {
-    if (diagnosticVersion === 2 && v2Result?.items) {
-      return buildEngagementRoadmap(v2Result.items, activeTier, {
+    if ((diagnosticVersion === 2 && v2Result?.items) || (diagnosticVersion === 3 && v3Result?.competencies)) {
+      return buildEngagementRoadmap(items, activeTier, {
         processes: processes || [],
         managedServices: managedServices || [],
       });
     }
     return buildEngagementRoadmapV1(processes || [], activeTier, managedServices || []);
-  }, [diagnosticVersion, v2Result, processes, managedServices, activeTier]);
+  }, [diagnosticVersion, v2Result, v3Result, items, processes, managedServices, activeTier]);
 
   // Cost of inaction
   const costOfInaction = useMemo(() => {

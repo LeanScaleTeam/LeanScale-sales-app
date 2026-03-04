@@ -53,7 +53,7 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
   }
 
   async function handleConfirmImport() {
-    if (!preview || preview.processes.length === 0) return;
+    if (!preview || (preview.processes.length === 0 && preview.tools.length === 0)) return;
 
     setSaving(true);
     try {
@@ -106,8 +106,8 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
       </div>
 
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-        Paste a markdown table or upload a .md file. The table should have columns for
-        Process, Status, Include, {diagnosticType === 'gtm' ? 'Function' : 'Category'}, Outcome, and Metric.
+        Paste a markdown table or upload a .md file. Supports both the standard template format
+        and Tool Diagnostic Report format (auto-detected).
       </p>
 
       {/* Action buttons */}
@@ -208,59 +208,126 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
       )}
 
       {/* Preview */}
-      {preview && preview.processes.length > 0 && (
+      {preview && (preview.processes.length > 0 || preview.tools.length > 0) && (
         <div style={{ marginTop: '1rem' }}>
+          {/* Report metadata banner */}
+          {preview.metadata && preview.metadata.orgAlias && (
+            <div style={{
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.75rem',
+              marginBottom: '0.75rem',
+              fontSize: '0.8rem',
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Tool Diagnostic Report Detected</div>
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', color: 'var(--text-secondary)' }}>
+                {preview.metadata.orgAlias && <span><strong>Org:</strong> {preview.metadata.orgAlias}</span>}
+                {preview.metadata.date && <span><strong>Date:</strong> {preview.metadata.date}</span>}
+                {preview.metadata.instanceUrl && <span><strong>Instance:</strong> {preview.metadata.instanceUrl}</span>}
+              </div>
+            </div>
+          )}
+
           <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>
             Preview ({preview.processes.length} processes{preview.tools.length > 0 ? `, ${preview.tools.length} tools` : ''}{preview.power10Metrics && preview.power10Metrics.length > 0 ? `, ${preview.power10Metrics.length} Power10 metrics` : ''})
           </h4>
 
-          <div style={{
-            maxHeight: '300px',
-            overflow: 'auto',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-sm)',
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-subtle)', position: 'sticky', top: 0 }}>
-                  <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Name</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>Status</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>Priority</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
-                    {diagnosticType === 'gtm' ? 'Function' : 'Category'}
-                  </th>
-                  <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Outcome</th>
-                  {preview.processes.some(p => p.metric) && (
-                    <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Metric</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {preview.processes.map((p, i) => (
-                  <tr key={i} style={{ background: i % 2 === 0 ? 'white' : 'var(--bg-subtle)' }}>
-                    <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)' }}>{p.name}</td>
-                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
-                      <StatusBadge status={p.status} />
-                    </td>
-                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
-                      {p.addToEngagement ? '✓' : ''}
-                    </td>
-                    <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                      {p.function || '-'}
-                    </td>
-                    <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                      {p.outcome || '-'}
-                    </td>
-                    {preview.processes.some(pp => pp.metric) && (
-                      <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                        {p.metric || '-'}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Tools preview (shown when tools exist, e.g. from report format) */}
+          {preview.tools.length > 0 && (
+            <div style={{ marginBottom: '1rem' }}>
+              <h5 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>
+                Tools ({preview.tools.length})
+              </h5>
+              <div style={{
+                maxHeight: '200px',
+                overflow: 'auto',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+              }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-subtle)', position: 'sticky', top: 0 }}>
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Name</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Category</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>Status</th>
+                      {preview.tools.some(t => t.oauthTokens) && (
+                        <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>OAuth</th>
+                      )}
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.tools.map((t, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? 'white' : 'var(--bg-subtle)' }}>
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)' }}>{t.name}</td>
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>{t.category || '-'}</td>
+                        <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
+                          <StatusBadge status={t.status} />
+                        </td>
+                        {preview.tools.some(tt => tt.oauthTokens) && (
+                          <td style={{ padding: '0.4rem 0.5rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                            {t.oauthTokens || '-'}
+                          </td>
+                        )}
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {t.notes || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Processes preview */}
+          {preview.processes.length > 0 && (
+            <div>
+              <h5 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>
+                Processes ({preview.processes.length})
+              </h5>
+              <div style={{
+                maxHeight: '250px',
+                overflow: 'auto',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+              }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-subtle)', position: 'sticky', top: 0 }}>
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Name</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>Status</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>Priority</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
+                        {diagnosticType === 'gtm' ? 'Function' : 'Category'}
+                      </th>
+                      <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.processes.map((p, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? 'white' : 'var(--bg-subtle)' }}>
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)' }}>{p.name}</td>
+                        <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
+                          <StatusBadge status={p.status} />
+                        </td>
+                        <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}>
+                          {p.addToEngagement ? '✓' : ''}
+                        </td>
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                          {p.function || '-'}
+                        </td>
+                        <td style={{ padding: '0.4rem 0.5rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                          {p.outcome || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Confirm / Cancel */}
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
@@ -279,7 +346,7 @@ export default function MarkdownImport({ diagnosticType, onImport, onCancel }) {
                 opacity: saving ? 0.6 : 1,
               }}
             >
-              {saving ? 'Importing...' : `Import ${preview.processes.length} Processes`}
+              {saving ? 'Importing...' : `Import ${preview.processes.length} Processes & ${preview.tools.length} Tools`}
             </button>
             <button
               onClick={() => {

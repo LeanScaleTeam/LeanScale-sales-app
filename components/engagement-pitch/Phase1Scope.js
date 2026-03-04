@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeUpItem, staggerContainer } from '../../lib/animations';
 
@@ -5,7 +6,29 @@ import { fadeUpItem, staggerContainer } from '../../lib/animations';
  * Phase1Scope — Step 5 of the Engagement Pitch.
  * Zooms into Phase 1 (Stabilize) with specific projects, milestones, and investment.
  */
+const STATUS_STYLES = {
+  available: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0', label: 'Available' },
+  limited: { bg: '#FEFCE8', text: '#854D0E', border: '#FEF08A', label: 'Limited' },
+  waitlist: { bg: '#FFF7ED', text: '#9A3412', border: '#FED7AA', label: 'Waitlist' },
+  sold_out: { bg: '#F3F4F6', text: '#4B5563', border: '#E5E7EB', label: 'Sold Out' },
+};
+
 export default function Phase1Scope({ roadmap, onBuildSow, customerPath }) {
+  const [cohorts, setCohorts] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/availability')
+      .then(res => res.ok ? res.json() : { dates: [] })
+      .then(json => {
+        // Show next 3 upcoming cohorts that aren't sold out
+        const upcoming = (json.dates || [])
+          .filter(d => d.status !== 'sold_out')
+          .slice(0, 3);
+        setCohorts(upcoming);
+      })
+      .catch(() => setCohorts([]));
+  }, []);
+
   if (!roadmap || !roadmap.phases) return null;
 
   const phase1 = roadmap.phases[0];
@@ -68,6 +91,61 @@ export default function Phase1Scope({ roadmap, onBuildSow, customerPath }) {
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>timeline</div>
         </div>
       </motion.div>
+
+      {/* Cohort Availability */}
+      {cohorts.length > 0 && (
+        <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
+          <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
+            Upcoming Cohort Availability
+          </h3>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+            {cohorts.map(cohort => {
+              const s = STATUS_STYLES[cohort.status] || STATUS_STYLES.available;
+              const dateStr = new Date(cohort.date + 'T00:00:00').toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+              });
+              return (
+                <div
+                  key={cohort.cohortNumber}
+                  style={{
+                    flex: '1 1 160px',
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md, 8px)',
+                    background: s.bg,
+                    border: `1px solid ${s.border}`,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                    Cohort {cohort.cohortNumber}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: '#1a1a2e' }}>
+                    {dateStr}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-1)', marginTop: '4px' }}>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      padding: '0.1rem 0.5rem',
+                      borderRadius: '9999px',
+                      background: 'white',
+                      color: s.text,
+                      border: `1px solid ${s.border}`,
+                    }}>
+                      {s.label}
+                    </span>
+                    {cohort.spotsLeft != null && (
+                      <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
+                        {cohort.spotsLeft}/{cohort.spotsTotal} spots
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Milestones */}
       <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>

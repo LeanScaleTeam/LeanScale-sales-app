@@ -35,6 +35,9 @@ import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-road
 import LifecycleView from './views/LifecycleView';
 import CpqMetricsView from './views/CpqMetricsView';
 
+// Engagement Pitch view
+import EngagementPitch from '../engagement-pitch/EngagementPitch';
+
 const V3_STATUS_LABELS = { 1: 'Weak', 2: 'Below Average', 3: 'Average', 4: 'Good', 5: 'Best Practice' };
 
 /**
@@ -596,12 +599,13 @@ export default function DiagnosticResults({ diagnosticType }) {
   const availableViews = isV3
     ? ['scorecard', 'roadmap', 'transcript', 'consultant', 'table']
     : isV2
-    ? ['layers', 'table']
+    ? ['layers', 'pitch', 'table']
     : (() => {
         const views = [];
         // CPQ gets lifecycle as first view
         if (diagnosticType === 'cpq') views.push('lifecycle');
         views.push('priority');
+        views.push('pitch');
         if (categories && categories.length > 0) views.push('by-category');
         if (outcomes && outcomes.length > 0) views.push('by-outcome');
         views.push('table');
@@ -939,6 +943,23 @@ export default function DiagnosticResults({ diagnosticType }) {
               onAddNote={handleAddNote}
               onDeleteNote={handleDeleteNote}
               categoryLabel="Pillar"
+            />
+          )}
+
+          {/* --- Engagement Pitch view (all versions) --- */}
+          {activeView === 'pitch' && (
+            <EngagementPitch
+              diagnosticVersion={diagnosticVersion}
+              v2Result={v2Result}
+              processes={processes}
+              power10Data={power10Data}
+              managedServices={[]}
+              companyProfile={
+                isV2 ? v2Result?.companyProfile
+                : isV3 ? v3Result?.company_profile
+                : {}
+              }
+              onBuildSow={diagnosticResultId ? handleBuildSow : undefined}
             />
           )}
 

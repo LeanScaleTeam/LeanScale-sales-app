@@ -9,6 +9,7 @@ import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/enga
 import { recommendTier } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
 import { getCompetencyById } from '../../lib/diagnostic-engine/v3/constants-v3';
+import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
 
 /**
  * Map v3 pillar to v2-style layer for phase assignment and display.
@@ -54,8 +55,9 @@ function adaptV3ToPitchItems(competencies) {
     else if (avgScore >= 2.5) status = 'careful';
     else status = 'warning';
 
-    // Join with static competency data for description
+    // Join with static competency data and playbook content
     const staticComp = getCompetencyById(comp.id);
+    const enrichment = enrichFromPlaybooks(comp.serviceIds || []);
 
     return {
       id: comp.id,
@@ -68,12 +70,11 @@ function adaptV3ToPitchItems(competencies) {
       weight: 1,
       serviceIds: comp.serviceIds || [],
       primaryFunction: derivePrimaryFunction(comp.departments),
-      description: staticComp?.description || comp.name,
-      // v3 doesn't have these enrichment fields — use description as fallback
-      impactTemplate: null,
-      outcomeStatement: null,
-      outcomes: [],
-      power10Metrics: [],
+      description: enrichment.description || staticComp?.description || comp.name,
+      impactTemplate: enrichment.impactTemplate,
+      outcomeStatement: enrichment.outcomeStatement,
+      outcomes: enrichment.outcomes,
+      power10Metrics: enrichment.power10Metrics,
     };
   });
 }

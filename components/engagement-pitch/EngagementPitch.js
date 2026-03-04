@@ -8,7 +8,7 @@ import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
 import { recommendTier } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
-import { getCompetencyById } from '../../lib/diagnostic-engine/v3/constants-v3';
+import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/v3/constants-v3';
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
 
 /**
@@ -40,7 +40,28 @@ function derivePrimaryFunction(departments) {
 }
 
 /**
+ * Reconstruct competency objects from score_card + static V3_COMPETENCIES.
+ * score_card is { [competencyId]: { [dept]: score|null } }
+ */
+function reconstructCompetencies(scoreCard) {
+  if (!scoreCard) return [];
+  return V3_COMPETENCIES.map(staticComp => {
+    const deptScores = scoreCard[staticComp.id];
+    if (!deptScores) return null;
+    return {
+      id: staticComp.id,
+      name: staticComp.name,
+      pillar: staticComp.pillar,
+      source: staticComp.source,
+      serviceIds: staticComp.serviceIds,
+      departments: deptScores,
+    };
+  }).filter(Boolean);
+}
+
+/**
  * Convert v3 competencies into pitch-compatible items.
+ * Accepts either full competency objects or reconstructed ones from score_card.
  */
 function adaptV3ToPitchItems(competencies) {
   if (!competencies || competencies.length === 0) return [];
@@ -57,7 +78,8 @@ function adaptV3ToPitchItems(competencies) {
 
     // Join with static competency data and playbook content
     const staticComp = getCompetencyById(comp.id);
-    const enrichment = enrichFromPlaybooks(comp.serviceIds || []);
+    const svcIds = comp.serviceIds || staticComp?.serviceIds || [];
+    const enrichment = enrichFromPlaybooks(svcIds);
 
     return {
       id: comp.id,
@@ -68,7 +90,7 @@ function adaptV3ToPitchItems(competencies) {
       status,
       avgScore,
       weight: 1,
-      serviceIds: comp.serviceIds || [],
+      serviceIds: svcIds,
       primaryFunction: derivePrimaryFunction(comp.departments),
       description: enrichment.description || staticComp?.description || comp.name,
       impactTemplate: enrichment.impactTemplate,
@@ -142,8 +164,10 @@ export default function EngagementPitch({
 
   // Determine items for findings (v3 competencies, v2 items, or v1 processes)
   const items = useMemo(() => {
-    if (diagnosticVersion === 3 && v3Result?.competencies) {
-      return adaptV3ToPitchItems(v3Result.competencies);
+    if (diagnosticVersion === 3 && v3Result) {
+      // v3Result may have full competencies (from engine run) or score_card (from API load)
+      const comps = v3Result.competencies || reconstructCompetencies(v3Result.score_card);
+      if (comps.length > 0) return adaptV3ToPitchItems(comps);
     }
     if (diagnosticVersion === 2 && v2Result?.items) {
       return v2Result.items;

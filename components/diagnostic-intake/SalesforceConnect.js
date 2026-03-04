@@ -185,23 +185,48 @@ export default function SalesforceConnect({ customerId, slug, status, onSaveAllA
 
         {showInstructions && (
           <div style={styles.instructions}>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', marginBottom: '0.5rem', color: '#1E40AF' }}>
+              Full Extraction (Recommended)
+            </div>
+            <p style={{ fontSize: 'var(--text-xs)', color: '#374151', marginTop: 0, marginBottom: '0.5rem' }}>
+              Runs the same queries as OAuth — captures stages, users, activity data, and installed packages.
+            </p>
             <ol style={styles.instructionsList}>
-              <li>Install the Salesforce CLI: <a href="https://developer.salesforce.com/tools/salesforcecli" target="_blank" rel="noopener noreferrer" style={styles.link}>developer.salesforce.com/tools/salesforcecli</a></li>
+              <li>Install prerequisites:
+                <ul style={{ marginTop: '0.25rem', paddingLeft: '1rem' }}>
+                  <li><a href="https://developer.salesforce.com/tools/salesforcecli" target="_blank" rel="noopener noreferrer" style={styles.link}>Salesforce CLI (sf)</a></li>
+                  <li><a href="https://jqlang.github.io/jq/download/" target="_blank" rel="noopener noreferrer" style={styles.link}>jq</a> — <code style={{ fontSize: '0.7rem', background: '#F3F4F6', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>brew install jq</code></li>
+                </ul>
+              </li>
               <li>Authenticate to the customer org:<br />
                 <code style={styles.code}>sf org login web --alias customer-org</code>
               </li>
-              <li>Retrieve metadata:<br />
-                <code style={styles.code}>
-                  sf project retrieve start \<br />
-                  &nbsp;&nbsp;--metadata CustomObject,CustomField,Flow,WorkflowRule,ValidationRule \<br />
-                  &nbsp;&nbsp;--metadata ApexTrigger,ApexClass,Profile,PermissionSet \<br />
-                  &nbsp;&nbsp;--metadata Role,DuplicateRule,ConnectedApp,NamedCredential \<br />
-                  &nbsp;&nbsp;--metadata Layout,RecordType,Report,Dashboard \<br />
-                  &nbsp;&nbsp;--target-org customer-org
-                </code>
+              <li>Run the extraction script:<br />
+                <code style={styles.code}>./scripts/sf-extract.sh customer-org</code>
               </li>
-              <li>Upload the resulting zip file above.</li>
+              <li>Upload the generated <code style={{ fontSize: '0.7rem', background: '#F3F4F6', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>sf-extract-output.json</code> file above.</li>
             </ol>
+
+            <div style={{ borderTop: '1px solid #DBEAFE', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
+              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem', color: '#6B7280' }}>
+                Minimal Extraction (XML metadata only)
+              </div>
+              <p style={{ fontSize: 'var(--text-xs)', color: '#9CA3AF', margin: '0 0 0.25rem 0' }}>
+                Fallback if SOQL queries fail. Captures objects, flows, and config but misses stages, users, and activity data.
+              </p>
+              <code style={{ ...styles.code, fontSize: '0.65rem', color: '#6B7280' }}>
+                sf project retrieve start \{'\n'}
+                &nbsp;&nbsp;--metadata CustomObject,CustomField,Flow,WorkflowRule,ValidationRule \{'\n'}
+                &nbsp;&nbsp;--metadata ApexTrigger,ApexClass,Profile,PermissionSet \{'\n'}
+                &nbsp;&nbsp;--metadata Role,DuplicateRule,ConnectedApp,NamedCredential \{'\n'}
+                &nbsp;&nbsp;--metadata Layout,RecordType,Report,Dashboard \{'\n'}
+                &nbsp;&nbsp;--target-org customer-org
+              </code>
+              <p style={{ fontSize: 'var(--text-xs)', color: '#9CA3AF', margin: '0.25rem 0 0 0' }}>
+                Requires a <code style={{ fontSize: '0.65rem' }}>sfdx-project.json</code> in the working directory.
+                Create one with: <code style={{ fontSize: '0.65rem' }}>sf project generate --name sf-extract</code>
+              </p>
+            </div>
           </div>
         )}
       </div>

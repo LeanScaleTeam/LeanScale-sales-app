@@ -159,39 +159,101 @@ Consultant opens intake form
   → Redirected to Salesforce OAuth consent screen
   → Consultant logs in with customer org credentials
   → Salesforce redirects back to /api/salesforce/callback
-  → App exchanges code for tokens
-  → App downloads metadata from 16 API endpoints in parallel
-  → App extracts ~55 diagnostic signals
+  → App exchanges code for tokens (PKCE + client secret)
+  → App downloads metadata from 28 API endpoints in parallel
+    (6 object describes, 11 core SOQL/Tooling, 7 v3 expansion, 5 activity/content)
+  → App extracts diagnostic signals (v3 signal extractor)
   → If intake was submitted → auto-runs diagnostic engine
   → Consultant redirected to intake form with success banner
-  → Clicks "Run Diagnostic" → results page with 4 layers
 ```
 
-### Path B: Metadata ZIP Upload (fallback)
+#### OAuth Troubleshooting: OAUTH_AUTHORIZATION_BLOCKED
 
-When OAuth isn't possible (e.g., security restrictions, no admin access):
+This error means the **customer's Salesforce org** is blocking third-party OAuth apps. The Connected App lives in LeanScale's org, so it won't appear in the customer's org until they successfully authorize.
 
+**Fix (customer admin must do this):**
+
+1. **Setup → Identity → OAuth and OpenID Connect Settings**
+   - Enable **"Allow Authorization Code and Credentials Flows"**
+   - This is org-wide but safe — users still must explicitly consent
+   - Can be turned back OFF after the OAuth flow completes (existing tokens continue to work)
+
+2. If the app appears in **Setup → Security → Connected Apps OAuth Usage** with "Block" status → click **Unblock**
+
+3. Check **Setup → Security → Session Settings** — "Lock sessions to the domain in which they were first used" can block cross-domain OAuth redirects
+
+### Path B: CLI Extraction Script (recommended fallback)
+
+When OAuth isn't possible (e.g., org blocks third-party OAuth, security restrictions, no admin access), use the CLI extraction script. This runs the **same 28 SOQL/Tooling/Describe queries** as the OAuth downloader, producing identical data quality.
+
+#### Prerequisites
+
+- [Salesforce CLI v2 (sf)](https://developer.salesforce.com/tools/salesforcecli) — `npm install -g @salesforce/cli` or `brew install sf`
+- [jq](https://jqlang.github.io/jq/download/) — `brew install jq` (macOS) or `apt-get install jq` (Linux)
+
+#### Steps
+
+```bash
+# 1. Authenticate to the customer org (opens browser for login)
+sf org login web --alias customer-org
+
+# 2. Run the extraction script (takes 1-2 minutes)
+./scripts/sf-extract.sh customer-org
+
+# 3. Upload the output file
+#    Option A: Drag & drop sf-extract-output.json on the intake page upload zone
+#    Option B: Via curl (replace CUSTOMER_ID with the UUID from the intake URL)
+jq '. + {customerId: "CUSTOMER_ID"}' sf-extract-output.json | \
+  curl -X POST https://clients.leanscale.team/api/salesforce/upload-json \
+    -H 'Content-Type: application/json' -d @-
 ```
-Consultant exports metadata from customer org via CLI:
-  $ sf org login web --alias customer-org
-  $ sf project retrieve start \
-      --metadata CustomObject,CustomField,Flow,WorkflowRule,ValidationRule \
-      --metadata ApexTrigger,ApexClass,Profile,PermissionSet \
-      --metadata Role,DuplicateRule,ConnectedApp,NamedCredential \
-      --metadata Layout,RecordType,Report,Dashboard \
-      --target-org customer-org
 
-Consultant uploads the resulting ZIP on the Review step
-  → App parses XML metadata into JSON
-  → App extracts diagnostic signals
-  → If intake was submitted → auto-runs diagnostic
+The script outputs a `sf-extract-output.json` file (typically 1-5MB) containing all metadata in the format expected by the upload-json endpoint. Upload it as a `.json` file — the intake page auto-detects JSON vs ZIP.
+
+#### What the script extracts
+
+| Category | Queries | Data |
+|----------|---------|------|
+| Object Describes | 6 | Lead, Contact, Account, Opportunity, Case, Campaign field definitions |
+| Core SOQL | 5 | OpportunityStage, LeadStatus, User, UserRole, RecordType |
+| Core Tooling | 6 | Flow, WorkflowRule, ValidationRule, ApexTrigger, ApexClass, Profile, PermissionSet |
+| Inventory | 4 | Report, Dashboard, ConnectedApp, NamedCredential |
+| v3 Expansion | 7 | Campaign, InstalledPackage, Territory, ForecastingType, DuplicateRule, ReportSchedule, EmailTemplate |
+| Activity & Content | 5 | Task aggregates, Event patterns, ContentVersion, KnowledgeArticle, CampaignMember count |
+
+Optional queries (v3 expansion, activity) degrade gracefully — if a feature isn't enabled in the org, the script returns `[]` and continues.
+
+### Path C: XML Metadata ZIP Upload (minimal fallback)
+
+If the CLI extraction script can't run (e.g., no `jq`, restricted environment), the XML metadata retrieve path works but captures **less data** — no stages, users, campaigns, activity data, or installed packages.
+
+```bash
+# 1. Authenticate
+sf org login web --alias customer-org
+
+# 2. Create a project (required by sf project retrieve)
+sf project generate --name sf-extract
+cd sf-extract
+
+# 3. Retrieve metadata
+sf project retrieve start \
+  --metadata CustomObject,CustomField,Flow,WorkflowRule,ValidationRule \
+  --metadata ApexTrigger,ApexClass,Profile,PermissionSet \
+  --metadata Role,DuplicateRule,ConnectedApp,NamedCredential \
+  --metadata Layout,RecordType,Report,Dashboard \
+  --target-org customer-org
+
+# 4. The output is in force-app/ — zip it and upload on the intake page
+zip -r sf-metadata.zip force-app/
 ```
+
+Upload the `.zip` file on the intake page. The app parses XML into JSON and extracts what signals it can.
 
 ### Waiting State
 
 If the consultant submits the intake form **before** connecting CRM:
 - Intake is saved with `status = 'awaiting_crm_data'`
-- When CRM data arrives later (OAuth or upload), the diagnostic auto-runs
+- When CRM data arrives later (OAuth, CLI JSON, or ZIP upload), the diagnostic auto-runs
 - No manual re-submission needed
 
 ---
@@ -203,7 +265,8 @@ If the consultant submits the intake form **before** connecting CRM:
 | GET | `/api/salesforce/authorize?customerId=X&slug=Y&sandbox=false` | Start OAuth flow |
 | GET | `/api/salesforce/callback?code=X&state=Y` | Handle OAuth callback |
 | GET | `/api/salesforce/status/{customerId}` | Check connection status |
-| POST | `/api/salesforce/upload` | Upload metadata ZIP (multipart) |
+| POST | `/api/salesforce/upload` | Upload metadata ZIP (multipart, 50MB max) |
+| POST | `/api/salesforce/upload-json` | Upload CLI extraction JSON (10MB max) |
 
 ### Status endpoint response
 
@@ -222,31 +285,48 @@ If the consultant submits the intake form **before** connecting CRM:
 
 ## 6. Salesforce API Scopes & Data Accessed
 
-The Connected App requests minimal scopes. Here's exactly what the downloader reads:
+The Connected App requests minimal scopes. Here's exactly what the downloader reads (28 queries total):
 
-### REST API (Object Describes)
+### REST API (Object Describes) — 6 queries
 - Lead, Contact, Account, Opportunity, Case, Campaign
 - Reads: field definitions, picklist values, record type info
 
-### SOQL Queries
+### Core SOQL Queries — 5 queries
 - `OpportunityStage` — pipeline stage names, probabilities
 - `LeadStatus` — lead lifecycle stages
 - `User WHERE IsActive = true` — active user list with profiles/roles
-- `RecordType GROUP BY SobjectType` — record type counts
-- `Report LIMIT 200` — report inventory
-- `Dashboard LIMIT 200` — dashboard inventory
 - `UserRole` — role hierarchy
+- `RecordType WHERE IsActive = true` — record type inventory
 
-### Tooling API
+### Core Tooling API — 6 queries
 - `Flow WHERE Status = 'Active'` — active automation flows
-- `WorkflowRule WHERE Active = true` — legacy workflow rules
+- `WorkflowRule` — legacy workflow rules
 - `ValidationRule WHERE Active = true` — validation rules by object
 - `ApexTrigger` — custom code triggers
 - `ApexClass WHERE NamespacePrefix = null` — custom Apex classes
-- `Profile` — security profiles
-- `PermissionSet WHERE IsOwnedByProfile = false` — custom permission sets
+- `Profile` / `PermissionSet` — security model
+
+### Inventory Queries — 4 queries
+- `Report LIMIT 200` — report inventory
+- `Dashboard LIMIT 200` — dashboard inventory
 - `ConnectedApplication` — integration inventory
 - `NamedCredential` — integration credentials
+
+### v3 Expansion Queries — 7 queries (optional, degrade gracefully)
+- `Campaign WHERE IsActive = true` — marketing campaign inventory
+- `InstalledSubscriberPackage` — installed AppExchange packages
+- `Territory2Model WHERE State = 'Active'` — territory management
+- `ForecastingType WHERE IsActive = true` — forecasting configuration
+- `DuplicateRule WHERE IsActive = true` — dedup rules
+- `CronTrigger` (report schedules) — scheduled report inventory
+- `EmailTemplate WHERE IsActive = true` — email template count
+
+### Activity & Content Queries — 5 queries (optional, degrade gracefully)
+- `Task GROUP BY Status` (last 90 days) — task completion patterns
+- `Event WHERE IsRecurrence = true` (last 90 days) — recurring meeting patterns
+- `ContentVersion` (latest 100) — content library inventory
+- `KnowledgeArticleVersion` (published) — knowledge base inventory
+- `CampaignMember` count — marketing engagement volume
 
 > **No data records are read.** Only metadata, configuration, and aggregate counts. No contact names, deal amounts, email content, etc.
 
@@ -312,7 +392,8 @@ The Connected App requests minimal scopes. Here's exactly what the downloader re
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `redirect_uri_mismatch` | Callback URL doesn't match Connected App | Verify `SALESFORCE_REDIRECT_URI` matches exactly |
+| `OAUTH_AUTHORIZATION_BLOCKED` | Customer org blocks third-party OAuth apps | See "OAuth Troubleshooting" in Section 4 — toggle org-wide OAuth setting or use CLI extraction |
+| `redirect_uri_mismatch` | Callback URL doesn't match Connected App | Verify `SALESFORCE_REDIRECT_URI` matches exactly (including protocol) |
 | `invalid_client_id` | Wrong Consumer Key | Check `SALESFORCE_CLIENT_ID` env var |
 | `invalid_grant` | Code expired or already used | Retry the OAuth flow from the beginning |
 | `INSUFFICIENT_ACCESS` | Missing API scope | Verify Connected App has `api` and `refresh_token` scopes |
@@ -344,7 +425,8 @@ Salesforce access tokens expire after ~2 hours. The app auto-refreshes after 90 
 
 | Restriction | Impact | Workaround |
 |-------------|--------|------------|
-| IP allowlisting | OAuth callback blocked | Add Vercel IPs or use metadata upload path |
-| Tooling API disabled | Flows/triggers not downloaded | Upload metadata ZIP instead |
-| API limits exhausted | 429 errors | Downloader retries 3x automatically; wait and retry |
-| MFA required | OAuth may require extra step | Consultant must complete MFA during OAuth |
+| Third-party OAuth blocked | `OAUTH_AUTHORIZATION_BLOCKED` error | Use CLI extraction: `./scripts/sf-extract.sh` |
+| IP allowlisting | OAuth callback blocked from server IP | Use CLI extraction (runs from consultant's machine) |
+| Tooling API disabled | Flows/triggers return empty | CLI script degrades gracefully; core SOQL still works |
+| API limits exhausted | 429 errors | OAuth downloader retries 3x; CLI script uses parallel queries |
+| MFA required | OAuth requires interactive MFA step | Consultant completes MFA during consent; CLI uses `sf org login web` which handles MFA natively |

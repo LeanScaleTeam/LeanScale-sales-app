@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../components/Layout';
 import { useCustomer } from '../context/CustomerContext';
@@ -55,21 +53,7 @@ const quickLinks = [
 ];
 
 export default function Home() {
-  const { customer, isDemo, customerPath } = useCustomer();
-  const router = useRouter();
-
-  // Active customers land directly on their diagnostic
-  const isActiveCustomer = !isDemo && customer?.id && customer?.customerType === 'active';
-  useEffect(() => {
-    if (isActiveCustomer) {
-      router.replace(customerPath('/try-leanscale/diagnostic'));
-    }
-  }, [isActiveCustomer]);
-
-  // Show loading state briefly while redirecting active customers
-  if (isActiveCustomer) {
-    return <Layout title="LeanScale"><div /></Layout>;
-  }
+  const { customer, customerPath } = useCustomer();
 
   return (
     <Layout title="LeanScale">

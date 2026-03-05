@@ -65,8 +65,7 @@ function buildCustomerNav(diagnosticType) {
   const diagLink = diagnosticConfig[diagnosticType] || diagnosticConfig.gtm;
 
   return [
-    { name: 'dashboard', label: 'Dashboard', type: 'link', href: '/dashboard' },
-    { name: 'diagnostic', label: diagLink.label, type: 'link', href: diagLink.href },
+    { name: 'diagnostic', label: 'Diagnostic', type: 'link', href: diagLink.href },
     // { name: 'sow', label: 'SOW', type: 'link', href: '/sow' }, // Hidden — SOW under development
     {
       name: 'more',

@@ -81,6 +81,22 @@ export default async function handler(req, res) {
       // Apply roadmap overrides if present
       const roadmap = applyRoadmapOverrides(v3Result.roadmap, v3Result.roadmap_overrides);
 
+      // Apply engagement overrides (exclusions + priority) on top
+      const engOv = v3Result.engagement_overrides?.roadmap || {};
+      if (Object.keys(engOv).length > 0 && roadmap?.phases) {
+        for (const phase of roadmap.phases) {
+          phase.projects = phase.projects.filter(p => !engOv[p.serviceId]?.excluded);
+          // Carry priority into project for SOW section generation
+          for (const proj of phase.projects) {
+            if (engOv[proj.serviceId]?.priority) {
+              proj.engagementPriority = engOv[proj.serviceId].priority;
+            }
+          }
+          phase.projectCount = phase.projects.length;
+        }
+        roadmap.totalProjects = roadmap.phases.reduce((s, p) => s + p.projectCount, 0);
+      }
+
       // Collect service slugs from all roadmap projects
       const phases = roadmap?.phases || [];
       const slugs = [...new Set(phases.flatMap(p => p.projects.map(proj => proj.serviceId)))];

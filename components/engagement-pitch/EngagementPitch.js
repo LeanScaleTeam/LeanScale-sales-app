@@ -332,6 +332,7 @@ export default function EngagementPitch({
               editMode={editMode}
               onOverride={updateOverrides}
               customerPath={customerPath}
+              overrides={overrides}
             />
           )}
 

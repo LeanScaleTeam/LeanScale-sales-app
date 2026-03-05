@@ -124,7 +124,7 @@ async function handleRun(req, res) {
  * Body: { customerId, items?: [...], engagementOverrides?: {...}, diagnosticResultId?: string }
  */
 async function handleUpdate(req, res) {
-  const { customerId, items: updatedItems, engagementOverrides, diagnosticResultId } = req.body;
+  const { customerId, items: updatedItems, engagementOverrides, diagnosticResultId, diagnosticVersion } = req.body;
 
   if (!customerId) {
     return res.status(400).json({ error: 'customerId is required' });
@@ -133,14 +133,14 @@ async function handleUpdate(req, res) {
   try {
     // If only saving engagement overrides (v2/v3), use diagnosticResultId directly
     if (engagementOverrides && !updatedItems) {
-      // Try v2 table first
-      let table = 'diagnostic_results';
+      const isV3 = diagnosticVersion === 3;
+      const table = isV3 ? 'diagnostic_results_v3' : 'diagnostic_results';
       let id = diagnosticResultId;
 
       if (!id) {
         // Fallback: look up by customerId
         const { data: existing } = await supabaseAdmin
-          .from('diagnostic_results')
+          .from(table)
           .select('id')
           .eq('customer_id', customerId)
           .eq('diagnostic_type', 'gtm')
@@ -149,23 +149,14 @@ async function handleUpdate(req, res) {
       }
 
       if (id) {
-        // Try v2 table
-        const { error: v2Error } = await supabaseAdmin
-          .from('diagnostic_results')
+        const { error } = await supabaseAdmin
+          .from(table)
           .update({ engagement_overrides: engagementOverrides })
           .eq('id', id);
 
-        if (v2Error) {
-          // Might be a v3 result — try v3 table
-          const { error: v3Error } = await supabaseAdmin
-            .from('diagnostic_results_v3')
-            .update({ engagement_overrides: engagementOverrides })
-            .eq('id', id);
-
-          if (v3Error) {
-            console.error('Error saving engagement overrides:', v3Error);
-            return res.status(500).json({ error: 'Failed to save engagement overrides' });
-          }
+        if (error) {
+          console.error(`Error saving engagement overrides to ${table}:`, error);
+          return res.status(500).json({ error: 'Failed to save engagement overrides' });
         }
 
         return res.status(200).json({ success: true });

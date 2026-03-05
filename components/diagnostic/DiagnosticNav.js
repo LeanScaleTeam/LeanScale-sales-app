@@ -32,6 +32,7 @@ export default function DiagnosticNav({
   hasCustomerData,
   hasDiagnosticResult,
   isDemo,
+  isAdmin,
   availableViews,
 }) {
   // Filter views based on what data is available
@@ -71,7 +72,7 @@ export default function DiagnosticNav({
       </div>
 
       {/* Actions */}
-      {!isDemo && (
+      {isAdmin && (
         <div className="diagnostic-nav-actions">
           <button
             className={`diagnostic-nav-action-btn ${editMode ? 'active' : ''}`}

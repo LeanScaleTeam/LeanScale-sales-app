@@ -10,11 +10,17 @@ const PHASE_COLORS = {
 
 const PHASE_IDS = ['stabilize', 'activate', 'optimize', 'scale'];
 
+const PRIORITY_OPTIONS = [
+  { value: 'critical', label: 'Critical', color: '#DC2626', bg: '#FEF2F2' },
+  { value: 'recommended', label: 'Recommended', color: '#EA580C', bg: '#FFF7ED' },
+  { value: 'optional', label: 'Optional', color: '#6B7280', bg: '#F3F4F6' },
+];
+
 /**
  * PhaseRoadmap — Step 3 of the Engagement Details.
  * Shows the 4-phase quarterly roadmap with projects and managed services per phase.
  */
-export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPath }) {
+export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPath, overrides }) {
   if (!roadmap || !roadmap.phases) return null;
 
   return (
@@ -121,6 +127,7 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
                         editMode={editMode}
                         onOverride={onOverride}
                         customerPath={customerPath}
+                        priority={overrides?.roadmap?.[proj.serviceId]?.priority}
                       />
                     ))}
                   </div>
@@ -173,7 +180,8 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
   );
 }
 
-function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, customerPath }) {
+function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, customerPath, priority }) {
+  const priorityOption = PRIORITY_OPTIONS.find(p => p.value === priority) || PRIORITY_OPTIONS[1]; // default: recommended
   return (
     <div style={{
       display: 'flex',
@@ -201,17 +209,18 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
           </div>
         )}
       </div>
-      {project.severity >= 3 && (
+      {/* Priority badge (always shown) */}
+      {!editMode && (
         <span style={{
           fontSize: '0.6rem',
           padding: '0 0.3rem',
           borderRadius: '3px',
-          background: '#FEF2F2',
-          color: '#991B1B',
+          background: priorityOption.bg,
+          color: priorityOption.color,
           fontWeight: 600,
           flexShrink: 0,
         }}>
-          Critical
+          {priorityOption.label}
         </span>
       )}
       {/* Playbook link */}
@@ -233,6 +242,27 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
       {/* Edit controls */}
       {editMode && (
         <>
+          <select
+            value={priority || 'recommended'}
+            onChange={(e) => onOverride?.('roadmap', project.serviceId, { priority: e.target.value })}
+            style={{
+              fontSize: '0.65rem',
+              padding: '0.15rem 0.3rem',
+              borderRadius: '4px',
+              border: `1px solid ${priorityOption.color}`,
+              background: priorityOption.bg,
+              color: priorityOption.color,
+              cursor: 'pointer',
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+          >
+            {PRIORITY_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
           <select
             value={currentPhaseId}
             onChange={(e) => onOverride?.('roadmap', project.serviceId, { phase: e.target.value })}

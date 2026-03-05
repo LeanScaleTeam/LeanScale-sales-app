@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Layout from '../Layout';
 import { diagnosticRegistry, countStatuses } from '../../data/diagnostic-registry';
 import { useCustomer } from '../../context/CustomerContext';
+import { useAuth } from '../../context/AuthContext';
 import { slideUp } from '../../lib/animations';
 
 // Views
@@ -72,6 +73,8 @@ function sortByPriority(processes) {
 export default function DiagnosticResults({ diagnosticType }) {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
+  const { isAuthenticated } = useAuth();
+  const isAdmin = isAuthenticated && !isDemo;
   const config = diagnosticRegistry[diagnosticType];
 
   // --- State ---
@@ -151,7 +154,12 @@ export default function DiagnosticResults({ diagnosticType }) {
               setV3Result(json.data);
               setDiagnosticResultId(json.data.id);
               setV3RunTimestamp(json.data.updated_at || json.data.created_at);
-              if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
+              if (json.data.engagement_overrides) {
+                setEngagementOverrides(json.data.engagement_overrides);
+                if (json.data.engagement_overrides.power10) {
+                  setEditablePower10(json.data.engagement_overrides.power10);
+                }
+              }
               setActiveView('scorecard');
             }
           }
@@ -344,6 +352,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             body: JSON.stringify({
               diagnosticResultId,
               customerId: customer.id,
+              diagnosticVersion,
               engagementOverrides: overrides,
             }),
           });
@@ -636,7 +645,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const isV2 = diagnosticVersion === 2 && v2Result;
 
   const availableViews = isV3
-    ? ['scorecard', 'pitch', 'roadmap', 'transcript', 'consultant', 'table']
+    ? ['scorecard', 'pitch', 'transcript', 'consultant', 'table']
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {
@@ -676,7 +685,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             <span>{config.icon}</span> {config.title}
           </h1>
           <p className="page-subtitle">{config.subtitle}</p>
-          {!isDemo && diagnosticType === 'gtm' && (
+          {isAdmin && diagnosticType === 'gtm' && (
             <div style={{ marginTop: '0.75rem' }}>
               {((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
@@ -769,6 +778,7 @@ export default function DiagnosticResults({ diagnosticType }) {
           hasCustomerData={editableProcesses !== null}
           hasDiagnosticResult={!!diagnosticResultId}
           isDemo={isDemo}
+          isAdmin={isAdmin}
           availableViews={availableViews}
         />
 

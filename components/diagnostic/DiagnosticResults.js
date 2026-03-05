@@ -642,7 +642,7 @@ export default function DiagnosticResults({ diagnosticType }) {
   const isV2 = diagnosticVersion === 2 && v2Result;
 
   const availableViews = isV3
-    ? ['scorecard', 'pitch', 'transcript', 'consultant', 'table']
+    ? ['scorecard', 'pitch', 'transcript', 'consultant']
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {

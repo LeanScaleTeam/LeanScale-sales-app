@@ -105,25 +105,18 @@ export default function Navigation() {
   const navItems = useMemo(
     () => {
       const shouldHideEngagement = hideEngagement || diagnosticType !== 'gtm';
-      const filterEngagement = (sections) =>
-        sections.map(section => {
+      if (shouldHideEngagement) {
+        return prospectSections.map(section => {
           const filtered = { ...section };
           if (filtered.links) {
             filtered.links = filtered.links.filter(l => l.href !== '/try-leanscale/engagement');
           }
           return filtered;
         });
-
-      if (isActive) {
-        const nav = buildCustomerNav(diagnosticType);
-        return shouldHideEngagement ? filterEngagement(nav) : nav;
-      }
-      if (shouldHideEngagement) {
-        return filterEngagement(prospectSections);
       }
       return prospectSections;
     },
-    [isActive, diagnosticType, hideEngagement]
+    [diagnosticType, hideEngagement]
   );
 
   return (
@@ -188,7 +181,15 @@ export default function Navigation() {
           )
         )}
 
-        {!isActive && (
+        {isActive ? (
+          <Link
+            href={customerPath(diagnosticConfig[diagnosticType]?.href || '/try-leanscale/diagnostic')}
+            className="nav-cta"
+            onClick={closeMenu}
+          >
+            View Your Diagnostic
+          </Link>
+        ) : (
           <Link href={customerPath('/buy-leanscale')} className="nav-cta" onClick={closeMenu}>
             Get Started
           </Link>

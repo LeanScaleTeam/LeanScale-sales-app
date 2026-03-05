@@ -286,27 +286,7 @@ export default function Phase1Scope({ roadmap, onBuildSow, customerPath }) {
         </motion.div>
       )}
 
-      {/* CTA */}
-      {onBuildSow && (
-        <motion.div variants={fadeUpItem} style={{ textAlign: 'center' }}>
-          <button
-            onClick={onBuildSow}
-            style={{
-              padding: 'var(--space-3) var(--space-6)',
-              fontSize: 'var(--text-base)',
-              fontWeight: 'var(--font-semibold)',
-              borderRadius: 'var(--radius-lg, 12px)',
-              border: 'none',
-              background: '#6C5CE7',
-              color: 'white',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(108, 92, 231, 0.3)',
-            }}
-          >
-            Build Statement of Work
-          </button>
-        </motion.div>
-      )}
+      {/* Build SOW CTA hidden — under development */}
     </motion.div>
   );
 }

@@ -86,14 +86,7 @@ export default function DiagnosticNav({
           >
             Import
           </button>
-          {hasDiagnosticResult && (
-            <button
-              className="diagnostic-nav-action-btn primary"
-              onClick={onBuildSow}
-            >
-              Build SOW
-            </button>
-          )}
+          {/* Build SOW hidden — under development */}
           <span aria-live="polite" style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
             {saving ? 'Saving...' : ''}
           </span>

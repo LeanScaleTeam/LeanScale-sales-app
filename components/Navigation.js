@@ -67,7 +67,7 @@ function buildCustomerNav(diagnosticType) {
   return [
     { name: 'dashboard', label: 'Dashboard', type: 'link', href: '/dashboard' },
     { name: 'diagnostic', label: diagLink.label, type: 'link', href: diagLink.href },
-    { name: 'sow', label: 'SOW', type: 'link', href: '/sow' },
+    // { name: 'sow', label: 'SOW', type: 'link', href: '/sow' }, // Hidden — SOW under development
     {
       name: 'more',
       label: 'More',

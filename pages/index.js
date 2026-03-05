@@ -59,14 +59,15 @@ export default function Home() {
   const router = useRouter();
 
   // Active customers land directly on their diagnostic
+  const isActiveCustomer = !isDemo && customer?.id && customer?.customerType === 'active';
   useEffect(() => {
-    if (!isDemo && customer?.id) {
+    if (isActiveCustomer) {
       router.replace(customerPath('/try-leanscale/diagnostic'));
     }
-  }, [isDemo, customer?.id]);
+  }, [isActiveCustomer]);
 
   // Show loading state briefly while redirecting active customers
-  if (!isDemo && customer?.id) {
+  if (isActiveCustomer) {
     return <Layout title="LeanScale"><div /></Layout>;
   }
 

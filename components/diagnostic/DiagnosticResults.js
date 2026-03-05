@@ -1178,25 +1178,13 @@ export default function DiagnosticResults({ diagnosticType }) {
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {!isDemo && diagnosticResultId ? (
-              <>
-                <a href={customerPath('/sow')} className="nav-cta" style={{ textDecoration: 'none' }}>
-                  View Statement of Work
-                </a>
-                {!customer?.hideEngagement && (
-                  <a
-                    href={customerPath('/try-leanscale/engagement')}
-                    className="nav-cta"
-                    style={{
-                      textDecoration: 'none',
-                      background: 'transparent',
-                      border: '2px solid var(--primary)',
-                      color: 'var(--primary)',
-                    }}
-                  >
-                    View Engagement Overview
-                  </a>
-                )}
-              </>
+              <button
+                className="nav-cta"
+                onClick={() => { setActiveView('pitch'); }}
+                style={{ border: 'none', cursor: 'pointer' }}
+              >
+                View Engagement Details
+              </button>
             ) : (
               <a href={customerPath('/try-leanscale/start')} className="nav-cta" style={{ textDecoration: 'none' }}>
                 Start Your Diagnostic

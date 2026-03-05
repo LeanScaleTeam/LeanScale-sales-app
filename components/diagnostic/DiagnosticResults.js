@@ -31,6 +31,7 @@ import TranscriptUpload from './v3/TranscriptUpload';
 import ConsultantAuditForm from './v3/ConsultantAuditForm';
 import SuggestedProjects, { findNewSuggestedProjects } from './v3/SuggestedProjects';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
+import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 
 // CPQ-specific views
 import LifecycleView from './views/LifecycleView';
@@ -139,7 +140,18 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   // --- Load customer-specific diagnostic data ---
   useEffect(() => {
-    if (isDemo || !customer?.id) return;
+    if (isDemo || !customer?.id) {
+      // Demo mode: generate v3 data client-side from curated intake answers
+      if (isDemo && diagnosticType === 'gtm') {
+        import('../../data/demo-v3-intake').then(({ DEMO_INTAKE_ANSWERS }) => {
+          const result = runDiagnosticV3(DEMO_INTAKE_ANSWERS, {}, {}, {}, 'salesforce');
+          setDiagnosticVersion(3);
+          setV3Result(result);
+          setActiveView('scorecard');
+        });
+      }
+      return;
+    }
 
     async function loadDiagnosticData() {
       setLoadingData(true);
@@ -642,7 +654,9 @@ export default function DiagnosticResults({ diagnosticType }) {
   const isV2 = diagnosticVersion === 2 && v2Result;
 
   const availableViews = isV3
-    ? ['scorecard', 'pitch', 'transcript', 'consultant']
+    ? (isDemo
+      ? ['scorecard', 'pitch']
+      : ['scorecard', 'pitch', 'transcript', 'consultant'])
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {

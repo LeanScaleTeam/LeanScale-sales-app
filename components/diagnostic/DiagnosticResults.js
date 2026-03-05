@@ -156,9 +156,6 @@ export default function DiagnosticResults({ diagnosticType }) {
               setV3RunTimestamp(json.data.updated_at || json.data.created_at);
               if (json.data.engagement_overrides) {
                 setEngagementOverrides(json.data.engagement_overrides);
-                if (json.data.engagement_overrides.power10) {
-                  setEditablePower10(json.data.engagement_overrides.power10);
-                }
               }
               setActiveView('scorecard');
             }

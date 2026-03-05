@@ -179,7 +179,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </Link>
-                <Link href={customerPath('/diagnostic/gtm?view=pitch')} style={{ textDecoration: 'none' }}>
+                <Link href={customerPath('/try-leanscale/diagnostic?view=pitch')} style={{ textDecoration: 'none' }}>
                   <div style={{
                     background: 'var(--bg-white)',
                     border: '1px solid var(--border-color)',

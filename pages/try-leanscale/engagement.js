@@ -785,13 +785,11 @@ export default function EngagementOverview() {
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>Ready to Get Started?</h3>
           <p style={{ margin: '0 0 1rem 0', opacity: 0.9 }}>Let&apos;s discuss your engagement plan and timeline.</p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {existingSowId && (
-              <Link href={customerPath(`/sow/${existingSowId}`)}>
-                <button className="btn" style={{ background: 'white', color: '#7c3aed', border: 'none', padding: '0.75rem 1.5rem' }}>
-                  View Statement of Work
-                </button>
-              </Link>
-            )}
+            <Link href={customerPath('/try-leanscale/diagnostic?view=pitch')}>
+              <button className="btn" style={{ background: 'white', color: '#7c3aed', border: 'none', padding: '0.75rem 1.5rem' }}>
+                View Engagement Details
+              </button>
+            </Link>
             <Link href={customerPath('/buy-leanscale/availability')}>
               <button className="btn" style={{ background: existingSowId ? 'transparent' : 'white', color: existingSowId ? 'white' : '#7c3aed', border: existingSowId ? '2px solid white' : 'none', padding: '0.75rem 1.5rem' }}>
                 Check Cohort Availability

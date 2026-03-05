@@ -179,7 +179,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </Link>
-                <Link href={customerPath('/sow')} style={{ textDecoration: 'none' }}>
+                <Link href={customerPath('/diagnostic/gtm?view=pitch')} style={{ textDecoration: 'none' }}>
                   <div style={{
                     background: 'var(--bg-white)',
                     border: '1px solid var(--border-color)',
@@ -194,7 +194,7 @@ export default function Dashboard() {
                       color: 'var(--ls-purple)',
                       marginBottom: '0.375rem',
                     }}>
-                      Statements of Work
+                      Engagement Details
                     </h3>
                     <p style={{
                       fontSize: '0.875rem',
@@ -202,7 +202,7 @@ export default function Dashboard() {
                       margin: 0,
                       lineHeight: 1.5,
                     }}>
-                      View and manage SOWs
+                      View prioritized projects and roadmap
                     </p>
                   </div>
                 </Link>

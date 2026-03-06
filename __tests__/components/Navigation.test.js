@@ -5,9 +5,11 @@
 /**
  * Tests for components/Navigation.js
  *
- * Phase 7: Validates conditional navigation rendering:
- * - Prospect customers see Why/Try/Buy dropdowns
- * - Active customers see Diagnostics/Projects/Documents dropdowns
+ * Validates the unified navigation:
+ * - All users see About Us / Diagnostic / Getting Started sections
+ * - Diagnostic links filtered by customer.diagnosticType
+ * - Demo users see all diagnostic types
+ * - Unified "View Diagnostic" CTA for all users
  */
 
 import React from 'react';
@@ -33,160 +35,119 @@ describe('Navigation', () => {
     jest.clearAllMocks();
   });
 
-  describe('Prospect Navigation (default)', () => {
+  describe('Demo / Prospect Navigation', () => {
     beforeEach(() => {
       mockUseCustomer.mockReturnValue({
         customer: {
           slug: 'demo',
           customerName: 'Demo',
           customerLogo: null,
-          customerType: 'prospect',
+          diagnosticType: 'gtm',
         },
         isDemo: true,
         displayName: null,
-        customerType: 'prospect',
+        customerPath: (p) => p,
       });
     });
 
-    test('renders Why LeanScale? dropdown button', () => {
+    test('renders About Us dropdown', () => {
       render(<Navigation />);
-      expect(screen.getByText(/Why LeanScale\?/)).toBeInTheDocument();
+      expect(screen.getByText('About Us')).toBeInTheDocument();
     });
 
-    test('renders Try LeanScale dropdown button', () => {
+    test('renders Diagnostic dropdown', () => {
       render(<Navigation />);
-      expect(screen.getByText(/Try LeanScale/)).toBeInTheDocument();
+      expect(screen.getByText('Diagnostic')).toBeInTheDocument();
     });
 
-    test('renders Buy LeanScale dropdown button', () => {
+    test('renders Getting Started dropdown', () => {
       render(<Navigation />);
-      expect(screen.getByText(/Buy LeanScale/)).toBeInTheDocument();
+      expect(screen.getByText('Getting Started')).toBeInTheDocument();
     });
 
-    test('does NOT render Diagnostics dropdown', () => {
+    test('demo users see all diagnostic types', () => {
       render(<Navigation />);
-      // Should not have the active-customer nav sections
-      expect(screen.queryByText('Diagnostics')).not.toBeInTheDocument();
+      expect(screen.getByText('GTM Diagnostic')).toBeInTheDocument();
+      expect(screen.getByText('Clay Diagnostic')).toBeInTheDocument();
+      expect(screen.getByText('Q2C Diagnostic')).toBeInTheDocument();
     });
 
-    test('does NOT render Projects dropdown', () => {
+    test('renders View Diagnostic CTA', () => {
       render(<Navigation />);
-      expect(screen.queryByText('Projects')).not.toBeInTheDocument();
-    });
-
-    test('does NOT render Documents dropdown', () => {
-      render(<Navigation />);
-      expect(screen.queryByText('Documents')).not.toBeInTheDocument();
-    });
-
-    test('renders Get Started CTA', () => {
-      render(<Navigation />);
-      expect(screen.getByText('Get Started')).toBeInTheDocument();
+      expect(screen.getByText('View Diagnostic')).toBeInTheDocument();
     });
   });
 
-  describe('Active Customer Navigation', () => {
+  describe('GTM Customer Navigation', () => {
     beforeEach(() => {
       mockUseCustomer.mockReturnValue({
         customer: {
           slug: 'acme',
           customerName: 'Acme Corp',
-          customerLogo: '/acme.png',
-          customerType: 'active',
+          customerLogo: null,
+          diagnosticType: 'gtm',
         },
         isDemo: false,
         displayName: 'Acme Corp',
-        customerType: 'active',
+        customerPath: (p) => `/c/acme${p}`,
       });
     });
 
-    test('renders Diagnostics dropdown button', () => {
+    test('renders unified nav sections', () => {
       render(<Navigation />);
-      expect(screen.getByText(/Diagnostics/)).toBeInTheDocument();
+      expect(screen.getByText('About Us')).toBeInTheDocument();
+      expect(screen.getByText('Diagnostic')).toBeInTheDocument();
+      expect(screen.getByText('Getting Started')).toBeInTheDocument();
     });
 
-    test('renders Projects dropdown button', () => {
-      render(<Navigation />);
-      expect(screen.getByText(/Projects/)).toBeInTheDocument();
-    });
-
-    test('renders Documents dropdown button', () => {
-      render(<Navigation />);
-      expect(screen.getByText(/Documents/)).toBeInTheDocument();
-    });
-
-    test('does NOT render Why LeanScale? dropdown', () => {
-      render(<Navigation />);
-      expect(screen.queryByText(/Why LeanScale\?/)).not.toBeInTheDocument();
-    });
-
-    test('does NOT render Try LeanScale dropdown', () => {
-      render(<Navigation />);
-      expect(screen.queryByText(/Try LeanScale/)).not.toBeInTheDocument();
-    });
-
-    test('does NOT render Buy LeanScale dropdown', () => {
-      render(<Navigation />);
-      expect(screen.queryByText(/Buy LeanScale/)).not.toBeInTheDocument();
-    });
-
-    test('renders GTM Diagnostic link', () => {
+    test('only shows GTM Diagnostic link', () => {
       render(<Navigation />);
       expect(screen.getByText('GTM Diagnostic')).toBeInTheDocument();
+      expect(screen.queryByText('Clay Diagnostic')).not.toBeInTheDocument();
+      expect(screen.queryByText('Q2C Diagnostic')).not.toBeInTheDocument();
     });
 
-    test('renders Clay Diagnostic link', () => {
+    test('does not show Clay x LeanScale link', () => {
       render(<Navigation />);
-      expect(screen.getByText('Clay Diagnostic')).toBeInTheDocument();
+      expect(screen.queryByText('Clay x LeanScale')).not.toBeInTheDocument();
     });
 
-    test('renders Q2C Diagnostic link', () => {
+    test('renders View Diagnostic CTA', () => {
       render(<Navigation />);
-      expect(screen.getByText('Q2C Diagnostic')).toBeInTheDocument();
+      expect(screen.getByText('View Diagnostic')).toBeInTheDocument();
     });
 
-    test('renders Clay Project Intake link', () => {
+    test('shows customer branding', () => {
       render(<Navigation />);
-      expect(screen.getByText('Clay Project Intake')).toBeInTheDocument();
-    });
-
-    test('renders Q2C Assessment link', () => {
-      render(<Navigation />);
-      expect(screen.getByText('Q2C Assessment')).toBeInTheDocument();
-    });
-
-    test('renders Statements of Work link', () => {
-      render(<Navigation />);
-      expect(screen.getByText('Statements of Work')).toBeInTheDocument();
-    });
-
-    test('renders Dashboard CTA instead of Get Started', () => {
-      render(<Navigation />);
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
-      expect(screen.queryByText('Get Started')).not.toBeInTheDocument();
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument();
     });
   });
 
-  describe('Churned Customer Navigation', () => {
+  describe('Clay Customer Navigation', () => {
     beforeEach(() => {
       mockUseCustomer.mockReturnValue({
         customer: {
-          slug: 'oldco',
-          customerName: 'OldCo',
+          slug: 'clayco',
+          customerName: 'ClayCompany',
           customerLogo: null,
-          customerType: 'churned',
+          diagnosticType: 'clay',
         },
         isDemo: false,
-        displayName: 'OldCo',
-        customerType: 'churned',
+        displayName: 'ClayCompany',
+        customerPath: (p) => `/c/clayco${p}`,
       });
     });
 
-    test('renders prospect navigation (Why/Try/Buy) for churned customers', () => {
+    test('only shows Clay Diagnostic link', () => {
       render(<Navigation />);
-      expect(screen.getByText(/Why LeanScale\?/)).toBeInTheDocument();
-      expect(screen.getByText(/Try LeanScale/)).toBeInTheDocument();
-      expect(screen.getByText(/Buy LeanScale/)).toBeInTheDocument();
+      expect(screen.getByText('Clay Diagnostic')).toBeInTheDocument();
+      expect(screen.queryByText('GTM Diagnostic')).not.toBeInTheDocument();
+      expect(screen.queryByText('Q2C Diagnostic')).not.toBeInTheDocument();
+    });
+
+    test('shows Clay x LeanScale link', () => {
+      render(<Navigation />);
+      expect(screen.getByText('Clay x LeanScale')).toBeInTheDocument();
     });
   });
 });

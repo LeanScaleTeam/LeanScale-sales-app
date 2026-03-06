@@ -19,7 +19,16 @@ export async function middleware(request) {
   if (pathMatch) {
     // Path-based routing detected - rewrite URL and set customer context
     const customerSlug = pathMatch[1].toLowerCase();
-    const remainingPath = pathMatch[2] || '/';
+    let remainingPath = pathMatch[2] || '/';
+
+    // Handle old-to-new path redirects within the /c/{slug}/ context
+    // next.config.js redirects run before middleware and can't see the slug prefix
+    const redirectTo = getRedirectPath(remainingPath);
+    if (redirectTo) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = `/c/${customerSlug}${redirectTo}`;
+      return NextResponse.redirect(redirectUrl, 301);
+    }
 
     // Rewrite the URL to remove /c/customer-slug prefix
     const url = request.nextUrl.clone();
@@ -82,6 +91,62 @@ export async function middleware(request) {
   });
 
   return response;
+}
+
+/**
+ * Map old paths to new paths for redirects.
+ * These handle the same renames as next.config.js redirects but
+ * work within /c/{slug}/ prefixed URLs (which bypass next.config.js
+ * redirects since those run before middleware).
+ *
+ * @param {string} path - The path after /c/{slug}/ prefix removal
+ * @returns {string|null} New path to redirect to, or null if no redirect needed
+ */
+function getRedirectPath(path) {
+  // Specific route renames (check before catch-all patterns)
+  const SPECIFIC_REDIRECTS = {
+    '/try-leanscale/diagnostic': '/diagnostic/gtm',
+    '/try-leanscale/clay-diagnostic': '/diagnostic/clay',
+    '/try-leanscale/cpq-diagnostic': '/diagnostic/cpq',
+    '/buy-leanscale/availability': '/getting-started/availability',
+    '/buy-leanscale/one-time-projects': '/getting-started/one-time-projects',
+    '/buy-leanscale/investor-perks': '/getting-started/investor-perks',
+    '/buy-leanscale/security': '/getting-started/security',
+    '/buy-leanscale/team': '/getting-started/team',
+    '/buy-leanscale/clay-intake': '/getting-started/clay-intake',
+    '/buy-leanscale/clay': '/getting-started/clay',
+    '/dashboard': '/',
+    '/sow': '/',
+  };
+
+  if (SPECIFIC_REDIRECTS[path]) {
+    return SPECIFIC_REDIRECTS[path];
+  }
+
+  // Section-level catch-all redirects
+  if (path.startsWith('/why-leanscale/')) {
+    return path.replace('/why-leanscale/', '/about/');
+  }
+  if (path === '/why-leanscale') {
+    return '/about';
+  }
+  if (path.startsWith('/try-leanscale/')) {
+    return path.replace('/try-leanscale/', '/diagnostic/');
+  }
+  if (path === '/try-leanscale') {
+    return '/diagnostic';
+  }
+  if (path.startsWith('/buy-leanscale/')) {
+    return '/'; // Removed pages go to homepage
+  }
+  if (path === '/buy-leanscale') {
+    return '/';
+  }
+  if (path.startsWith('/sow/')) {
+    return '/';
+  }
+
+  return null;
 }
 
 /**

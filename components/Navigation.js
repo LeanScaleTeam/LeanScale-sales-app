@@ -3,46 +3,61 @@ import Link from 'next/link';
 import { useCustomer } from '../context/CustomerContext';
 
 // Navigation sections (About / Diagnostic / Getting Started)
-const navSections = [
-  {
-    name: 'about',
-    label: 'About Us',
-    type: 'dropdown',
-    links: [
-      { href: '/about', label: 'Overview' },
-      { href: '/about/about', label: 'About Us' },
-      { href: '/about/resources', label: 'Key Resources' },
-      { href: '/about/references', label: 'Customer References' },
-      { href: '/about/services', label: 'Services Catalog' },
-      { href: '/about/glossary', label: 'GTM Ops Glossary' },
-    ],
-  },
-  {
-    name: 'diagnostic',
-    label: 'Diagnostic',
-    type: 'dropdown',
-    links: [
-      { href: '/diagnostic', label: 'Overview' },
-      { href: '/diagnostic/start', label: 'Start Diagnostic' },
-      { href: '/diagnostic/gtm', label: 'GTM Diagnostic' },
-      { href: '/diagnostic/clay', label: 'Clay Diagnostic' },
-      { href: '/diagnostic/cpq', label: 'Q2C Diagnostic' },
-    ],
-  },
-  {
-    name: 'getting-started',
-    label: 'Getting Started',
-    type: 'dropdown',
-    links: [
-      { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
-      { href: '/getting-started/investor-perks', label: 'Investor Perks' },
-      { href: '/getting-started/security', label: 'Security' },
-      { href: '/getting-started/team', label: 'Your Team' },
-      { href: '/getting-started/clay', label: 'Clay x LeanScale' },
-    ],
-  },
+// Diagnostic and Getting Started links are filtered by diagnosticType in the component
+const aboutLinks = [
+  { href: '/about', label: 'Overview' },
+  { href: '/about/about', label: 'About Us' },
+  { href: '/about/resources', label: 'Key Resources' },
+  { href: '/about/references', label: 'Customer References' },
+  { href: '/about/services', label: 'Services Catalog' },
+  { href: '/about/glossary', label: 'GTM Ops Glossary' },
 ];
+
+// Diagnostic links shown per diagnostic type
+const diagnosticLinks = {
+  gtm: [
+    { href: '/diagnostic', label: 'Overview' },
+    { href: '/diagnostic/start', label: 'Start Diagnostic' },
+    { href: '/diagnostic/gtm', label: 'GTM Diagnostic' },
+  ],
+  clay: [
+    { href: '/diagnostic', label: 'Overview' },
+    { href: '/diagnostic/start', label: 'Start Diagnostic' },
+    { href: '/diagnostic/clay', label: 'Clay Diagnostic' },
+  ],
+  cpq: [
+    { href: '/diagnostic', label: 'Overview' },
+    { href: '/diagnostic/start', label: 'Start Diagnostic' },
+    { href: '/diagnostic/cpq', label: 'Q2C Diagnostic' },
+  ],
+  // Demo users see all diagnostic types
+  all: [
+    { href: '/diagnostic', label: 'Overview' },
+    { href: '/diagnostic/start', label: 'Start Diagnostic' },
+    { href: '/diagnostic/gtm', label: 'GTM Diagnostic' },
+    { href: '/diagnostic/clay', label: 'Clay Diagnostic' },
+    { href: '/diagnostic/cpq', label: 'Q2C Diagnostic' },
+  ],
+};
+
+// Getting Started links — clay customers see Clay x LeanScale, others don't
+const gettingStartedLinks = {
+  default: [
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
+    { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+    { href: '/getting-started/security', label: 'Security' },
+    { href: '/getting-started/team', label: 'Your Team' },
+  ],
+  clay: [
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
+    { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+    { href: '/getting-started/security', label: 'Security' },
+    { href: '/getting-started/team', label: 'Your Team' },
+    { href: '/getting-started/clay', label: 'Clay x LeanScale' },
+  ],
+};
 
 // Diagnostic type → results page path
 const diagnosticConfig = {
@@ -67,6 +82,32 @@ export default function Navigation() {
 
   const showCustomerBranding = !isDemo && displayName;
   const diagnosticType = customer.diagnosticType || 'gtm';
+
+  // Build nav sections based on customer's diagnostic type
+  const navSections = [
+    {
+      name: 'about',
+      label: 'About Us',
+      type: 'dropdown',
+      links: aboutLinks,
+    },
+    {
+      name: 'diagnostic',
+      label: 'Diagnostic',
+      type: 'dropdown',
+      links: isDemo
+        ? diagnosticLinks.all
+        : (diagnosticLinks[diagnosticType] || diagnosticLinks.gtm),
+    },
+    {
+      name: 'getting-started',
+      label: 'Getting Started',
+      type: 'dropdown',
+      links: diagnosticType === 'clay'
+        ? gettingStartedLinks.clay
+        : gettingStartedLinks.default,
+    },
+  ];
 
   return (
     <nav className="nav">

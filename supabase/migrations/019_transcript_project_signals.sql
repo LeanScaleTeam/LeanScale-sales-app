@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS transcript_project_signals (
   created_at timestamptz DEFAULT now()
 );
 
+ALTER TABLE transcript_project_signals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service_role full access on transcript_project_signals"
+  ON transcript_project_signals FOR ALL TO service_role
+  USING (true) WITH CHECK (true);
+
 CREATE INDEX IF NOT EXISTS idx_project_signals_customer
   ON transcript_project_signals(customer_id);
 

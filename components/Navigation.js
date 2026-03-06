@@ -1,93 +1,60 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useCustomer } from '../context/CustomerContext';
 
-// Prospect/default navigation sections (Why / Try / Buy)
-const prospectSections = [
+// Navigation sections (About / Diagnostic / Getting Started)
+const navSections = [
   {
-    name: 'why',
-    label: 'Why LeanScale?',
+    name: 'about',
+    label: 'About Us',
     type: 'dropdown',
     links: [
-      { href: '/why-leanscale', label: 'Overview' },
-      { href: '/why-leanscale/about', label: 'About Us' },
-      { href: '/why-leanscale/resources', label: 'Key Resources' },
-      { href: '/why-leanscale/references', label: 'Customer References' },
-      { href: '/why-leanscale/services', label: 'Services Catalog' },
-      { href: '/why-leanscale/glossary', label: 'GTM Ops Glossary' },
+      { href: '/about', label: 'Overview' },
+      { href: '/about/about', label: 'About Us' },
+      { href: '/about/resources', label: 'Key Resources' },
+      { href: '/about/references', label: 'Customer References' },
+      { href: '/about/services', label: 'Services Catalog' },
+      { href: '/about/glossary', label: 'GTM Ops Glossary' },
     ],
   },
   {
-    name: 'try',
-    label: 'Try LeanScale',
+    name: 'diagnostic',
+    label: 'Diagnostic',
     type: 'dropdown',
     links: [
-      { href: '/try-leanscale', label: 'Overview' },
-      { href: '/try-leanscale/start', label: 'Start Diagnostic' },
-      { href: '/try-leanscale/diagnostic', label: 'GTM Diagnostic' },
-      { href: '/try-leanscale/power10', label: 'Power10 GTM Metrics' },
-      { href: '/try-leanscale/gtm-tool-health', label: 'GTM Tool Health' },
-      { href: '/try-leanscale/process-health', label: 'Process Health' },
-      { href: '/try-leanscale/clay-diagnostic', label: 'Clay Diagnostic' },
-      { href: '/try-leanscale/cpq-diagnostic', label: 'Q2C Diagnostic' },
-      { href: '/try-leanscale/engagement', label: 'Engagement Overview' },
+      { href: '/diagnostic', label: 'Overview' },
+      { href: '/diagnostic/start', label: 'Start Diagnostic' },
+      { href: '/diagnostic/gtm', label: 'GTM Diagnostic' },
+      { href: '/diagnostic/clay', label: 'Clay Diagnostic' },
+      { href: '/diagnostic/cpq', label: 'Q2C Diagnostic' },
     ],
   },
   {
-    name: 'buy',
-    label: 'Buy LeanScale',
+    name: 'getting-started',
+    label: 'Getting Started',
     type: 'dropdown',
     links: [
-      { href: '/buy-leanscale/availability', label: 'Cohort Availability' },
-      { href: '/buy-leanscale/one-time-projects', label: 'One-Time Projects' },
-      { href: '/buy-leanscale/investor-perks', label: 'Investor Perks' },
-      { href: '/buy-leanscale/security', label: 'Security' },
-      { href: '/buy-leanscale/team', label: 'Your Team' },
-      { href: '/buy-leanscale/clay', label: 'Clay x LeanScale' },
-      { href: '/buy-leanscale/q2c-intake', label: 'Q2C Assessment' },
+      { href: '/getting-started/availability', label: 'Cohort Availability' },
+      { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
+      { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+      { href: '/getting-started/security', label: 'Security' },
+      { href: '/getting-started/team', label: 'Your Team' },
+      { href: '/getting-started/clay', label: 'Clay x LeanScale' },
     ],
   },
 ];
 
-// Diagnostic type → nav link config
+// Diagnostic type → results page path
 const diagnosticConfig = {
-  gtm: { href: '/try-leanscale/diagnostic', label: 'Diagnostic' },
-  clay: { href: '/try-leanscale/clay-diagnostic', label: 'Diagnostic' },
-  cpq: { href: '/try-leanscale/cpq-diagnostic', label: 'Diagnostic' },
+  gtm: { href: '/diagnostic/gtm', label: 'Diagnostic' },
+  clay: { href: '/diagnostic/clay', label: 'Diagnostic' },
+  cpq: { href: '/diagnostic/cpq', label: 'Diagnostic' },
 };
-
-/**
- * Build customer-specific nav items.
- * Primary flat links: Dashboard → Diagnostic → SOW
- * Secondary items go in a single "More" dropdown.
- */
-function buildCustomerNav(diagnosticType) {
-  const diagLink = diagnosticConfig[diagnosticType] || diagnosticConfig.gtm;
-
-  return [
-    { name: 'diagnostic', label: 'Diagnostic', type: 'link', href: diagLink.href },
-    // { name: 'sow', label: 'SOW', type: 'link', href: '/sow' }, // Hidden — SOW under development
-    {
-      name: 'more',
-      label: 'More',
-      type: 'dropdown',
-      links: [
-        ...(diagnosticType === 'gtm' ? [{ href: '/try-leanscale/engagement', label: 'Engagement' }] : []),
-        { href: '/why-leanscale/services', label: 'Services Catalog' },
-        { href: '/buy-leanscale/team', label: 'Your Team' },
-        { href: '/why-leanscale/resources', label: 'Key Resources' },
-        { href: '/why-leanscale/references', label: 'Customer References' },
-        { href: '/buy-leanscale/security', label: 'Security' },
-        { href: '/why-leanscale/glossary', label: 'GTM Ops Glossary' },
-      ],
-    },
-  ];
-}
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const { customer, isDemo, displayName, customerType, customerPath } = useCustomer();
+  const { customer, isDemo, displayName, customerPath } = useCustomer();
 
   const toggleDropdown = (name) => {
     setOpenDropdown(openDropdown === name ? null : name);
@@ -99,25 +66,7 @@ export default function Navigation() {
   };
 
   const showCustomerBranding = !isDemo && displayName;
-  const isActive = customerType === 'active';
   const diagnosticType = customer.diagnosticType || 'gtm';
-  const hideEngagement = customer.hideEngagement || false;
-  const navItems = useMemo(
-    () => {
-      const shouldHideEngagement = hideEngagement || diagnosticType !== 'gtm';
-      if (shouldHideEngagement) {
-        return prospectSections.map(section => {
-          const filtered = { ...section };
-          if (filtered.links) {
-            filtered.links = filtered.links.filter(l => l.href !== '/try-leanscale/engagement');
-          }
-          return filtered;
-        });
-      }
-      return prospectSections;
-    },
-    [diagnosticType, hideEngagement]
-  );
 
   return (
     <nav className="nav">
@@ -152,7 +101,7 @@ export default function Navigation() {
       </button>
 
       <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
-        {navItems.map((item) =>
+        {navSections.map((item) =>
           item.type === 'link' ? (
             <Link
               key={item.name}
@@ -181,19 +130,13 @@ export default function Navigation() {
           )
         )}
 
-        {isActive ? (
-          <Link
-            href={customerPath(diagnosticConfig[diagnosticType]?.href || '/try-leanscale/diagnostic')}
-            className="nav-cta"
-            onClick={closeMenu}
-          >
-            View Your Diagnostic
-          </Link>
-        ) : (
-          <Link href={customerPath('/buy-leanscale')} className="nav-cta" onClick={closeMenu}>
-            Get Started
-          </Link>
-        )}
+        <Link
+          href={customerPath(diagnosticConfig[diagnosticType]?.href || '/diagnostic/gtm')}
+          className="nav-cta"
+          onClick={closeMenu}
+        >
+          View Diagnostic
+        </Link>
       </div>
     </nav>
   );

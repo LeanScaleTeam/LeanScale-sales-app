@@ -363,7 +363,7 @@ export default function YourTeam() {
               : 'Schedule a kickoff call to meet the operators assigned to your engagement.'
             }
           </p>
-          <a href="/buy-leanscale" style={{ textDecoration: 'none' }}>
+          <a href="/getting-started" style={{ textDecoration: 'none' }}>
             <button className="btn btn-primary">Get Started</button>
           </a>
         </div>

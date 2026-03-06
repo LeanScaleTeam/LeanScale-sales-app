@@ -120,7 +120,6 @@ const STEPS = [
  * - power10Data: Power 10 metrics array
  * - managedServices: managed services health array
  * - companyProfile: intake answers { arrRange, repCount, gtmMotion }
- * - onBuildSow: callback to create SOW
  * - editMode: boolean for edit toggle
  * - engagementOverrides: persisted overrides object
  * - onOverridesChange: callback to save overrides
@@ -134,7 +133,6 @@ export default function EngagementPitch({
   power10Data,
   managedServices,
   companyProfile,
-  onBuildSow,
   editMode,
   engagementOverrides,
   onOverridesChange,
@@ -347,7 +345,6 @@ export default function EngagementPitch({
           {step.id === 'start' && (
             <Phase1Scope
               roadmap={effectiveRoadmap}
-              onBuildSow={onBuildSow}
               customerPath={customerPath}
             />
           )}

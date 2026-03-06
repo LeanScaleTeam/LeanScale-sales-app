@@ -30,14 +30,14 @@ jest.mock('../../components/Layout', () => {
   };
 });
 
-import ClayPage from '../../pages/buy-leanscale/clay';
+import ClayPage from '../../pages/getting-started/clay';
 
 describe('Clay Page - Intake CTA', () => {
-  test('renders a link to /buy-leanscale/clay-intake', () => {
+  test('renders a link to /getting-started/clay-intake', () => {
     render(<ClayPage />);
     const intakeLink = screen.getByRole('link', { name: /start clay project intake/i });
     expect(intakeLink).toBeInTheDocument();
-    expect(intakeLink.getAttribute('href')).toBe('/buy-leanscale/clay-intake');
+    expect(intakeLink.getAttribute('href')).toBe('/getting-started/clay-intake');
   });
 
   test('intake CTA button has primary styling', () => {

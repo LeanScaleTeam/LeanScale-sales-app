@@ -33,7 +33,7 @@ export default function Availability() {
           <p style={{ opacity: 0.9, marginBottom: '1.5rem' }}>
             Configure your engagement and secure your cohort spot today.
           </p>
-          <Link href={customerPath('/buy-leanscale')} style={{ textDecoration: 'none' }}>
+          <Link href={customerPath('/getting-started')} style={{ textDecoration: 'none' }}>
             <button className="btn" style={{ 
               background: 'white', 
               color: '#7c3aed', 

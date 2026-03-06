@@ -100,8 +100,8 @@ export function CustomerProvider({ children, initialCustomer = null }) {
   /**
    * Prefix a path with /c/slug/ when viewing a real customer.
    * Demo customers and admin routes stay unprefixed.
-   * @param {string} path - e.g. '/try-leanscale/diagnostic'
-   * @returns {string} - e.g. '/c/cassidy/try-leanscale/diagnostic'
+   * @param {string} path - e.g. '/diagnostic/gtm'
+   * @returns {string} - e.g. '/c/cassidy/diagnostic/gtm'
    */
   const customerPath = useCallback((path) => {
     if (isDemo || !customer.slug) return path;

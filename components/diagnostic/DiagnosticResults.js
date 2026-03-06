@@ -122,8 +122,6 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [activeView, setActiveView] = useState(diagnosticType === 'cpq' ? 'lifecycle' : 'priority');
-  const [linkedSows, setLinkedSows] = useState([]);
-  const [syncToast, setSyncToast] = useState(null);
   const [highlightedItem, setHighlightedItem] = useState(null);
   const [modalItem, setModalItem] = useState(null);
   const saveTimerRef = useRef(null);
@@ -292,23 +290,6 @@ export default function DiagnosticResults({ diagnosticType }) {
     loadCrmSignals();
   }, [customer?.id, diagnosticVersion, isDemo]);
 
-  // --- Load linked SOWs ---
-  useEffect(() => {
-    if (isDemo || !customer?.id) return;
-
-    async function loadLinkedSows() {
-      try {
-        const res = await fetch(`/api/diagnostics/${diagnosticType}/linked-sows?customerId=${customer.id}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success) setLinkedSows(json.data || []);
-        }
-      } catch (_) { /* ignore */ }
-    }
-
-    loadLinkedSows();
-  }, [customer?.id, diagnosticType, isDemo]);
-
   // --- Handle highlight query param ---
   useEffect(() => {
     const { highlight } = router.query;
@@ -350,20 +331,12 @@ export default function DiagnosticResults({ diagnosticType }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      // Show sync toast if there are linked SOWs
-      if (linkedSows.length > 0) {
-        setSyncToast({
-          count: linkedSows.length,
-          sows: linkedSows,
-        });
-        setTimeout(() => setSyncToast(null), 5000);
-      }
     } catch (err) {
       console.error('Error saving diagnostic data:', err);
     } finally {
       setSaving(false);
     }
-  }, [customer?.id, diagnosticType, isDemo, customer?.customerName, linkedSows]);
+  }, [customer?.id, diagnosticType, isDemo, customer?.customerName]);
 
   function scheduleSave(procs, tls, p10, eo) {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -511,36 +484,6 @@ export default function DiagnosticResults({ diagnosticType }) {
         }
       }
     } catch (_) { /* ignore */ }
-  }
-
-  // --- Build SOW handler ---
-  async function handleBuildSow() {
-    const isV3Now = diagnosticVersion === 3 && v3Result;
-    try {
-      const res = await fetch('/api/sow/from-diagnostic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId: customer.id,
-          diagnosticResultId: isV3Now ? v3Result.id : diagnosticResultId,
-          diagnosticType,
-          diagnosticVersion: isV3Now ? 3 : diagnosticVersion,
-          customerName: customer.customerName,
-          sowType: diagnosticType === 'clay' ? 'clay' : diagnosticType === 'cpq' ? 'q2c' : 'embedded',
-          createdBy: 'sales-app',
-        }),
-      });
-      const json = await res.json();
-      if (json.success && json.data?.id) {
-        router.push(customerPath(`/sow/${json.data.id}`));
-      } else {
-        console.error('SOW creation failed:', json);
-        alert(`SOW creation failed: ${json.error || 'Unknown error'}`);
-      }
-    } catch (err) {
-      console.error('Error creating SOW from diagnostic:', err);
-      alert(`SOW creation error: ${err.message}`);
-    }
   }
 
   // --- Roadmap edit handlers ---
@@ -827,7 +770,6 @@ export default function DiagnosticResults({ diagnosticType }) {
           editMode={editMode}
           onEditToggle={() => setEditMode(!editMode)}
           onImport={() => setShowImport(true)}
-          onBuildSow={handleBuildSow}
           saving={saving}
           hasCustomerData={editableProcesses !== null}
           hasDiagnosticResult={!!diagnosticResultId}
@@ -1063,7 +1005,6 @@ export default function DiagnosticResults({ diagnosticType }) {
                 : isV3 ? v3Result?.company_profile
                 : {}
               }
-              onBuildSow={diagnosticResultId ? handleBuildSow : undefined}
               editMode={editMode}
               engagementOverrides={engagementOverrides}
               onOverridesChange={handleEngagementOverridesChange}
@@ -1112,7 +1053,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               onPriorityToggle={handlePriorityToggle}
               notes={notes}
               onOpenNotes={(name) => setExpandedRow(name === expandedRow ? null : name)}
-              linkedSows={linkedSows}
+
               highlightedItem={highlightedItem}
               customerPath={customerPath}
               onOpenModal={editMode ? setModalItem : undefined}
@@ -1135,7 +1076,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               onRowExpand={setExpandedRow}
               onAddNote={handleAddNote}
               onDeleteNote={handleDeleteNote}
-              linkedSows={linkedSows}
+
               highlightedItem={highlightedItem}
               customerPath={customerPath}
               onOpenModal={editMode ? setModalItem : undefined}
@@ -1153,7 +1094,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               onPriorityToggle={handlePriorityToggle}
               notes={notes}
               onOpenNotes={(name) => setExpandedRow(name === expandedRow ? null : name)}
-              linkedSows={linkedSows}
+
               highlightedItem={highlightedItem}
               customerPath={customerPath}
               onOpenModal={editMode ? setModalItem : undefined}
@@ -1213,7 +1154,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               onPriorityToggle={handlePriorityToggle}
               notes={notes}
               onOpenNotes={(name) => setExpandedRow(name === expandedRow ? null : name)}
-              linkedSows={linkedSows}
+
               highlightedItem={highlightedItem}
               customerPath={customerPath}
               onOpenModal={editMode ? setModalItem : undefined}
@@ -1243,79 +1184,13 @@ export default function DiagnosticResults({ diagnosticType }) {
                 View Engagement Details
               </button>
             ) : (
-              <a href={customerPath('/try-leanscale/start')} className="nav-cta" style={{ textDecoration: 'none' }}>
+              <a href={customerPath('/diagnostic/start')} className="nav-cta" style={{ textDecoration: 'none' }}>
                 Start Your Diagnostic
               </a>
             )}
           </div>
         </div>
 
-        {/* Sync Toast */}
-        <AnimatePresence>
-          {syncToast && (
-            <motion.div
-              variants={slideUp}
-              initial="hidden"
-              animate="show"
-              exit="exit"
-              style={{
-                position: 'fixed',
-                bottom: '1.5rem',
-                right: '1.5rem',
-                zIndex: 100,
-                background: 'white',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '1rem 1.25rem',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                maxWidth: '340px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1a1a2e', marginBottom: '0.25rem' }}>
-                    Diagnostic saved
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#718096' }}>
-                    {syncToast.count} linked SOW{syncToast.count !== 1 ? 's' : ''} may need updating
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                    {syncToast.sows.slice(0, 3).map(s => (
-                      <a
-                        key={s.id}
-                        href={customerPath(`/sow/${s.id}`)}
-                        style={{
-                          fontSize: '0.75rem',
-                          color: '#6C5CE7',
-                          textDecoration: 'none',
-                          padding: '0.15rem 0.5rem',
-                          background: '#F3F0FF',
-                          borderRadius: '0.25rem',
-                        }}
-                      >
-                        {s.title || 'View SOW'}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSyncToast(null)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#A0AEC0',
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    padding: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  x
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
         {/* Diagnostic Item Detail Modal */}
         <DiagnosticItemModal
           item={modalItem}

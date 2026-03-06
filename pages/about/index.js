@@ -26,10 +26,10 @@ export default function WhyLeanScale() {
             for B2B tech startups, delivering enterprise-grade revenue operations without the enterprise price tag.
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem' }}>
-            <Link href={customerPath('/buy-leanscale')} className="btn btn-primary">
+            <Link href={customerPath('/getting-started')} className="btn btn-primary">
               Get Started
             </Link>
-            <Link href={customerPath('/try-leanscale')} className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
+            <Link href={customerPath('/diagnostic')} className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
               Start GTM Diagnostic
             </Link>
           </div>
@@ -138,7 +138,7 @@ export default function WhyLeanScale() {
               />
             </div>
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <Link href={customerPath('/why-leanscale/services')}>
+              <Link href={customerPath('/about/services')}>
                 <button className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
                   View Full Services Catalog →
                 </button>
@@ -280,7 +280,7 @@ export default function WhyLeanScale() {
             </div>
 
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <Link href={customerPath('/buy-leanscale/team')}>
+              <Link href={customerPath('/getting-started/team')}>
                 <button className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
                   Meet Your Team →
                 </button>
@@ -358,12 +358,12 @@ export default function WhyLeanScale() {
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>Ready to Accelerate Your GTM?</h3>
           <p style={{ margin: '0 0 1.5rem 0', opacity: 0.9 }}>Start with a GTM Diagnostic or schedule time to discuss your needs.</p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href={customerPath('/try-leanscale')}>
+            <Link href={customerPath('/diagnostic')}>
               <button className="btn" style={{ background: 'white', color: '#7c3aed', border: 'none', padding: '0.75rem 1.5rem', fontWeight: 600 }}>
                 Start GTM Diagnostic
               </button>
             </Link>
-            <Link href={customerPath('/buy-leanscale')}>
+            <Link href={customerPath('/getting-started')}>
               <button className="btn" style={{ background: 'transparent', color: 'white', border: '2px solid white', padding: '0.75rem 1.5rem' }}>
                 Start Engagement
               </button>

@@ -435,12 +435,12 @@ export default function ClayPartnership() {
                 View on Clay Directory
               </button>
             </a>
-            <Link href={customerPath('/buy-leanscale/one-time-projects')} style={{ textDecoration: 'none' }}>
+            <Link href={customerPath('/getting-started/one-time-projects')} style={{ textDecoration: 'none' }}>
               <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
                 Custom Enrichment Project
               </button>
             </Link>
-            <Link href={customerPath('/buy-leanscale/clay-intake')} style={{ textDecoration: 'none' }}>
+            <Link href={customerPath('/getting-started/clay-intake')} style={{ textDecoration: 'none' }}>
               <button className="btn btn-primary">
                 Start Clay Project Intake
               </button>

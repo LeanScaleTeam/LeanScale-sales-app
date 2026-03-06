@@ -11,15 +11,14 @@ const diagnosticFeatures = [
   { icon: '🔧', label: '17 Tool Categories', desc: 'GTM tech stack health assessment' },
 ];
 
-export default function TryLeanScale() {
+export default function DiagnosticOverview() {
   const { customer, customerPath } = useCustomer();
-  const diagnosticType = customer.diagnosticType || 'gtm';
   return (
-    <Layout title="Try LeanScale">
+    <Layout title="Diagnostic">
       <div className="container">
         <div className="page-header" style={{ textAlign: 'center' }}>
           <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>🧪</span> Try LeanScale
+            <span>🧪</span> GTM Diagnostic
           </h1>
           <p className="page-subtitle" style={{ maxWidth: 500, margin: '0.5rem auto 0' }}>
             Get clarity on your GTM engine with our diagnostic assessment
@@ -28,7 +27,7 @@ export default function TryLeanScale() {
 
         {/* CTA Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-          <Link href={customerPath('/try-leanscale/start')} style={{ textDecoration: 'none' }}>
+          <Link href={customerPath('/diagnostic/start')} style={{ textDecoration: 'none' }}>
             <div className="card" style={{
               padding: '2rem',
               background: 'linear-gradient(135deg, var(--ls-lime-green) 0%, #d9f99d 100%)',
@@ -57,7 +56,7 @@ export default function TryLeanScale() {
             </div>
           </Link>
 
-          <Link href={customerPath('/try-leanscale/diagnostic')} style={{ textDecoration: 'none' }}>
+          <Link href={customerPath('/diagnostic/gtm')} style={{ textDecoration: 'none' }}>
             <div className="card" style={{
               padding: '2rem',
               cursor: 'pointer',
@@ -144,34 +143,6 @@ export default function TryLeanScale() {
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2.5rem',
-        }}>
-          {[
-            { href: '/try-leanscale/power10', label: 'Power10 Metrics', icon: '📈' },
-            { href: '/try-leanscale/gtm-tool-health', label: 'GTM Tool Health', icon: '🔧' },
-            { href: '/try-leanscale/process-health', label: 'Process Health', icon: '⚙️' },
-            ...(diagnosticType === 'gtm' ? [{ href: '/try-leanscale/engagement', label: 'Engagement Overview', icon: '📋' }] : []),
-          ].map((link) => (
-            <Link key={link.href} href={customerPath(link.href)} className="quick-link" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '1rem',
-              background: 'var(--bg-white)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-lg)',
-            }}>
-              <span>{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
         {/* CTA Banner */}
         <div className="cta-banner">
           <h3 className="cta-title">Ready to get started?</h3>
@@ -179,10 +150,10 @@ export default function TryLeanScale() {
             Take the diagnostic to identify your highest-impact GTM improvements.
           </p>
           <div className="cta-buttons">
-            <Link href={customerPath('/try-leanscale/start')} className="btn cta-btn-primary">
+            <Link href={customerPath('/diagnostic/start')} className="btn cta-btn-primary">
               Start Diagnostic
             </Link>
-            <Link href={customerPath('/why-leanscale/services')} className="btn cta-btn-secondary">
+            <Link href={customerPath('/about/services')} className="btn cta-btn-secondary">
               Browse Services
             </Link>
           </div>

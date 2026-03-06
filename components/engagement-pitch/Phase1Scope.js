@@ -13,7 +13,7 @@ const STATUS_STYLES = {
   sold_out: { bg: '#F3F4F6', text: '#4B5563', border: '#E5E7EB', label: 'Sold Out' },
 };
 
-export default function Phase1Scope({ roadmap, onBuildSow, customerPath }) {
+export default function Phase1Scope({ roadmap, customerPath }) {
   const [cohorts, setCohorts] = useState([]);
 
   useEffect(() => {

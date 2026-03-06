@@ -246,7 +246,7 @@ export default function IntakeForm() {
 
       // Navigate to results (v3 defaults to scorecard, v2 to layers)
       const defaultView = diagVersion === 3 ? 'scorecard' : 'layers';
-      router.push(customerPath(`/try-leanscale/diagnostic?view=${defaultView}`));
+      router.push(customerPath(`/diagnostic/gtm?view=${defaultView}`));
     } catch (err) {
       console.error('Error submitting diagnostic:', err);
       setError(err.message || 'Something went wrong. Please try again.');
@@ -307,7 +307,7 @@ export default function IntakeForm() {
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <a
-          href={customerPath('/try-leanscale/diagnostic')}
+          href={customerPath('/diagnostic/gtm')}
           style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textDecoration: 'none' }}
         >
           &larr; Back to Diagnostic

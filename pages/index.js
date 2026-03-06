@@ -21,33 +21,33 @@ const highlights = [
 
 const quickLinks = [
   {
-    title: 'Why LeanScale?',
+    title: 'About Us',
     icon: '🎯',
     description: 'Learn why B2B companies choose us',
     links: [
-      { href: '/why-leanscale', label: 'Overview' },
-      { href: '/why-leanscale/references', label: 'Customer References' },
-      { href: '/why-leanscale/services', label: 'Services Catalog' },
+      { href: '/about', label: 'Overview' },
+      { href: '/about/references', label: 'Customer References' },
+      { href: '/about/services', label: 'Services Catalog' },
     ],
   },
   {
-    title: 'Try LeanScale',
+    title: 'Diagnostic',
     icon: '🧪',
     description: 'Get clarity on your GTM engine',
     links: [
-      { href: '/try-leanscale', label: 'Overview' },
-      { href: '/try-leanscale/start', label: 'Start Diagnostic' },
-      { href: '/try-leanscale/diagnostic', label: 'GTM Diagnostic Demo' },
+      { href: '/diagnostic', label: 'Overview' },
+      { href: '/diagnostic/start', label: 'Start Diagnostic' },
+      { href: '/diagnostic/gtm', label: 'GTM Diagnostic Demo' },
     ],
   },
   {
-    title: 'Buy LeanScale',
+    title: 'Getting Started',
     icon: '🚀',
     description: 'Start your engagement',
     links: [
-      { href: '/buy-leanscale', label: 'Get Started' },
-      { href: '/buy-leanscale/investor-perks', label: 'Investor Perks' },
-      { href: '/buy-leanscale/team', label: 'Your Team' },
+      { href: '/getting-started/availability', label: 'Cohort Availability' },
+      { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+      { href: '/getting-started/team', label: 'Your Team' },
     ],
   },
 ];
@@ -212,10 +212,10 @@ export default function Home() {
             Take our diagnostic to identify the highest-impact opportunities.
           </p>
           <div className="cta-buttons">
-            <Link href={customerPath('/try-leanscale/start')} className="btn cta-btn-primary">
+            <Link href={customerPath('/diagnostic/start')} className="btn cta-btn-primary">
               Start Diagnostic
             </Link>
-            <Link href={customerPath('/buy-leanscale')} className="btn cta-btn-secondary">
+            <Link href={customerPath('/getting-started/availability')} className="btn cta-btn-secondary">
               Get Started
             </Link>
           </div>

@@ -278,7 +278,7 @@ export default function ServicesCatalog() {
             Take our GTM Diagnostic to identify which services will have the biggest impact on your revenue operations.
           </p>
           <Link 
-            href="/try-leanscale/diagnostic"
+            href="/diagnostic/gtm"
             className="btn btn-primary"
             style={{
               background: 'white',

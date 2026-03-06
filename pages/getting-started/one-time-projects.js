@@ -405,7 +405,7 @@ export default function OneTimeProjects() {
                   </button>
                 </Link>
               )}
-              <Link href={customerPath('/buy-leanscale')} style={{ textDecoration: 'none' }}>
+              <Link href={customerPath('/getting-started')} style={{ textDecoration: 'none' }}>
                 <button className="btn btn-primary">
                   Start Engagement →
                 </button>
@@ -419,7 +419,7 @@ export default function OneTimeProjects() {
             <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
               Click on any project above to see full details, or start your engagement now.
             </p>
-            <Link href={customerPath('/buy-leanscale')}>
+            <Link href={customerPath('/getting-started')}>
               <button className="btn btn-primary">
                 Start Engagement →
               </button>

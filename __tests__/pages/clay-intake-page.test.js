@@ -3,7 +3,7 @@
  */
 
 /**
- * Tests for pages/buy-leanscale/clay-intake.js
+ * Tests for pages/getting-started/clay-intake.js
  *
  * Validates the Clay intake page renders correctly
  * with the IntakeForm component and clay config.
@@ -41,7 +41,7 @@ jest.mock('../../components/IntakeForm', () => {
   };
 });
 
-import ClayIntakePage from '../../pages/buy-leanscale/clay-intake';
+import ClayIntakePage from '../../pages/getting-started/clay-intake';
 
 describe('Clay Intake Page', () => {
   test('renders within Layout', () => {

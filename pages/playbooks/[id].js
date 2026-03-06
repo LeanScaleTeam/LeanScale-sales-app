@@ -150,7 +150,7 @@ export default function PlaybookDetail() {
           <p style={{ color: '#666', marginBottom: '2rem' }}>
             The playbook you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
-          <Link href={customerPath('/why-leanscale/services')} className="btn btn-primary">
+          <Link href={customerPath('/about/services')} className="btn btn-primary">
             Browse All Services
           </Link>
         </div>
@@ -172,7 +172,7 @@ export default function PlaybookDetail() {
               In the meantime, start a diagnostic to see how this project fits your GTM roadmap.
             </p>
             <div style={{ marginTop: '1.5rem' }}>
-              <Link href={customerPath('/try-leanscale/start')} className="btn btn-primary">
+              <Link href={customerPath('/diagnostic/start')} className="btn btn-primary">
                 Start GTM Diagnostic
               </Link>
             </div>
@@ -223,10 +223,10 @@ export default function PlaybookDetail() {
         )}
 
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <Link href={customerPath('/try-leanscale/start')} className="btn btn-primary" style={{ marginRight: '1rem' }}>
+          <Link href={customerPath('/diagnostic/start')} className="btn btn-primary" style={{ marginRight: '1rem' }}>
             Start GTM Diagnostic
           </Link>
-          <Link href={customerPath('/why-leanscale/services')} className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
+          <Link href={customerPath('/about/services')} className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
             Browse More Services
           </Link>
         </div>
@@ -241,7 +241,7 @@ function BackLink({ customerPath }) {
   return (
     <div style={{ marginBottom: '2rem' }}>
       <Link
-        href={customerPath('/why-leanscale/services')}
+        href={customerPath('/about/services')}
         style={{ color: '#7c3aed', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.9rem' }}
       >
         ← Back to Services Catalog

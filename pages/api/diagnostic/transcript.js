@@ -4,8 +4,10 @@
  * POST /api/diagnostic/transcript — Upload transcript text
  * POST /api/diagnostic/transcript?action=prepare-analyze — Get prompt config for client-side competency analysis
  * POST /api/diagnostic/transcript?action=prepare-intake — Get prompt config for client-side intake extraction
+ * POST /api/diagnostic/transcript?action=prepare-project-signals — Get prompt config for client-side project signal extraction
  * POST /api/diagnostic/transcript?action=store-analyze — Store competency analysis results from client
  * POST /api/diagnostic/transcript?action=store-intake — Validate + return intake extraction results from client
+ * POST /api/diagnostic/transcript?action=store-project-signals — Validate + store project signal results from client
  * POST /api/diagnostic/transcript?action=analyze — (Legacy) Run server-side Claude analysis
  * POST /api/diagnostic/transcript?action=extract-intake — (Legacy) Run server-side intake extraction
  * GET  /api/diagnostic/transcript?customerId=... — List transcripts for customer
@@ -14,6 +16,7 @@
 import { supabaseAdmin } from '../../../lib/supabase';
 import { analyzeTranscript, buildAnalyzePromptConfig, parseExtractionResponse } from '../../../lib/diagnostic-engine/v3/transcript-analyzer';
 import { extractIntakeFromTranscript, buildIntakePromptConfig, parseIntakeResponse } from '../../../lib/diagnostic-engine/v3/transcript-intake-extractor';
+import { buildProjectSignalPromptConfig, parseProjectSignalResponse } from '../../../lib/diagnostic-engine/v3/transcript-project-extractor';
 
 export const config = {
   api: {
@@ -28,8 +31,10 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     if (req.query.action === 'prepare-analyze') return handlePrepareAnalyze(req, res);
     if (req.query.action === 'prepare-intake') return handlePrepareIntake(req, res);
+    if (req.query.action === 'prepare-project-signals') return handlePrepareProjectSignals(req, res);
     if (req.query.action === 'store-analyze') return handleStoreAnalyze(req, res);
     if (req.query.action === 'store-intake') return handleStoreIntake(req, res);
+    if (req.query.action === 'store-project-signals') return handleStoreProjectSignals(req, res);
     if (req.query.action === 'analyze') return handleAnalyze(req, res);
     if (req.query.action === 'extract-intake') return handleExtractIntake(req, res);
     return handleUpload(req, res);
@@ -340,6 +345,100 @@ async function handleStoreIntake(req, res) {
     });
   } catch (err) {
     console.error('Store intake error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
+
+/**
+ * Return prompt config + API key for client-side project signal extraction.
+ * Body: { transcriptId, customerId }
+ */
+async function handlePrepareProjectSignals(req, res) {
+  const { transcriptId, customerId } = req.body;
+  if (!transcriptId || !customerId) {
+    return res.status(400).json({ error: 'transcriptId and customerId are required' });
+  }
+
+  try {
+    const { data: transcript, error } = await supabaseAdmin
+      .from('diagnostic_transcripts')
+      .select('id, raw_text')
+      .eq('id', transcriptId)
+      .eq('customer_id', customerId)
+      .single();
+
+    if (error || !transcript) {
+      return res.status(404).json({ error: 'Transcript not found' });
+    }
+
+    const config = buildProjectSignalPromptConfig(transcript.raw_text);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        apiKey: process.env.OPENROUTER_API_KEY,
+        config,
+      },
+    });
+  } catch (err) {
+    console.error('Prepare project signals error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Validate and store project signal results from client-side OpenRouter call.
+ * Body: { transcriptId, customerId, openRouterResponse }
+ */
+async function handleStoreProjectSignals(req, res) {
+  const { transcriptId, customerId, openRouterResponse } = req.body;
+  if (!transcriptId || !customerId || !openRouterResponse) {
+    return res.status(400).json({ error: 'transcriptId, customerId, and openRouterResponse are required' });
+  }
+
+  try {
+    const signals = parseProjectSignalResponse(openRouterResponse);
+
+    if (signals.length > 0) {
+      // Delete existing signals for this transcript to avoid duplicates on re-analysis
+      await supabaseAdmin
+        .from('transcript_project_signals')
+        .delete()
+        .eq('transcript_id', transcriptId)
+        .eq('customer_id', customerId);
+
+      const rows = signals.map((s) => ({
+        customer_id: customerId,
+        transcript_id: transcriptId,
+        service_id: s.service_id,
+        signal_type: s.signal_type,
+        confidence: s.confidence,
+        evidence: s.evidence,
+        reasoning: s.reasoning,
+        model_version: 'anthropic/claude-sonnet-4',
+        created_at: new Date().toISOString(),
+      }));
+
+      const { error: insertError } = await supabaseAdmin
+        .from('transcript_project_signals')
+        .insert(rows);
+
+      if (insertError) {
+        console.error('Error storing project signals:', insertError);
+        return res.status(500).json({ error: 'Failed to store project signals' });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        transcriptId,
+        signalCount: signals.length,
+        signals,
+      },
+    });
+  } catch (err) {
+    console.error('Store project signals error:', err);
     return res.status(500).json({ error: err.message || 'Internal server error' });
   }
 }

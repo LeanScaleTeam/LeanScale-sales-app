@@ -209,6 +209,25 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
           </div>
         )}
       </div>
+      {/* Transcript signal badge (admin only) */}
+      {editMode && project.transcriptSignal && (
+        <span
+          title={project.transcriptSignal.evidence || ''}
+          style={{
+            fontSize: '0.55rem',
+            padding: '0.1rem 0.35rem',
+            borderRadius: '3px',
+            background: '#EDE9FE',
+            color: '#6C5CE7',
+            fontWeight: 600,
+            flexShrink: 0,
+            cursor: project.transcriptSignal.evidence ? 'help' : 'default',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Mentioned in call
+        </span>
+      )}
       {/* Priority badge (always shown) */}
       {!editMode && (
         <span style={{

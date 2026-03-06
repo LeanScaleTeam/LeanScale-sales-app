@@ -112,13 +112,29 @@ async function handleRun(req, res) {
 
     const transcriptIds = (transcripts || []).map((t) => t.id);
 
+    // Fetch transcript project signals
+    const { data: signalRows } = await supabaseAdmin
+      .from('transcript_project_signals')
+      .select('service_id, signal_type, confidence, evidence, reasoning')
+      .eq('customer_id', customerId);
+
+    // Deduplicate: keep highest confidence per service_id
+    const signalMap = {};
+    for (const row of signalRows || []) {
+      if (!signalMap[row.service_id] || row.confidence > signalMap[row.service_id].confidence) {
+        signalMap[row.service_id] = row;
+      }
+    }
+    const projectSignals = Object.values(signalMap);
+
     // Run the v3 engine
     const result = runDiagnosticV3(
       intake?.answers || {},
       computedSignals,
       transcriptAssessments,
       consultantAssessments,
-      crmType
+      crmType,
+      projectSignals
     );
 
     // Store result — when preserveRoadmap is set, only update scores (not roadmap)

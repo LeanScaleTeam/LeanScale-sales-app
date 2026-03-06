@@ -8,7 +8,7 @@
 import { useState, useRef } from 'react';
 import { parseDocument } from '../../../lib/client/parse-document';
 
-export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted }) {
+export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted, onProjectSignalsExtracted }) {
   const [text, setText] = useState('');
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -95,7 +95,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       setUploading(false);
       setAnalyzing(true);
 
-      const [prepAnalyzeRes, prepIntakeRes] = await Promise.all([
+      const [prepAnalyzeRes, prepIntakeRes, prepSignalsRes] = await Promise.all([
         fetch('/api/diagnostic/transcript?action=prepare-analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -106,19 +106,29 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transcriptId, customerId }),
         }),
+        fetch('/api/diagnostic/transcript?action=prepare-project-signals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptId, customerId }),
+        }),
       ]);
 
       const prepAnalyze = await safeJson(prepAnalyzeRes, 'Prepare analysis');
       const prepIntake = await safeJson(prepIntakeRes, 'Prepare intake');
+      const prepSignals = await safeJson(prepSignalsRes, 'Prepare project signals');
 
       if (!prepAnalyze.success || !prepIntake.success) {
         throw new Error('Failed to prepare analysis');
       }
 
       // Step 3: Call OpenRouter directly from browser (no timeout!)
-      const [analyzeOpenRouter, intakeOpenRouter] = await Promise.allSettled([
+      // All three extractions run in parallel
+      const [analyzeOpenRouter, intakeOpenRouter, signalsOpenRouter] = await Promise.allSettled([
         callOpenRouterDirect(prepAnalyze.data.apiKey, prepAnalyze.data.config),
         callOpenRouterDirect(prepIntake.data.apiKey, prepIntake.data.config),
+        prepSignals.success
+          ? callOpenRouterDirect(prepSignals.data.apiKey, prepSignals.data.config)
+          : Promise.reject(new Error('Skipped')),
       ]);
 
       if (analyzeOpenRouter.status === 'rejected') {
@@ -153,6 +163,21 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
         );
       }
 
+      // Project signals extraction is best-effort
+      if (signalsOpenRouter.status === 'fulfilled') {
+        storePromises.push(
+          fetch('/api/diagnostic/transcript?action=store-project-signals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              transcriptId,
+              customerId,
+              openRouterResponse: signalsOpenRouter.value,
+            }),
+          })
+        );
+      }
+
       const storeResults = await Promise.all(storePromises);
       const analyzeJson = await safeJson(storeResults[0], 'Store analysis');
 
@@ -160,22 +185,34 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
         throw new Error(analyzeJson.error || 'Failed to store analysis');
       }
 
-      // Intake store is best-effort
+      // Intake and project signals stores are best-effort
       let intakeData = null;
-      if (storeResults[1]) {
+      let signalsData = null;
+
+      // Parse remaining store results (indices depend on which extractions succeeded)
+      let storeIdx = 1;
+      if (intakeOpenRouter.status === 'fulfilled' && storeResults[storeIdx]) {
         try {
-          const intakeJson = await safeJson(storeResults[1], 'Store intake');
-          if (intakeJson.success) {
-            intakeData = intakeJson.data;
-          }
+          const intakeJson = await safeJson(storeResults[storeIdx], 'Store intake');
+          if (intakeJson.success) intakeData = intakeJson.data;
         } catch {
-          // Intake storage failed silently — competency analysis still succeeds
+          // Intake storage failed silently
+        }
+        storeIdx++;
+      }
+      if (signalsOpenRouter.status === 'fulfilled' && storeResults[storeIdx]) {
+        try {
+          const signalsJson = await safeJson(storeResults[storeIdx], 'Store project signals');
+          if (signalsJson.success) signalsData = signalsJson.data;
+        } catch {
+          // Project signals storage failed silently
         }
       }
 
       const combinedResult = {
         ...analyzeJson.data,
         intakeExtracted: intakeData?.extractedCount || 0,
+        projectSignals: signalsData?.signalCount || 0,
       };
 
       setResult(combinedResult);
@@ -183,6 +220,10 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
 
       if (intakeData?.preFill && Object.keys(intakeData.preFill).length > 0) {
         onIntakeExtracted?.(intakeData.preFill);
+      }
+
+      if (signalsData?.signals && signalsData.signals.length > 0) {
+        onProjectSignalsExtracted?.(signalsData.signals);
       }
     } catch (err) {
       setError(err.message);
@@ -328,6 +369,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
               <div style={styles.stat}>
                 <span style={styles.statValue}>{result.intakeExtracted}</span>
                 <span style={styles.statLabel}>Intake Questions Filled</span>
+              </div>
+            )}
+            {result.projectSignals > 0 && (
+              <div style={styles.stat}>
+                <span style={styles.statValue}>{result.projectSignals}</span>
+                <span style={styles.statLabel}>Project Signals</span>
               </div>
             )}
           </div>

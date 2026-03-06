@@ -346,6 +346,7 @@ export default function EngagementPitch({
             <Phase1Scope
               roadmap={effectiveRoadmap}
               customerPath={customerPath}
+              editMode={editMode}
             />
           )}
         </motion.div>

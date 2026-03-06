@@ -13,7 +13,7 @@ const STATUS_STYLES = {
   sold_out: { bg: '#F3F4F6', text: '#4B5563', border: '#E5E7EB', label: 'Sold Out' },
 };
 
-export default function Phase1Scope({ roadmap, customerPath }) {
+export default function Phase1Scope({ roadmap, customerPath, editMode }) {
   const [cohorts, setCohorts] = useState([]);
 
   useEffect(() => {
@@ -209,6 +209,24 @@ export default function Phase1Scope({ roadmap, customerPath }) {
                   {proj.primaryFunction}{proj.outcome ? ` — ${proj.outcome}` : ''}
                 </div>
               </div>
+              {editMode && proj.transcriptSignal && (
+                <span
+                  title={proj.transcriptSignal.evidence || ''}
+                  style={{
+                    fontSize: '0.55rem',
+                    padding: '0.1rem 0.35rem',
+                    borderRadius: '3px',
+                    background: '#EDE9FE',
+                    color: '#6C5CE7',
+                    fontWeight: 600,
+                    flexShrink: 0,
+                    cursor: proj.transcriptSignal.evidence ? 'help' : 'default',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Mentioned in call
+                </span>
+              )}
               {proj.metric && (
                 <span style={{
                   fontSize: '0.6rem',

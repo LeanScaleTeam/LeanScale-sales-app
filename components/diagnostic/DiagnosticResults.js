@@ -40,6 +40,37 @@ import CpqMetricsView from './views/CpqMetricsView';
 // Engagement Pitch view
 import EngagementPitch from '../engagement-pitch/EngagementPitch';
 
+/**
+ * Derive Power 10 metrics array from intake D5_* answers.
+ * Maps intake values to the { name, ableToReport } shape Power10Anchor expects.
+ */
+const D5_TO_METRIC = [
+  ['D5_arr', 'ARR'],
+  ['D5_bookings', 'Bookings'],
+  ['D5_pipeline', 'Pipeline production'],
+  ['D5_mql', 'MQL production'],
+  ['D5_gross_churn', 'Gross churn'],
+  ['D5_grr', 'Gross retention'],
+  ['D5_nrr', 'Net retention'],
+  ['D5_mql_opp', 'MQL -> Opportunity conversion rate'],
+  ['D5_opp_cw', 'Opportunity/Deal -> CW conversion rate'],
+  ['D5_cycle', 'Opportunity/Deal - CW cycle time'],
+];
+
+function derivePower10FromIntake(answers) {
+  if (!answers) return null;
+  const hasAny = D5_TO_METRIC.some(([key]) => answers[key]);
+  if (!hasAny) return null;
+  return D5_TO_METRIC.map(([key, name]) => {
+    const val = answers[key];
+    let ableToReport = 'unable';
+    if (val === 'Automated') ableToReport = 'healthy';
+    else if (val === 'Manual calc') ableToReport = 'careful';
+    else if (val === "Can't report" || val === 'Not reported') ableToReport = 'warning';
+    return { name, ableToReport };
+  });
+}
+
 const V3_STATUS_LABELS = { 1: 'Weak', 2: 'Below Average', 3: 'Average', 4: 'Good', 5: 'Best Practice' };
 
 /**
@@ -147,6 +178,7 @@ export default function DiagnosticResults({ diagnosticType }) {
           const result = runDiagnosticV3(DEMO_INTAKE_ANSWERS, {}, {}, {}, 'salesforce');
           setDiagnosticVersion(3);
           setV3Result(result);
+          setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
           setActiveView('scorecard');
         });
       }
@@ -158,9 +190,12 @@ export default function DiagnosticResults({ diagnosticType }) {
       try {
         if (configuredVersion === 3 && diagnosticType === 'gtm') {
           // v3: load from v3 endpoint
-          const res = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
-          if (res.ok) {
-            const json = await res.json();
+          const [v3Res, intakeRes] = await Promise.all([
+            fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`),
+            fetch(`/api/diagnostic/intake?customerId=${customer.id}`),
+          ]);
+          if (v3Res.ok) {
+            const json = await v3Res.json();
             if (json.success && json.data) {
               setDiagnosticVersion(3);
               setV3Result(json.data);
@@ -168,6 +203,14 @@ export default function DiagnosticResults({ diagnosticType }) {
               setV3RunTimestamp(json.data.updated_at || json.data.created_at);
               if (json.data.engagement_overrides) {
                 setEngagementOverrides(json.data.engagement_overrides);
+              }
+              // Derive Power 10 from intake answers for engagement details
+              if (intakeRes.ok) {
+                const intakeJson = await intakeRes.json();
+                if (intakeJson.success && intakeJson.answers) {
+                  const p10 = derivePower10FromIntake(intakeJson.answers);
+                  if (p10) setEditablePower10(p10);
+                }
               }
               setActiveView('scorecard');
             }

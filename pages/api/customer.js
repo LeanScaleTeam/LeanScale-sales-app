@@ -6,6 +6,7 @@
  */
 
 import { getCustomerServer } from '../../lib/getCustomer';
+import { supabaseAdmin } from '../../lib/supabase';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -21,10 +22,29 @@ export default async function handler(req, res) {
       });
     }
 
+    // Check if customer has diagnostic results
+    let hasDiagnosticResult = false;
+    if (customer.id && !customer.isDemo) {
+      const { count } = await supabaseAdmin
+        .from('diagnostic_results_v3')
+        .select('id', { count: 'exact', head: true })
+        .eq('customer_id', customer.id);
+      if (!count) {
+        const { count: v2Count } = await supabaseAdmin
+          .from('diagnostic_results')
+          .select('id', { count: 'exact', head: true })
+          .eq('customer_id', customer.id);
+        hasDiagnosticResult = v2Count > 0;
+      } else {
+        hasDiagnosticResult = true;
+      }
+    }
+
     // Add customerType (not in shared helper transform)
     const config = {
       ...customer,
       customerType: customer.customerType || 'active',
+      hasDiagnosticResult,
     };
 
     // No CDN caching — response varies by slug query param which Netlify

@@ -9,7 +9,7 @@
  * - All users see About Us / Diagnostic / Getting Started sections
  * - Diagnostic links filtered by customer.diagnosticType
  * - Demo users see all diagnostic types
- * - Unified "View Diagnostic" CTA for all users
+ * - Notification dot shown when customer has diagnostic results
  */
 
 import React from 'react';
@@ -43,6 +43,7 @@ describe('Navigation', () => {
           customerName: 'Demo',
           customerLogo: null,
           diagnosticType: 'gtm',
+          hasDiagnosticResult: false,
         },
         isDemo: true,
         displayName: null,
@@ -52,7 +53,7 @@ describe('Navigation', () => {
 
     test('renders About Us dropdown', () => {
       render(<Navigation />);
-      expect(screen.getByText('About Us')).toBeInTheDocument();
+      expect(screen.getAllByText('About Us').length).toBeGreaterThanOrEqual(1);
     });
 
     test('renders Diagnostic dropdown', () => {
@@ -72,9 +73,9 @@ describe('Navigation', () => {
       expect(screen.getByText('Q2C Diagnostic')).toBeInTheDocument();
     });
 
-    test('renders View Diagnostic CTA', () => {
+    test('does not show notification dot for demo users', () => {
       render(<Navigation />);
-      expect(screen.getByText('View Diagnostic')).toBeInTheDocument();
+      expect(document.querySelector('.nav-dot')).not.toBeInTheDocument();
     });
   });
 
@@ -86,6 +87,7 @@ describe('Navigation', () => {
           customerName: 'Acme Corp',
           customerLogo: null,
           diagnosticType: 'gtm',
+          hasDiagnosticResult: false,
         },
         isDemo: false,
         displayName: 'Acme Corp',
@@ -95,7 +97,7 @@ describe('Navigation', () => {
 
     test('renders unified nav sections', () => {
       render(<Navigation />);
-      expect(screen.getByText('About Us')).toBeInTheDocument();
+      expect(screen.getAllByText('About Us').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Diagnostic')).toBeInTheDocument();
       expect(screen.getByText('Getting Started')).toBeInTheDocument();
     });
@@ -112,11 +114,6 @@ describe('Navigation', () => {
       expect(screen.queryByText('Clay x LeanScale')).not.toBeInTheDocument();
     });
 
-    test('renders View Diagnostic CTA', () => {
-      render(<Navigation />);
-      expect(screen.getByText('View Diagnostic')).toBeInTheDocument();
-    });
-
     test('shows customer branding', () => {
       render(<Navigation />);
       expect(screen.getByText('Acme Corp')).toBeInTheDocument();
@@ -131,6 +128,7 @@ describe('Navigation', () => {
           customerName: 'ClayCompany',
           customerLogo: null,
           diagnosticType: 'clay',
+          hasDiagnosticResult: false,
         },
         isDemo: false,
         displayName: 'ClayCompany',
@@ -148,6 +146,59 @@ describe('Navigation', () => {
     test('shows Clay x LeanScale link', () => {
       render(<Navigation />);
       expect(screen.getByText('Clay x LeanScale')).toBeInTheDocument();
+    });
+  });
+
+  describe('Diagnostic notification dot', () => {
+    test('shows dot when customer has diagnostic result and is not demo', () => {
+      mockUseCustomer.mockReturnValue({
+        customer: {
+          slug: 'acme',
+          customerName: 'Acme Corp',
+          customerLogo: null,
+          diagnosticType: 'gtm',
+          hasDiagnosticResult: true,
+        },
+        isDemo: false,
+        displayName: 'Acme Corp',
+        customerPath: (p) => `/c/acme${p}`,
+      });
+      render(<Navigation />);
+      expect(document.querySelector('.nav-dot')).toBeInTheDocument();
+    });
+
+    test('does not show dot for demo users even with diagnostic result', () => {
+      mockUseCustomer.mockReturnValue({
+        customer: {
+          slug: 'demo',
+          customerName: 'Demo',
+          customerLogo: null,
+          diagnosticType: 'gtm',
+          hasDiagnosticResult: true,
+        },
+        isDemo: true,
+        displayName: null,
+        customerPath: (p) => p,
+      });
+      render(<Navigation />);
+      expect(document.querySelector('.nav-dot')).not.toBeInTheDocument();
+    });
+
+    test('does not show dot when customer has no diagnostic result', () => {
+      mockUseCustomer.mockReturnValue({
+        customer: {
+          slug: 'acme',
+          customerName: 'Acme Corp',
+          customerLogo: null,
+          diagnosticType: 'gtm',
+          hasDiagnosticResult: false,
+        },
+        isDemo: false,
+        displayName: 'Acme Corp',
+        customerPath: (p) => `/c/acme${p}`,
+      });
+      render(<Navigation />);
+      expect(document.querySelector('.nav-dot')).not.toBeInTheDocument();
     });
   });
 });

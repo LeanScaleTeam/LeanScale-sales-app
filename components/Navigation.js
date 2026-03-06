@@ -59,13 +59,6 @@ const gettingStartedLinks = {
   ],
 };
 
-// Diagnostic type → results page path
-const diagnosticConfig = {
-  gtm: { href: '/diagnostic/gtm', label: 'Diagnostic' },
-  clay: { href: '/diagnostic/clay', label: 'Diagnostic' },
-  cpq: { href: '/diagnostic/cpq', label: 'Diagnostic' },
-};
-
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -158,7 +151,11 @@ export default function Navigation() {
                 className="nav-button"
                 onClick={() => toggleDropdown(item.name)}
               >
-                {item.label} <span>&#9662;</span>
+                {item.label}
+                {item.name === 'diagnostic' && !isDemo && customer.hasDiagnosticResult && (
+                  <span className="nav-dot" />
+                )}
+                {' '}<span>&#9662;</span>
               </button>
               <div className={`nav-dropdown ${openDropdown === item.name ? 'nav-dropdown-open' : ''}`}>
                 {item.links.map((link) => (
@@ -171,13 +168,6 @@ export default function Navigation() {
           )
         )}
 
-        <Link
-          href={customerPath(diagnosticConfig[diagnosticType]?.href || '/diagnostic/gtm')}
-          className="nav-cta"
-          onClick={closeMenu}
-        >
-          View Diagnostic
-        </Link>
       </div>
     </nav>
   );

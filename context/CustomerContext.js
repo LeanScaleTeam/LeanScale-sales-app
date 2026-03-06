@@ -23,6 +23,7 @@ const defaultCustomer = {
   assignedTeam: ['izzy', 'brian', 'dave', 'kavean'],
   isDemo: true,
   customerType: 'prospect',
+  hasDiagnosticResult: false,
 };
 
 // Static availability dates (fallback when API fails)

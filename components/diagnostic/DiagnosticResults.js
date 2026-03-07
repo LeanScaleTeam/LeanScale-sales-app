@@ -1177,14 +1177,14 @@ export default function DiagnosticResults({ diagnosticType }) {
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {!isDemo && diagnosticResultId ? (
               <button
-                className="nav-cta"
+                className="btn cta-btn-primary"
                 onClick={() => { setActiveView('pitch'); }}
                 style={{ border: 'none', cursor: 'pointer' }}
               >
                 View Engagement Details
               </button>
             ) : (
-              <a href={customerPath('/diagnostic/start')} className="nav-cta" style={{ textDecoration: 'none' }}>
+              <a href={customerPath('/diagnostic/start')} className="btn cta-btn-primary" style={{ textDecoration: 'none' }}>
                 Start Your Diagnostic
               </a>
             )}

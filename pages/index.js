@@ -54,6 +54,10 @@ const quickLinks = [
 
 export default function Home() {
   const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
+  const diagnosticHref = customer.hasDiagnosticResult
+    ? `/diagnostic/${diagnosticType}`
+    : '/diagnostic/start';
 
   return (
     <Layout title="LeanScale">
@@ -212,8 +216,8 @@ export default function Home() {
             Take our diagnostic to identify the highest-impact opportunities.
           </p>
           <div className="cta-buttons">
-            <Link href={customerPath('/diagnostic/start')} className="btn cta-btn-primary">
-              Start Diagnostic
+            <Link href={customerPath(diagnosticHref)} className="btn cta-btn-primary">
+              {customer.hasDiagnosticResult ? 'View Diagnostic' : 'Start Diagnostic'}
             </Link>
             <Link href={customerPath('/getting-started/availability')} className="btn cta-btn-secondary">
               Get Started

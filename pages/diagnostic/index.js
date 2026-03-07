@@ -13,6 +13,10 @@ const diagnosticFeatures = [
 
 export default function DiagnosticOverview() {
   const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
+  const diagnosticHref = customer.hasDiagnosticResult
+    ? `/diagnostic/${diagnosticType}`
+    : '/diagnostic/start';
   return (
     <Layout title="Diagnostic">
       <div className="container">
@@ -150,8 +154,8 @@ export default function DiagnosticOverview() {
             Take the diagnostic to identify your highest-impact GTM improvements.
           </p>
           <div className="cta-buttons">
-            <Link href={customerPath('/diagnostic/start')} className="btn cta-btn-primary">
-              Start Diagnostic
+            <Link href={customerPath(diagnosticHref)} className="btn cta-btn-primary">
+              {customer.hasDiagnosticResult ? 'View Diagnostic' : 'Start Diagnostic'}
             </Link>
             <Link href={customerPath('/about/services')} className="btn cta-btn-secondary">
               Browse Services

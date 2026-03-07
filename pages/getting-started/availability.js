@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useCustomer } from '../../context/CustomerContext';
 
 export default function Availability() {
-  const { customerPath } = useCustomer();
+  const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
+  const diagnosticHref = customer.hasDiagnosticResult
+    ? `/diagnostic/${diagnosticType}`
+    : '/diagnostic/start';
   return (
     <Layout title="Cohort Availability">
       <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -33,14 +37,14 @@ export default function Availability() {
           <p style={{ opacity: 0.9, marginBottom: '1.5rem' }}>
             Configure your engagement and secure your cohort spot today.
           </p>
-          <Link href={customerPath('/getting-started')} style={{ textDecoration: 'none' }}>
-            <button className="btn" style={{ 
-              background: 'white', 
-              color: '#7c3aed', 
+          <Link href={customerPath(diagnosticHref)} style={{ textDecoration: 'none' }}>
+            <button className="btn" style={{
+              background: 'white',
+              color: '#7c3aed',
               fontWeight: 600,
               padding: '0.875rem 2rem',
             }}>
-              Start Your Engagement →
+              {customer.hasDiagnosticResult ? 'View Diagnostic →' : 'Start Diagnostic →'}
             </button>
           </Link>
         </div>

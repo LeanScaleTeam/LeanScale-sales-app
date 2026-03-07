@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
+import { useCustomer } from '../../context/CustomerContext';
 import { 
   strategicProjects, 
   managedServices, 
@@ -21,6 +22,11 @@ const tabs = [
 const functionOptions = ['all', 'crossFunctional', 'marketing', 'sales', 'customerSuccess', 'partnerships'];
 
 export default function ServicesCatalog() {
+  const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
+  const diagnosticHref = customer.hasDiagnosticResult
+    ? `/diagnostic/${diagnosticType}`
+    : '/diagnostic/start';
   const [activeTab, setActiveTab] = useState('strategic');
   const [functionFilter, setFunctionFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -277,15 +283,15 @@ export default function ServicesCatalog() {
           <p style={{ margin: '0 0 1rem 0', opacity: 0.9 }}>
             Take our GTM Diagnostic to identify which services will have the biggest impact on your revenue operations.
           </p>
-          <Link 
-            href="/diagnostic/gtm"
+          <Link
+            href={customerPath(diagnosticHref)}
             className="btn btn-primary"
             style={{
               background: 'white',
               color: '#7c3aed',
             }}
           >
-            Start GTM Diagnostic
+            {customer.hasDiagnosticResult ? 'View Diagnostic' : 'Start Diagnostic'}
           </Link>
         </div>
       </div>

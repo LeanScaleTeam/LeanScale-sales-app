@@ -13,7 +13,11 @@ const navLinks = [
 
 
 export default function WhyLeanScale() {
-  const { customerPath } = useCustomer();
+  const { customer, customerPath } = useCustomer();
+  const diagnosticType = customer.diagnosticType || 'gtm';
+  const diagnosticHref = customer.hasDiagnosticResult
+    ? `/diagnostic/${diagnosticType}`
+    : '/diagnostic/start';
   return (
     <Layout title="Why LeanScale?">
       <div className="container">
@@ -358,9 +362,9 @@ export default function WhyLeanScale() {
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>Ready to Accelerate Your GTM?</h3>
           <p style={{ margin: '0 0 1.5rem 0', opacity: 0.9 }}>Start with a GTM Diagnostic or schedule time to discuss your needs.</p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href={customerPath('/diagnostic')}>
+            <Link href={customerPath(diagnosticHref)}>
               <button className="btn" style={{ background: 'white', color: '#7c3aed', border: 'none', padding: '0.75rem 1.5rem', fontWeight: 600 }}>
-                Start GTM Diagnostic
+                {customer.hasDiagnosticResult ? 'View Diagnostic' : 'Start Diagnostic'}
               </button>
             </Link>
             <Link href={customerPath('/getting-started')}>

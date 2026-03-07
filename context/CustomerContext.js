@@ -20,7 +20,7 @@ const defaultCustomer = {
   intakeFormLink: 'https://forms.fillout.com/t/nqEbrHoL5Eus',
   youtubeVideoId: 'M7oECb8xsy0',
   googleSlidesEmbedUrl: 'https://docs.google.com/presentation/d/e/2PACX-1vSGSLvHvPn9Cus6N3BpGnK6AkZsUiEdh8cARVVBiZ4w54uUCjHHJ-lHfymW8wfPPraAXMfgXtePxIwf/pubembed?start=true&loop=true&delayms=3000',
-  assignedTeam: ['izzy', 'brian', 'dave', 'kavean'],
+  assignedTeam: ['izzy', 'brian', 'kavean'],
   isDemo: true,
   customerType: 'prospect',
   hasDiagnosticResult: false,

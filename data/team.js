@@ -46,19 +46,7 @@ const team = [
     ],
     personal: "Spends downtime coaching baseball and competing in national softball tournaments."
   },
-  {
-    id: "dave",
-    name: "David (Dave) Evans",
-    role: "Engineer",
-    photo: "https://leanscale.team/wp-content/uploads/2024/12/Dave-Evans.jpg",
-    experience: [
-      "11+ years in Marketing Operations & Web Development within B2B SaaS",
-      "25+ years as a Software Engineer/Architect",
-      "7+ years as a startup founder & CTO"
-    ],
-    personal: "Fan of the 49ers, going all out for Halloween, and traveling the country in his RV."
-  },
-  {
+{
     id: "kavean",
     name: "Kavean Gobal",
     role: "Engineer",

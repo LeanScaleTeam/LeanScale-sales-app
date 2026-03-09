@@ -185,6 +185,7 @@ export default function DiagnosticResults({ diagnosticType }) {
 
     async function loadDiagnosticData() {
       setLoadingData(true);
+      let foundResults = false;
       try {
         if (configuredVersion === 3 && diagnosticType === 'gtm') {
           // v3: load from v3 endpoint
@@ -211,6 +212,7 @@ export default function DiagnosticResults({ diagnosticType }) {
                 }
               }
               setActiveView('scorecard');
+              foundResults = true;
             }
           }
         } else {
@@ -232,6 +234,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               setV2RunTimestamp(json.data.updated_at || json.data.created_at);
               if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
               setActiveView('layers');
+              foundResults = true;
             } else {
               setDiagnosticVersion(1);
               setEditableProcesses(json.data.processes || []);
@@ -242,6 +245,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               }
               if (json.data.engagement_overrides) setEngagementOverrides(json.data.engagement_overrides);
               setDiagnosticResultId(json.data.id);
+              foundResults = true;
             }
             setNotes(json.notes || []);
           }
@@ -250,6 +254,14 @@ export default function DiagnosticResults({ diagnosticType }) {
         console.error('Error loading diagnostic data:', err);
       } finally {
         setLoadingData(false);
+        if (!foundResults && diagnosticType === 'gtm') {
+          const { DEMO_INTAKE_ANSWERS } = await import('../../data/demo-v3-intake');
+          const result = runDiagnosticV3(DEMO_INTAKE_ANSWERS, {}, {}, {}, 'salesforce');
+          setDiagnosticVersion(3);
+          setV3Result(result);
+          setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
+          setActiveView('scorecard');
+        }
       }
     }
 

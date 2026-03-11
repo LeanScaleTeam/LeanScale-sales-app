@@ -16,9 +16,42 @@ const PRIORITY_OPTIONS = [
   { value: 'optional', label: 'Optional', color: '#6B7280', bg: '#F3F4F6' },
 ];
 
+const FUNCTION_ORDER = ['Sales', 'Marketing', 'Customer Success', 'Partnerships', 'Cross Functional'];
+
+const FUNCTION_ICONS = {
+  'Sales': '💼',
+  'Marketing': '📣',
+  'Customer Success': '🤝',
+  'Partnerships': '🔗',
+  'Cross Functional': '⚙️',
+};
+
+/**
+ * Group projects by primaryFunction, in a stable order.
+ */
+function groupByFunction(projects) {
+  const groups = new Map();
+  for (const proj of projects) {
+    const fn = proj.primaryFunction || 'Cross Functional';
+    if (!groups.has(fn)) groups.set(fn, []);
+    groups.get(fn).push(proj);
+  }
+  // Sort by FUNCTION_ORDER, then alphabetical for any extras
+  const sorted = [...groups.entries()].sort(([a], [b]) => {
+    const ai = FUNCTION_ORDER.indexOf(a);
+    const bi = FUNCTION_ORDER.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.localeCompare(b);
+  });
+  return sorted;
+}
+
 /**
  * PhaseRoadmap — Step 3 of the Engagement Details.
- * Shows the 4-phase quarterly roadmap with projects and managed services per phase.
+ * Shows the 4-phase quarterly roadmap with projects grouped by function,
+ * plus managed services per phase.
  */
 export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPath, overrides }) {
   if (!roadmap || !roadmap.phases) return null;
@@ -41,9 +74,15 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
       </motion.div>
 
       {/* Phase Cards */}
-      {roadmap.phases.map((phase, idx) => {
+      {roadmap.phases.map((phase) => {
         const colors = PHASE_COLORS[phase.id] || PHASE_COLORS.activate;
-        const hasContent = phase.projects.length > 0 || phase.managedServices?.length > 0;
+        // Split strategic projects from managed services within projects
+        const strategicProjects = phase.projects.filter(p => p.type !== 'managed');
+        const managedFromProjects = phase.projects.filter(p => p.type === 'managed');
+        // Combine managed from projects + explicit managedServices array
+        const allManaged = [...managedFromProjects, ...(phase.managedServices || [])];
+        const hasContent = strategicProjects.length > 0 || allManaged.length > 0;
+        const functionGroups = groupByFunction(strategicProjects);
 
         return (
           <motion.div
@@ -81,6 +120,14 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
                   <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: colors.text, margin: 0 }}>
                     {phase.name}
                   </h3>
+                  <span style={{
+                    fontSize: 'var(--text-2xs)',
+                    color: 'var(--text-muted)',
+                    fontWeight: 500,
+                  }}>
+                    {strategicProjects.length} project{strategicProjects.length !== 1 ? 's' : ''}
+                    {allManaged.length > 0 && ` + ${allManaged.length} system${allManaged.length !== 1 ? 's' : ''}`}
+                  </span>
                 </div>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: 'var(--space-1) 0 0' }}>
                   {phase.tagline}
@@ -100,34 +147,22 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
 
             {/* Phase Content */}
             <div style={{ padding: 'var(--space-4)' }}>
-              {/* Strategic Projects */}
-              {phase.projects.length > 0 && (
-                <div style={{ marginBottom: phase.managedServices?.length > 0 ? 'var(--space-4)' : 0 }}>
-                  <div style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.05em',
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    marginBottom: 'var(--space-2)',
-                  }}>
-                    Strategic Projects
-                  </div>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: 'var(--space-2)',
-                  }}>
-                    {phase.projects.map(proj => (
-                      <ProjectRow
-                        key={proj.serviceId}
-                        project={proj}
+              {/* Strategic Projects grouped by function */}
+              {strategicProjects.length > 0 && (
+                <div style={{ marginBottom: allManaged.length > 0 ? 'var(--space-4)' : 0 }}>
+                  <SectionLabel>Strategic Projects</SectionLabel>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                    {functionGroups.map(([functionName, projects]) => (
+                      <FunctionGroup
+                        key={functionName}
+                        functionName={functionName}
+                        projects={projects}
                         colors={colors}
                         currentPhaseId={phase.id}
                         editMode={editMode}
                         onOverride={onOverride}
                         customerPath={customerPath}
-                        priority={overrides?.roadmap?.[proj.serviceId]?.priority}
+                        overrides={overrides}
                       />
                     ))}
                   </div>
@@ -135,33 +170,36 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
               )}
 
               {/* Managed Services */}
-              {phase.managedServices?.length > 0 && (
+              {allManaged.length > 0 && (
                 <div>
+                  <SectionLabel>Managed Systems</SectionLabel>
                   <div style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.05em',
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    marginBottom: 'var(--space-2)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                    gap: 'var(--space-2)',
                   }}>
-                    Managed Systems
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                    {phase.managedServices.map(ms => (
-                      <span
+                    {allManaged.map(ms => (
+                      <div
                         key={ms.serviceId || ms.name}
                         style={{
-                          fontSize: 'var(--text-xs)',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '9999px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          fontSize: 'var(--text-sm)',
+                          padding: '0.35rem 0.6rem',
+                          borderRadius: 'var(--radius-md, 8px)',
                           background: 'var(--bg-subtle)',
-                          color: 'var(--text-secondary)',
                           border: '1px solid var(--border-color)',
                         }}
                       >
-                        {ms.name}
-                      </span>
+                        <span style={{ fontSize: 'var(--text-sm)' }}>{ms.icon || '🔧'}</span>
+                        <span style={{ fontWeight: 'var(--font-medium)' }}>{ms.name}</span>
+                        {ms.hoursPerMonth && (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-2xs)', marginLeft: 'auto' }}>
+                            {ms.hoursPerMonth}hrs/mo
+                          </span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -180,35 +218,105 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
   );
 }
 
+function SectionLabel({ children }) {
+  return (
+    <div style={{
+      fontSize: '0.65rem',
+      fontWeight: 700,
+      letterSpacing: '0.05em',
+      color: 'var(--text-muted)',
+      textTransform: 'uppercase',
+      marginBottom: 'var(--space-2)',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function FunctionGroup({ functionName, projects, colors, currentPhaseId, editMode, onOverride, customerPath, overrides }) {
+  return (
+    <div>
+      {/* Function subheader */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.35rem',
+        marginBottom: 'var(--space-1)',
+        paddingBottom: '0.25rem',
+        borderBottom: '1px solid var(--border-color)',
+      }}>
+        <span style={{ fontSize: 'var(--text-xs)' }}>{FUNCTION_ICONS[functionName] || '📋'}</span>
+        <span style={{
+          fontSize: 'var(--text-xs)',
+          fontWeight: 'var(--font-semibold)',
+          color: 'var(--text-secondary)',
+        }}>
+          {functionName}
+        </span>
+        <span style={{
+          fontSize: 'var(--text-2xs)',
+          color: 'var(--text-muted)',
+        }}>
+          ({projects.length})
+        </span>
+      </div>
+      {/* Project list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        {projects.map(proj => (
+          <ProjectRow
+            key={proj.serviceId}
+            project={proj}
+            colors={colors}
+            currentPhaseId={currentPhaseId}
+            editMode={editMode}
+            onOverride={onOverride}
+            customerPath={customerPath}
+            priority={overrides?.roadmap?.[proj.serviceId]?.priority}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, customerPath, priority }) {
-  const priorityOption = PRIORITY_OPTIONS.find(p => p.value === priority) || PRIORITY_OPTIONS[1]; // default: recommended
+  const priorityOption = PRIORITY_OPTIONS.find(p => p.value === priority) || PRIORITY_OPTIONS[1];
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
       gap: 'var(--space-2)',
-      padding: 'var(--space-2) var(--space-3)',
-      borderRadius: 'var(--radius-md, 8px)',
-      background: 'var(--bg-subtle)',
-      border: '1px solid var(--border-color)',
-    }}>
-      <span style={{ fontSize: 'var(--text-base)' }}>{project.icon || '📋'}</span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: 'var(--text-sm)',
-          fontWeight: 'var(--font-medium)',
-          whiteSpace: 'nowrap',
+      padding: '0.4rem 0.6rem',
+      borderRadius: '4px',
+      transition: 'background 0.15s',
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-subtle)'}
+    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+    >
+      <span style={{ fontSize: 'var(--text-sm)' }}>{project.icon || '📋'}</span>
+      <span style={{
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-medium)',
+        flex: 1,
+        minWidth: 0,
+      }}>
+        {project.name}
+      </span>
+      {/* Outcome text when available */}
+      {project.outcome && !editMode && (
+        <span style={{
+          fontSize: 'var(--text-2xs)',
+          color: 'var(--text-muted)',
+          flexShrink: 1,
+          minWidth: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: '200px',
         }}>
-          {project.name}
-        </div>
-        {project.primaryFunction && (
-          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
-            {project.primaryFunction}
-          </div>
-        )}
-      </div>
+          {project.outcome}
+        </span>
+      )}
       {/* Transcript signal badge (admin only) */}
       {editMode && project.transcriptSignal && (
         <span
@@ -228,17 +336,23 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
           Mentioned in call
         </span>
       )}
-      {/* Priority badge (always shown) */}
+      {/* Priority dot + label */}
       {!editMode && (
         <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
           fontSize: '0.6rem',
-          padding: '0 0.3rem',
-          borderRadius: '3px',
-          background: priorityOption.bg,
           color: priorityOption.color,
           fontWeight: 600,
           flexShrink: 0,
         }}>
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: priorityOption.color,
+          }} />
           {priorityOption.label}
         </span>
       )}
@@ -249,10 +363,11 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
           onClick={(e) => e.stopPropagation()}
           title="View Playbook"
           style={{
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             textDecoration: 'none',
             flexShrink: 0,
             lineHeight: 1,
+            opacity: 0.6,
           }}
         >
           📖

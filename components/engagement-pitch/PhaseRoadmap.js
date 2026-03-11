@@ -19,6 +19,12 @@ const PRIORITY_OPTIONS = [
 const FUNCTION_ORDER = ['Sales', 'Marketing', 'Customer Success', 'Partnerships', 'Cross Functional'];
 
 
+const MANAGED_SERVICE_ICONS = {
+  'crm-admin': '🗄️',
+  'enrichment-tools-admin': '🔬',
+  'ongoing-reporting': '📊',
+};
+
 const FUNCTION_ICONS = {
   'Sales': '💼',
   'Marketing': '📣',
@@ -80,7 +86,7 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
           <SectionLabel>Ongoing Managed Services</SectionLabel>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 'var(--space-3)',
           }}>
             {managedServices.map(ms => (
@@ -443,7 +449,7 @@ function ManagedServiceCard({ service, editMode, onOverride }) {
         </button>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
-        <span style={{ fontSize: '1.25rem' }}>🔧</span>
+        <span style={{ fontSize: '1.25rem' }}>{MANAGED_SERVICE_ICONS[service.serviceId] || '🔧'}</span>
         <span style={{ fontWeight: 600 }}>{service.name}</span>
       </div>
       {service.description && (

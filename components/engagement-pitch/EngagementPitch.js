@@ -10,57 +10,7 @@ import { recommendTier } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
 import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/v3/constants-v3';
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
-import { managedServices as managedServicesCatalog } from '../../data/services-catalog';
-
-// Map known CRM/tool identifiers to their managed service catalog entries
-const CORE_SYSTEM_MAP = {
-  salesforce: 'salesforce-impl',
-  hubspot: 'hubspot-impl',
-};
-
-/**
- * Derive core managed systems from diagnostic data.
- * Returns the customer's actual CRM + any detected platforms.
- */
-function deriveCoreManaged(companyProfile, v3Result) {
-  const systems = [];
-  const seen = new Set();
-
-  // 1. CRM from company profile or v3 result
-  const crm = companyProfile?.crm || v3Result?.company_profile?.crm || v3Result?.crmType;
-  const crmKey = crm?.toLowerCase();
-  if (crmKey && CORE_SYSTEM_MAP[crmKey]) {
-    const sid = CORE_SYSTEM_MAP[crmKey];
-    const entry = findInCatalog(sid);
-    if (entry) { systems.push(entry); seen.add(sid); }
-  }
-
-  // 2. Managed services that appear in the v3 roadmap (diagnostic detected them)
-  if (v3Result?.roadmap?.phases) {
-    for (const phase of v3Result.roadmap.phases) {
-      for (const proj of phase.projects || []) {
-        if (proj.service?.type === 'managed' && !seen.has(proj.serviceId)) {
-          systems.push({
-            serviceId: proj.serviceId,
-            name: proj.service.name,
-            icon: proj.service.icon,
-          });
-          seen.add(proj.serviceId);
-        }
-      }
-    }
-  }
-
-  return systems;
-}
-
-function findInCatalog(serviceId) {
-  for (const category of Object.values(managedServicesCatalog)) {
-    const found = category.find(s => s.id === serviceId);
-    if (found) return { serviceId: found.id, name: found.name, icon: found.icon };
-  }
-  return null;
-}
+import { managedServicesHealth } from '../../data/diagnostic-data';
 
 /**
  * Map v3 pillar to v2-style layer for phase assignment and display.
@@ -240,13 +190,21 @@ export default function EngagementPitch({
 
   const activeTier = selectedTierId || autoTier;
 
-  // Derive core managed systems from customer data (CRM, MAP, etc.)
+  // Resolve managed services: "health" = from managedServicesHealth, otherwise use array as-is
   const resolvedManagedServices = useMemo(() => {
-    if (managedServices === 'all') {
-      return deriveCoreManaged(companyProfile, v3Result);
+    if (managedServices === 'health') {
+      return managedServicesHealth
+        .filter(ms => ms.addToEngagement)
+        .map(ms => ({
+          serviceId: ms.serviceId,
+          name: ms.name,
+          icon: '🔧',
+          status: ms.status,
+          hoursPerMonth: ms.hoursPerMonth,
+        }));
     }
     return managedServices || [];
-  }, [managedServices, companyProfile, v3Result]);
+  }, [managedServices]);
 
   // Build roadmap
   const roadmap = useMemo(() => {

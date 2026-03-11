@@ -424,42 +424,67 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
 
 function ManagedServicesList({ services, editMode, onOverride }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
       {services.map(ms => (
-        <span
+        <div
           key={ms.serviceId || ms.id || ms.name}
           style={{
-            display: 'inline-flex',
+            display: 'flex',
             alignItems: 'center',
-            gap: '0.3rem',
-            fontSize: 'var(--text-sm)',
-            padding: '0.3rem 0.65rem',
-            borderRadius: '9999px',
-            background: 'var(--bg-subtle)',
-            border: '1px solid var(--border-color)',
+            gap: 'var(--space-2)',
+            padding: '0.4rem 0.6rem',
+            borderRadius: '4px',
+            transition: 'background 0.15s',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-subtle)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          <span>{ms.icon || '🔧'}</span>
-          {ms.name}
+          <span style={{ fontSize: 'var(--text-sm)' }}>🔧</span>
+          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', flex: 1 }}>
+            {ms.name}
+          </span>
+          {ms.hoursPerMonth && (
+            <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
+              {ms.hoursPerMonth} hrs/mo
+            </span>
+          )}
+          {ms.status && (
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              fontSize: '0.6rem',
+              fontWeight: 600,
+              color: ms.status === 'warning' ? '#DC2626' : ms.status === 'careful' ? '#EA580C' : '#16A34A',
+            }}>
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: ms.status === 'warning' ? '#DC2626' : ms.status === 'careful' ? '#EA580C' : '#16A34A',
+              }} />
+              {ms.status === 'warning' ? 'Needs attention' : ms.status === 'careful' ? 'Monitor' : 'Healthy'}
+            </span>
+          )}
           {editMode && (
             <button
               onClick={() => onOverride?.('roadmap', ms.serviceId || ms.id, { excluded: true })}
               title={`Remove ${ms.name}`}
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.8rem',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: 0,
+                padding: '2px',
                 lineHeight: 1,
                 color: '#9CA3AF',
-                marginLeft: '0.15rem',
+                flexShrink: 0,
               }}
             >
               ✕
             </button>
           )}
-        </span>
+        </div>
       ))}
     </div>
   );

@@ -1011,7 +1011,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               v3Result={v3Result}
               processes={processes}
               power10Data={power10Data}
-              managedServices="all"
+              managedServices="health"
               companyProfile={
                 isV2 ? v2Result?.companyProfile
                 : isV3 ? v3Result?.company_profile

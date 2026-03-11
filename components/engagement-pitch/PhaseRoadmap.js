@@ -54,7 +54,7 @@ function groupByFunction(projects) {
  * Shows the 4-phase quarterly roadmap with projects grouped by function,
  * plus managed services per phase.
  */
-export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPath, overrides }) {
+export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOverride, customerPath, overrides }) {
   if (!roadmap || !roadmap.phases) return null;
 
   return (
@@ -74,17 +74,61 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
         </p>
       </motion.div>
 
+      {/* Ongoing Managed Services — not tied to any phase */}
+      {managedServices?.length > 0 && (
+        <motion.div
+          variants={fadeUpItem}
+          className="card"
+          style={{
+            padding: 0,
+            overflow: 'hidden',
+            border: '1px solid var(--border-color)',
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: 'var(--space-3) var(--space-4)',
+            background: 'var(--bg-subtle)',
+            borderBottom: '1px solid var(--border-color)',
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  background: '#6C5CE7',
+                  color: 'white',
+                }}>
+                  ONGOING
+                </span>
+                <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', margin: 0 }}>
+                  Managed Services
+                </h3>
+              </div>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: 'var(--space-1) 0 0' }}>
+                Core operations your LeanScale team manages throughout the engagement
+              </p>
+            </div>
+          </div>
+          <div style={{ padding: 'var(--space-3) var(--space-4)' }}>
+            <ManagedServicesList
+              services={managedServices}
+              editMode={editMode}
+              onOverride={onOverride}
+            />
+          </div>
+        </motion.div>
+      )}
+
       {/* Phase Cards */}
       {roadmap.phases.map((phase) => {
         const colors = PHASE_COLORS[phase.id] || PHASE_COLORS.activate;
-        // Split strategic projects from managed services within projects
         const strategicProjects = phase.projects.filter(p => p.type !== 'managed');
-        const managedFromProjects = phase.projects.filter(p => p.type === 'managed');
-        // Combine managed from projects + explicit managedServices array (dedupe by serviceId)
-        const managedIds = new Set(managedFromProjects.map(p => p.serviceId));
-        const extraManaged = (phase.managedServices || []).filter(ms => !managedIds.has(ms.serviceId));
-        const allManaged = [...managedFromProjects, ...extraManaged];
-        const hasContent = strategicProjects.length > 0 || allManaged.length > 0;
+        const hasContent = strategicProjects.length > 0;
         const functionGroups = groupByFunction(strategicProjects);
 
         return (
@@ -129,7 +173,6 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
                     fontWeight: 500,
                   }}>
                     {strategicProjects.length} project{strategicProjects.length !== 1 ? 's' : ''}
-                    {allManaged.length > 0 && ` + ${allManaged.length} system${allManaged.length !== 1 ? 's' : ''}`}
                   </span>
                 </div>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: 'var(--space-1) 0 0' }}>
@@ -152,7 +195,7 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
             <div style={{ padding: 'var(--space-4)' }}>
               {/* Strategic Projects grouped by function */}
               {strategicProjects.length > 0 && (
-                <div style={{ marginBottom: allManaged.length > 0 ? 'var(--space-4)' : 0 }}>
+                <div>
                   <SectionLabel>Strategic Projects</SectionLabel>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                     {functionGroups.map(([functionName, projects]) => (
@@ -169,23 +212,6 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
                       />
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Managed Services */}
-              {allManaged.length > 0 && (
-                <div>
-                  <SectionLabel>
-                    Managed Systems
-                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: '0.5rem' }}>
-                      ({allManaged.length})
-                    </span>
-                  </SectionLabel>
-                  <ManagedServicesList
-                    services={allManaged}
-                    editMode={editMode}
-                    onOverride={onOverride}
-                  />
                 </div>
               )}
 

@@ -217,20 +217,22 @@ export default function EngagementPitch({
     return buildEngagementRoadmapV1(processes || [], activeTier, []);
   }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier]);
 
-  // Apply roadmap overrides (phase reassignment, exclusions) and inject managed services
+  // Filter managed services by exclusion overrides
+  const effectiveManagedServices = useMemo(() => {
+    const roadmapOv = overrides?.roadmap || {};
+    return resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
+  }, [resolvedManagedServices, overrides?.roadmap]);
+
+  // Apply roadmap overrides (phase reassignment, exclusions)
   const effectiveRoadmap = useMemo(() => {
     if (!roadmap?.phases) return roadmap;
     const roadmapOv = overrides?.roadmap || {};
 
-    const phases = roadmap.phases.map((phase, idx) => ({
+    const phases = roadmap.phases.map((phase) => ({
       ...phase,
       projects: phase.projects
         .filter(p => !roadmapOv[p.serviceId]?.excluded)
         .slice(),
-      // Attach all managed services to the first phase (stabilize)
-      managedServices: idx === 0
-        ? resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded)
-        : (phase.managedServices || []).filter(ms => !roadmapOv[ms.serviceId || ms.id]?.excluded),
     }));
 
     // Handle phase reassignments
@@ -251,7 +253,7 @@ export default function EngagementPitch({
     }
 
     return { ...roadmap, phases };
-  }, [roadmap, overrides?.roadmap, resolvedManagedServices]);
+  }, [roadmap, overrides?.roadmap]);
 
   // Cost of inaction
   const costOfInaction = useMemo(() => {
@@ -346,6 +348,7 @@ export default function EngagementPitch({
           {step.id === 'roadmap' && (
             <PhaseRoadmap
               roadmap={effectiveRoadmap}
+              managedServices={effectiveManagedServices}
               editMode={editMode}
               onOverride={updateOverrides}
               customerPath={customerPath}

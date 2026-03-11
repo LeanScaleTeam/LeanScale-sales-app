@@ -421,13 +421,7 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
 
 function ManagedServiceCard({ service, editMode, onOverride }) {
   return (
-    <div
-      className="card"
-      style={{
-        padding: 'var(--space-3)',
-        position: 'relative',
-      }}
-    >
+    <div className="card" style={{ padding: 'var(--space-4)', position: 'relative' }}>
       {editMode && (
         <button
           onClick={() => onOverride?.('roadmap', service.serviceId || service.id, { excluded: true })}
@@ -448,16 +442,19 @@ function ManagedServiceCard({ service, editMode, onOverride }) {
           ✕
         </button>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-1)' }}>
-        <span style={{ fontSize: 'var(--text-base)' }}>🔧</span>
-        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
-          {service.name}
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
+        <span style={{ fontSize: '1.25rem' }}>🔧</span>
+        <span style={{ fontWeight: 600 }}>{service.name}</span>
       </div>
+      {service.description && (
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 var(--space-2) 0' }}>
+          {service.description}
+        </p>
+      )}
       {service.hoursPerMonth && (
-        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: '#6C5CE7', fontWeight: 500 }}>
           ~{service.hoursPerMonth} hrs/month
-        </span>
+        </div>
       )}
     </div>
   );

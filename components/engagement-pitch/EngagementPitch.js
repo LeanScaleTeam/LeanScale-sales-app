@@ -12,6 +12,12 @@ import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
 import { managedServicesHealth } from '../../data/diagnostic-data';
 
+const MANAGED_SERVICE_DESCRIPTIONS = {
+  'crm-admin': 'Ongoing CRM configuration, user management, and system maintenance to keep your revenue engine running.',
+  'enrichment-tools-admin': 'Manage data enrichment tools and integrations to maintain high-quality contact and account data.',
+  'ongoing-reporting': 'Regular reporting updates, dashboard maintenance, and ad-hoc analysis for GTM leadership.',
+};
+
 /**
  * Map v3 pillar to v2-style layer for phase assignment and display.
  */
@@ -190,14 +196,17 @@ export default function EngagementPitch({
 
   const activeTier = selectedTierId || autoTier;
 
-  // Resolve managed services: standard ops every LeanScale customer gets
+  // Resolve managed services: the 3 core ops every LeanScale customer gets
   const resolvedManagedServices = useMemo(() => {
     if (managedServices === 'health') {
-      return managedServicesHealth.map(ms => ({
-        serviceId: ms.serviceId,
-        name: ms.name,
-        hoursPerMonth: ms.hoursPerMonth,
-      }));
+      return managedServicesHealth
+        .filter(ms => ms.addToEngagement)
+        .map(ms => ({
+          serviceId: ms.serviceId,
+          name: ms.name,
+          hoursPerMonth: ms.hoursPerMonth,
+          description: MANAGED_SERVICE_DESCRIPTIONS[ms.serviceId] || '',
+        }));
     }
     return managedServices || [];
   }, [managedServices]);

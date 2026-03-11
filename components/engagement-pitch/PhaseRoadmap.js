@@ -76,50 +76,21 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
 
       {/* Ongoing Managed Services — not tied to any phase */}
       {managedServices?.length > 0 && (
-        <motion.div
-          variants={fadeUpItem}
-          className="card"
-          style={{
-            padding: 0,
-            overflow: 'hidden',
-            border: '1px solid var(--border-color)',
-          }}
-        >
+        <motion.div variants={fadeUpItem}>
+          <SectionLabel>Ongoing Managed Services</SectionLabel>
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: 'var(--space-3) var(--space-4)',
-            background: 'var(--bg-subtle)',
-            borderBottom: '1px solid var(--border-color)',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            gap: 'var(--space-3)',
           }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <span style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '4px',
-                  background: '#6C5CE7',
-                  color: 'white',
-                }}>
-                  ONGOING
-                </span>
-                <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', margin: 0 }}>
-                  Managed Services
-                </h3>
-              </div>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: 'var(--space-1) 0 0' }}>
-                Core operations your LeanScale team manages throughout the engagement
-              </p>
-            </div>
-          </div>
-          <div style={{ padding: 'var(--space-3) var(--space-4)' }}>
-            <ManagedServicesList
-              services={managedServices}
-              editMode={editMode}
-              onOverride={onOverride}
-            />
+            {managedServices.map(ms => (
+              <ManagedServiceCard
+                key={ms.serviceId || ms.name}
+                service={ms}
+                editMode={editMode}
+                onOverride={onOverride}
+              />
+            ))}
           </div>
         </motion.div>
       )}
@@ -448,70 +419,80 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
   );
 }
 
-function ManagedServicesList({ services, editMode, onOverride }) {
+const STATUS_COLORS = {
+  warning: '#DC2626',
+  careful: '#EA580C',
+  healthy: '#16A34A',
+};
+
+const STATUS_LABELS = {
+  warning: 'Needs Attention',
+  careful: 'Monitor',
+  healthy: 'Healthy',
+};
+
+function ManagedServiceCard({ service, editMode, onOverride }) {
+  const statusColor = STATUS_COLORS[service.status] || STATUS_COLORS.healthy;
+  const statusLabel = STATUS_LABELS[service.status] || 'Active';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-      {services.map(ms => (
-        <div
-          key={ms.serviceId || ms.id || ms.name}
+    <div
+      className="card"
+      style={{
+        padding: 'var(--space-3)',
+        position: 'relative',
+        borderLeft: `3px solid ${statusColor}`,
+      }}
+    >
+      {editMode && (
+        <button
+          onClick={() => onOverride?.('roadmap', service.serviceId || service.id, { excluded: true })}
+          title={`Remove ${service.name}`}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            padding: '0.4rem 0.6rem',
-            borderRadius: '4px',
-            transition: 'background 0.15s',
+            position: 'absolute',
+            top: '0.5rem',
+            right: '0.5rem',
+            fontSize: '0.8rem',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px',
+            lineHeight: 1,
+            color: '#9CA3AF',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-subtle)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          <span style={{ fontSize: 'var(--text-sm)' }}>🔧</span>
-          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', flex: 1 }}>
-            {ms.name}
+          ✕
+        </button>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
+        <span style={{ fontSize: 'var(--text-base)' }}>🔧</span>
+        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
+          {service.name}
+        </span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {service.hoursPerMonth && (
+          <span style={{ fontSize: 'var(--text-xs)', color: '#6C5CE7', fontWeight: 'var(--font-medium)' }}>
+            ~{service.hoursPerMonth} hrs/month
           </span>
-          {ms.hoursPerMonth && (
-            <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
-              {ms.hoursPerMonth} hrs/mo
-            </span>
-          )}
-          {ms.status && (
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              fontSize: '0.6rem',
-              fontWeight: 600,
-              color: ms.status === 'warning' ? '#DC2626' : ms.status === 'careful' ? '#EA580C' : '#16A34A',
-            }}>
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: ms.status === 'warning' ? '#DC2626' : ms.status === 'careful' ? '#EA580C' : '#16A34A',
-              }} />
-              {ms.status === 'warning' ? 'Needs attention' : ms.status === 'careful' ? 'Monitor' : 'Healthy'}
-            </span>
-          )}
-          {editMode && (
-            <button
-              onClick={() => onOverride?.('roadmap', ms.serviceId || ms.id, { excluded: true })}
-              title={`Remove ${ms.name}`}
-              style={{
-                fontSize: '0.8rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '2px',
-                lineHeight: 1,
-                color: '#9CA3AF',
-                flexShrink: 0,
-              }}
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      ))}
+        )}
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
+          fontSize: 'var(--text-2xs)',
+          fontWeight: 600,
+          color: statusColor,
+        }}>
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: statusColor,
+          }} />
+          {statusLabel}
+        </span>
+      </div>
     </div>
   );
 }

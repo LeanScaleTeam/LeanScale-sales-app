@@ -79,8 +79,10 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
         // Split strategic projects from managed services within projects
         const strategicProjects = phase.projects.filter(p => p.type !== 'managed');
         const managedFromProjects = phase.projects.filter(p => p.type === 'managed');
-        // Combine managed from projects + explicit managedServices array
-        const allManaged = [...managedFromProjects, ...(phase.managedServices || [])];
+        // Combine managed from projects + explicit managedServices array (dedupe by serviceId)
+        const managedIds = new Set(managedFromProjects.map(p => p.serviceId));
+        const extraManaged = (phase.managedServices || []).filter(ms => !managedIds.has(ms.serviceId));
+        const allManaged = [...managedFromProjects, ...extraManaged];
         const hasContent = strategicProjects.length > 0 || allManaged.length > 0;
         const functionGroups = groupByFunction(strategicProjects);
 

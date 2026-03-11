@@ -1011,7 +1011,18 @@ export default function DiagnosticResults({ diagnosticType }) {
               v3Result={v3Result}
               processes={processes}
               power10Data={power10Data}
-              managedServices={[]}
+              managedServices={
+                // Extract managed services from v3 roadmap projects
+                (v3Result?.roadmap?.phases || [])
+                  .flatMap(p => p.projects || [])
+                  .filter(p => p.service?.type === 'managed')
+                  .map(p => ({
+                    serviceId: p.serviceId,
+                    name: p.service.name,
+                    icon: p.service.icon,
+                    status: p.phase === 'FOUNDATION' ? 'warning' : 'careful',
+                  }))
+              }
               companyProfile={
                 isV2 ? v2Result?.companyProfile
                 : isV3 ? v3Result?.company_profile

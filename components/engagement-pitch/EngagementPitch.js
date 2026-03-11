@@ -12,6 +12,56 @@ import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
 import { managedServices as managedServicesCatalog } from '../../data/services-catalog';
 
+// Map known CRM/tool identifiers to their managed service catalog entries
+const CORE_SYSTEM_MAP = {
+  salesforce: 'salesforce-impl',
+  hubspot: 'hubspot-impl',
+};
+
+/**
+ * Derive core managed systems from diagnostic data.
+ * Returns the customer's actual CRM + any detected platforms.
+ */
+function deriveCoreManaged(companyProfile, v3Result) {
+  const systems = [];
+  const seen = new Set();
+
+  // 1. CRM from company profile or v3 result
+  const crm = companyProfile?.crm || v3Result?.company_profile?.crm || v3Result?.crmType;
+  const crmKey = crm?.toLowerCase();
+  if (crmKey && CORE_SYSTEM_MAP[crmKey]) {
+    const sid = CORE_SYSTEM_MAP[crmKey];
+    const entry = findInCatalog(sid);
+    if (entry) { systems.push(entry); seen.add(sid); }
+  }
+
+  // 2. Managed services that appear in the v3 roadmap (diagnostic detected them)
+  if (v3Result?.roadmap?.phases) {
+    for (const phase of v3Result.roadmap.phases) {
+      for (const proj of phase.projects || []) {
+        if (proj.service?.type === 'managed' && !seen.has(proj.serviceId)) {
+          systems.push({
+            serviceId: proj.serviceId,
+            name: proj.service.name,
+            icon: proj.service.icon,
+          });
+          seen.add(proj.serviceId);
+        }
+      }
+    }
+  }
+
+  return systems;
+}
+
+function findInCatalog(serviceId) {
+  for (const category of Object.values(managedServicesCatalog)) {
+    const found = category.find(s => s.id === serviceId);
+    if (found) return { serviceId: found.id, name: found.name, icon: found.icon };
+  }
+  return null;
+}
+
 /**
  * Map v3 pillar to v2-style layer for phase assignment and display.
  */
@@ -190,15 +240,13 @@ export default function EngagementPitch({
 
   const activeTier = selectedTierId || autoTier;
 
-  // Resolve managed services: "all" = full catalog, otherwise use array as-is
+  // Derive core managed systems from customer data (CRM, MAP, etc.)
   const resolvedManagedServices = useMemo(() => {
     if (managedServices === 'all') {
-      return Object.entries(managedServicesCatalog).flatMap(([category, services]) =>
-        services.map(s => ({ ...s, serviceId: s.id, category }))
-      );
+      return deriveCoreManaged(companyProfile, v3Result);
     }
     return managedServices || [];
-  }, [managedServices]);
+  }, [managedServices, companyProfile, v3Result]);
 
   // Build roadmap
   const roadmap = useMemo(() => {

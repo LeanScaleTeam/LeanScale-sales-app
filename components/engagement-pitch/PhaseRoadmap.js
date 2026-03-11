@@ -419,29 +419,13 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
   );
 }
 
-const STATUS_COLORS = {
-  warning: '#DC2626',
-  careful: '#EA580C',
-  healthy: '#16A34A',
-};
-
-const STATUS_LABELS = {
-  warning: 'Needs Attention',
-  careful: 'Monitor',
-  healthy: 'Healthy',
-};
-
 function ManagedServiceCard({ service, editMode, onOverride }) {
-  const statusColor = STATUS_COLORS[service.status] || STATUS_COLORS.healthy;
-  const statusLabel = STATUS_LABELS[service.status] || 'Active';
-
   return (
     <div
       className="card"
       style={{
         padding: 'var(--space-3)',
         position: 'relative',
-        borderLeft: `3px solid ${statusColor}`,
       }}
     >
       {editMode && (
@@ -464,35 +448,17 @@ function ManagedServiceCard({ service, editMode, onOverride }) {
           ✕
         </button>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-1)' }}>
         <span style={{ fontSize: 'var(--text-base)' }}>🔧</span>
         <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
           {service.name}
         </span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {service.hoursPerMonth && (
-          <span style={{ fontSize: 'var(--text-xs)', color: '#6C5CE7', fontWeight: 'var(--font-medium)' }}>
-            ~{service.hoursPerMonth} hrs/month
-          </span>
-        )}
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          fontSize: 'var(--text-2xs)',
-          fontWeight: 600,
-          color: statusColor,
-        }}>
-          <span style={{
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            background: statusColor,
-          }} />
-          {statusLabel}
+      {service.hoursPerMonth && (
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          ~{service.hoursPerMonth} hrs/month
         </span>
-      </div>
+      )}
     </div>
   );
 }

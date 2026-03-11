@@ -190,18 +190,14 @@ export default function EngagementPitch({
 
   const activeTier = selectedTierId || autoTier;
 
-  // Resolve managed services: "health" = from managedServicesHealth, otherwise use array as-is
+  // Resolve managed services: standard ops every LeanScale customer gets
   const resolvedManagedServices = useMemo(() => {
     if (managedServices === 'health') {
-      return managedServicesHealth
-        .filter(ms => ms.addToEngagement)
-        .map(ms => ({
-          serviceId: ms.serviceId,
-          name: ms.name,
-          icon: '🔧',
-          status: ms.status,
-          hoursPerMonth: ms.hoursPerMonth,
-        }));
+      return managedServicesHealth.map(ms => ({
+        serviceId: ms.serviceId,
+        name: ms.name,
+        hoursPerMonth: ms.hoursPerMonth,
+      }));
     }
     return managedServices || [];
   }, [managedServices]);

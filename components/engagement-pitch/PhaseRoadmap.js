@@ -18,6 +18,15 @@ const PRIORITY_OPTIONS = [
 
 const FUNCTION_ORDER = ['Sales', 'Marketing', 'Customer Success', 'Partnerships', 'Cross Functional'];
 
+const MANAGED_CATEGORY_LABELS = {
+  crossFunctional: 'Cross Functional',
+  marketing: 'Marketing',
+  sales: 'Sales',
+  customerSuccess: 'Customer Success',
+};
+
+const MANAGED_CATEGORY_ORDER = ['crossFunctional', 'marketing', 'sales', 'customerSuccess'];
+
 const FUNCTION_ICONS = {
   'Sales': '💼',
   'Marketing': '📣',
@@ -174,36 +183,17 @@ export default function PhaseRoadmap({ roadmap, editMode, onOverride, customerPa
               {/* Managed Services */}
               {allManaged.length > 0 && (
                 <div>
-                  <SectionLabel>Managed Systems</SectionLabel>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                    gap: 'var(--space-2)',
-                  }}>
-                    {allManaged.map(ms => (
-                      <div
-                        key={ms.serviceId || ms.name}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                          fontSize: 'var(--text-sm)',
-                          padding: '0.35rem 0.6rem',
-                          borderRadius: 'var(--radius-md, 8px)',
-                          background: 'var(--bg-subtle)',
-                          border: '1px solid var(--border-color)',
-                        }}
-                      >
-                        <span style={{ fontSize: 'var(--text-sm)' }}>{ms.icon || '🔧'}</span>
-                        <span style={{ fontWeight: 'var(--font-medium)' }}>{ms.name}</span>
-                        {ms.hoursPerMonth && (
-                          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-2xs)', marginLeft: 'auto' }}>
-                            {ms.hoursPerMonth}hrs/mo
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <SectionLabel>
+                    Managed Systems
+                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: '0.5rem' }}>
+                      ({allManaged.length})
+                    </span>
+                  </SectionLabel>
+                  <ManagedServicesList
+                    services={allManaged}
+                    editMode={editMode}
+                    onOverride={onOverride}
+                  />
                 </div>
               )}
 
@@ -436,6 +426,76 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
           </button>
         </>
       )}
+    </div>
+  );
+}
+
+function ManagedServicesList({ services, editMode, onOverride }) {
+  // Group by category
+  const grouped = new Map();
+  for (const ms of services) {
+    const cat = ms.category || 'crossFunctional';
+    if (!grouped.has(cat)) grouped.set(cat, []);
+    grouped.get(cat).push(ms);
+  }
+  const sortedGroups = [...grouped.entries()].sort(([a], [b]) => {
+    const ai = MANAGED_CATEGORY_ORDER.indexOf(a);
+    const bi = MANAGED_CATEGORY_ORDER.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {sortedGroups.map(([category, items]) => (
+        <div key={category}>
+          <div style={{
+            fontSize: 'var(--text-2xs)',
+            fontWeight: 'var(--font-semibold)',
+            color: 'var(--text-muted)',
+            marginBottom: '0.25rem',
+          }}>
+            {MANAGED_CATEGORY_LABELS[category] || category} ({items.length})
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+            {items.map(ms => (
+              <span
+                key={ms.serviceId || ms.id || ms.name}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  fontSize: 'var(--text-xs)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '9999px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                }}
+              >
+                <span>{ms.icon || '🔧'}</span>
+                {ms.name}
+                {editMode && (
+                  <button
+                    onClick={() => onOverride?.('roadmap', ms.serviceId || ms.id, { excluded: true })}
+                    title={`Remove ${ms.name}`}
+                    style={{
+                      fontSize: '0.65rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      lineHeight: 1,
+                      color: '#9CA3AF',
+                      marginLeft: '0.15rem',
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default function DiagnosticNav({
             className={`diagnostic-nav-action-btn ${editMode ? 'active' : ''}`}
             onClick={onEditToggle}
           >
-            {editMode ? 'Exit Edit' : 'Edit'}
+            {editMode ? 'Done Editing' : 'Edit'}
           </button>
           <button
             className="diagnostic-nav-action-btn"
@@ -85,9 +85,22 @@ export default function DiagnosticNav({
           >
             Import
           </button>
-          <span aria-live="polite" style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
-            {saving ? 'Saving...' : ''}
-          </span>
+          {editMode && (
+            <span
+              aria-live="polite"
+              style={{
+                fontSize: 'var(--text-2xs)',
+                padding: '0.15rem 0.5rem',
+                borderRadius: '4px',
+                background: saving ? '#FEF3C7' : '#ECFDF5',
+                color: saving ? '#92400E' : '#065F46',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+              }}
+            >
+              {saving ? 'Saving...' : 'Auto-saved'}
+            </span>
+          )}
         </div>
       )}
     </div>

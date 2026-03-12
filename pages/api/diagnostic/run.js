@@ -91,25 +91,30 @@ async function handleRun(req, res) {
     const result = runDiagnostic(intake.answers, computedSignals, effectiveCrmType);
 
     // Store result in diagnostic_results (version=2)
+    const upsertData = {
+      customer_id: customerId,
+      diagnostic_type: 'gtm',
+      version: 2,
+      crm_type: crmType,
+      items: result.items,
+      scores: result.scores,
+      company_profile: result.company_profile,
+      metadata: result.metadata,
+      intake_id: intake.id,
+      hubspot_metadata_id: hsMetadataId || (crmType === 'hubspot' ? null : undefined),
+      salesforce_metadata_id: sfMetadataId || (crmType === 'salesforce' ? null : undefined),
+    };
+    if (crmType === 'dual') {
+      upsertData.merged_signals = computedSignals;
+    }
+    // Remove undefined keys so Supabase doesn't try to set missing columns
+    for (const key of Object.keys(upsertData)) {
+      if (upsertData[key] === undefined) delete upsertData[key];
+    }
+
     const { data: stored, error } = await supabaseAdmin
       .from('diagnostic_results')
-      .upsert(
-        {
-          customer_id: customerId,
-          diagnostic_type: 'gtm',
-          version: 2,
-          crm_type: crmType,
-          items: result.items,
-          scores: result.scores,
-          company_profile: result.company_profile,
-          metadata: result.metadata,
-          intake_id: intake.id,
-          hubspot_metadata_id: hsMetadataId,
-          salesforce_metadata_id: sfMetadataId,
-          merged_signals: crmType === 'dual' ? computedSignals : null,
-        },
-        { onConflict: 'customer_id,diagnostic_type' }
-      )
+      .upsert(upsertData, { onConflict: 'customer_id,diagnostic_type' })
       .select('id')
       .single();
 

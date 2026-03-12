@@ -160,15 +160,16 @@ async function handleRun(req, res) {
       department_scores: result.department_scores,
       overall_score: result.overall_score,
       intake_id: intake?.id || null,
-      hubspot_metadata_id: hsMetadataId,
-      salesforce_metadata_id: sfMetadataId,
-      merged_signals: crmType === 'dual' ? computedSignals : null,
       transcript_ids: transcriptIds,
       company_profile: result.company_profile,
       data_coverage: result.data_coverage,
       metadata: result.metadata,
       updated_at: new Date().toISOString(),
     };
+    // Only include dual-specific columns if relevant (avoids failure if migration not yet applied)
+    if (hsMetadataId) upsertData.hubspot_metadata_id = hsMetadataId;
+    if (sfMetadataId) upsertData.salesforce_metadata_id = sfMetadataId;
+    if (crmType === 'dual') upsertData.merged_signals = computedSignals;
 
     // Only overwrite the roadmap when not preserving it
     if (!preserveRoadmap) {

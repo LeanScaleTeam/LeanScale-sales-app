@@ -102,10 +102,17 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to store metadata' });
     }
 
-    // Update customer CRM type
+    // Update customer CRM type (check if HubSpot is also connected → dual)
+    const { data: hsConn } = await supabaseAdmin
+      .from('hubspot_connections')
+      .select('id')
+      .eq('customer_id', customerId)
+      .single();
+
+    const newCrmType = hsConn ? 'dual' : 'salesforce';
     await supabaseAdmin
       .from('customers')
-      .update({ crm_type: 'salesforce' })
+      .update({ crm_type: newCrmType })
       .eq('id', customerId);
 
     // Check if intake is awaiting CRM data — auto-run diagnostic

@@ -7,6 +7,7 @@
  */
 
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { mergeSignals } from '../../../../lib/diagnostic-engine/signal-merger';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -30,7 +31,17 @@ export default async function handler(req, res) {
     let computedSignals = {};
     let enhancedSignals = {};
 
-    if (crmType === 'salesforce') {
+    if (crmType === 'dual') {
+      const [{ data: sfMeta }, { data: hsMeta }] = await Promise.all([
+        supabaseAdmin.from('salesforce_metadata').select('computed_signals, enhanced_signals')
+          .eq('customer_id', customerId).order('fetched_at', { ascending: false }).limit(1).single(),
+        supabaseAdmin.from('hubspot_metadata').select('computed_signals')
+          .eq('customer_id', customerId).order('downloaded_at', { ascending: false }).limit(1).single(),
+      ]);
+
+      computedSignals = mergeSignals(sfMeta?.computed_signals || {}, hsMeta?.computed_signals || {});
+      enhancedSignals = sfMeta?.enhanced_signals || {};
+    } else if (crmType === 'salesforce') {
       const { data: sfMetadata } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('computed_signals, enhanced_signals')

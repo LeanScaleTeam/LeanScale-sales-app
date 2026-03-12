@@ -9,6 +9,7 @@
 
 import { supabaseAdmin } from '../../../lib/supabase';
 import { runDiagnostic } from '../../../lib/diagnostic-engine';
+import { mergeSignals } from '../../../lib/diagnostic-engine/signal-merger';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -48,10 +49,10 @@ async function handleRun(req, res) {
 
     const crmType = customer?.crm_type || 'unknown';
     let computedSignals = {};
-    let metadataId = null;
+    let sfMetadataId = null;
+    let hsMetadataId = null;
 
-    if (crmType === 'salesforce') {
-      // Read Salesforce signals
+    if (crmType === 'dual' || crmType === 'salesforce') {
       const { data: sfMetadata } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('id, computed_signals')
@@ -60,11 +61,14 @@ async function handleRun(req, res) {
         .limit(1)
         .single();
 
-      computedSignals = sfMetadata?.computed_signals || {};
-      metadataId = sfMetadata?.id || null;
-    } else {
-      // Read HubSpot signals (existing behavior)
-      const { data: metadata } = await supabaseAdmin
+      if (sfMetadata) {
+        sfMetadataId = sfMetadata.id;
+        computedSignals = sfMetadata.computed_signals || {};
+      }
+    }
+
+    if (crmType === 'dual' || crmType === 'hubspot') {
+      const { data: hsMetadata } = await supabaseAdmin
         .from('hubspot_metadata')
         .select('id, computed_signals')
         .eq('customer_id', customerId)
@@ -72,12 +76,19 @@ async function handleRun(req, res) {
         .limit(1)
         .single();
 
-      computedSignals = metadata?.computed_signals || {};
-      metadataId = metadata?.id || null;
+      if (hsMetadata) {
+        hsMetadataId = hsMetadata.id;
+        if (crmType === 'dual') {
+          computedSignals = mergeSignals(computedSignals, hsMetadata.computed_signals || {});
+        } else {
+          computedSignals = hsMetadata.computed_signals || {};
+        }
+      }
     }
 
     // Run the diagnostic engine
-    const result = runDiagnostic(intake.answers, computedSignals, crmType);
+    const effectiveCrmType = crmType === 'dual' ? 'salesforce' : crmType;
+    const result = runDiagnostic(intake.answers, computedSignals, effectiveCrmType);
 
     // Store result in diagnostic_results (version=2)
     const { data: stored, error } = await supabaseAdmin
@@ -93,8 +104,9 @@ async function handleRun(req, res) {
           company_profile: result.company_profile,
           metadata: result.metadata,
           intake_id: intake.id,
-          hubspot_metadata_id: crmType === 'hubspot' ? metadataId : null,
-          salesforce_metadata_id: crmType === 'salesforce' ? metadataId : null,
+          hubspot_metadata_id: hsMetadataId,
+          salesforce_metadata_id: sfMetadataId,
+          merged_signals: crmType === 'dual' ? computedSignals : null,
         },
         { onConflict: 'customer_id,diagnostic_type' }
       )

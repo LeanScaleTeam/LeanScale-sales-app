@@ -6,6 +6,7 @@
 
 import { supabaseAdmin } from '../../../../lib/supabase';
 import { runDiagnosticV3, recomputeV3 } from '../../../../lib/diagnostic-engine/v3';
+import { mergeSignals } from '../../../../lib/diagnostic-engine/signal-merger';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') return handleRun(req, res);
@@ -37,10 +38,11 @@ async function handleRun(req, res) {
 
     const crmType = customer?.crm_type || 'unknown';
     let computedSignals = {};
-    let metadataId = null;
+    let sfMetadataId = null;
+    let hsMetadataId = null;
 
     // Fetch CRM signals
-    if (crmType === 'salesforce') {
+    if (crmType === 'dual' || crmType === 'salesforce') {
       const { data: sfMetadata } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('id, computed_signals')
@@ -49,9 +51,13 @@ async function handleRun(req, res) {
         .limit(1)
         .single();
 
-      computedSignals = sfMetadata?.computed_signals || {};
-      metadataId = sfMetadata?.id || null;
-    } else {
+      if (sfMetadata) {
+        sfMetadataId = sfMetadata.id;
+        computedSignals = sfMetadata.computed_signals || {};
+      }
+    }
+
+    if (crmType === 'dual' || crmType === 'hubspot') {
       const { data: hsMetadata } = await supabaseAdmin
         .from('hubspot_metadata')
         .select('id, computed_signals')
@@ -60,8 +66,14 @@ async function handleRun(req, res) {
         .limit(1)
         .single();
 
-      computedSignals = hsMetadata?.computed_signals || {};
-      metadataId = hsMetadata?.id || null;
+      if (hsMetadata) {
+        hsMetadataId = hsMetadata.id;
+        if (crmType === 'dual') {
+          computedSignals = mergeSignals(computedSignals, hsMetadata.computed_signals || {});
+        } else {
+          computedSignals = hsMetadata.computed_signals || {};
+        }
+      }
     }
 
     // Fetch transcript assessments
@@ -128,12 +140,13 @@ async function handleRun(req, res) {
     const projectSignals = Object.values(signalMap);
 
     // Run the v3 engine
+    const effectiveCrmType = crmType === 'dual' ? 'salesforce' : crmType;
     const result = runDiagnosticV3(
       intake?.answers || {},
       computedSignals,
       transcriptAssessments,
       consultantAssessments,
-      crmType,
+      effectiveCrmType,
       projectSignals
     );
 
@@ -147,8 +160,9 @@ async function handleRun(req, res) {
       department_scores: result.department_scores,
       overall_score: result.overall_score,
       intake_id: intake?.id || null,
-      hubspot_metadata_id: crmType === 'hubspot' ? metadataId : null,
-      salesforce_metadata_id: crmType === 'salesforce' ? metadataId : null,
+      hubspot_metadata_id: hsMetadataId,
+      salesforce_metadata_id: sfMetadataId,
+      merged_signals: crmType === 'dual' ? computedSignals : null,
       transcript_ids: transcriptIds,
       company_profile: result.company_profile,
       data_coverage: result.data_coverage,
@@ -271,7 +285,7 @@ async function handleUpdate(req, res) {
     let computedSignals = {};
     const crmType = existing.crm_type || 'unknown';
 
-    if (crmType === 'salesforce') {
+    if (crmType === 'dual' || crmType === 'salesforce') {
       const { data: sf } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('computed_signals')
@@ -279,8 +293,12 @@ async function handleUpdate(req, res) {
         .order('fetched_at', { ascending: false })
         .limit(1)
         .single();
-      computedSignals = sf?.computed_signals || {};
-    } else {
+      if (sf) {
+        computedSignals = sf.computed_signals || {};
+      }
+    }
+
+    if (crmType === 'dual' || crmType === 'hubspot') {
       const { data: hs } = await supabaseAdmin
         .from('hubspot_metadata')
         .select('computed_signals')
@@ -288,7 +306,13 @@ async function handleUpdate(req, res) {
         .order('downloaded_at', { ascending: false })
         .limit(1)
         .single();
-      computedSignals = hs?.computed_signals || {};
+      if (hs) {
+        if (crmType === 'dual') {
+          computedSignals = mergeSignals(computedSignals, hs.computed_signals || {});
+        } else {
+          computedSignals = hs.computed_signals || {};
+        }
+      }
     }
 
     const { data: transcriptRows } = await supabaseAdmin
@@ -305,12 +329,13 @@ async function handleUpdate(req, res) {
     }
 
     const { runDiagnosticV3 } = await import('../../../../lib/diagnostic-engine/v3');
+    const effectiveType = crmType === 'dual' ? 'salesforce' : crmType;
     const result = runDiagnosticV3(
       intake?.answers || {},
       computedSignals,
       transcriptAssessments,
       consultantOverrides,
-      crmType
+      effectiveType
     );
 
     // Update stored result — preserve existing roadmap (admin overrides are score-only)

@@ -694,6 +694,71 @@ export default function DiagnosticResults({ diagnosticType }) {
             <span>{config.icon}</span> {config.title}
           </h1>
           <p className="page-subtitle">{config.subtitle}</p>
+          {/* CRM type badge */}
+          {isV3 && (() => {
+            const effectiveCrmType = crmSignals.crmType || v3Result?.crm_type || 'salesforce';
+            return (
+              <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                {effectiveCrmType === 'dual' ? (
+                  <>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      padding: '0.25rem 0.75rem',
+                      background: 'linear-gradient(135deg, #EBF5FF, #F0FFF4)',
+                      border: '1px solid #93C5FD',
+                      borderRadius: '999px',
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 600,
+                      color: '#1E40AF',
+                    }}>
+                      Salesforce (CRM) + HubSpot (MAP)
+                    </span>
+                    {v3Result?.metadata?.apiDataAvailable && (
+                      <div style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                        marginTop: '0.25rem',
+                      }}>
+                        Dual-system analysis: CRM + Marketing Automation data
+                      </div>
+                    )}
+                  </>
+                ) : effectiveCrmType === 'hubspot' ? (
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem 0.75rem',
+                    background: '#FFF5F0',
+                    border: '1px solid #FB923C',
+                    borderRadius: '999px',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 600,
+                    color: '#C2410C',
+                  }}>
+                    HubSpot
+                  </span>
+                ) : (
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem 0.75rem',
+                    background: '#EBF5FF',
+                    border: '1px solid #93C5FD',
+                    borderRadius: '999px',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 600,
+                    color: '#1E40AF',
+                  }}>
+                    Salesforce
+                  </span>
+                )}
+              </div>
+            );
+          })()}
           {isAdmin && diagnosticType === 'gtm' && (
             <div style={{ marginTop: '0.75rem' }}>
               {((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (

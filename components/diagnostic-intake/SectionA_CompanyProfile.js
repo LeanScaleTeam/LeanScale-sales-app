@@ -9,7 +9,12 @@ const QUESTIONS = [
   {
     key: 'A1',
     label: 'What is your primary CRM?',
-    options: ['HubSpot', 'Salesforce', 'Both', 'Other'],
+    options: [
+      'HubSpot',
+      'Salesforce',
+      { value: 'Both', label: 'Both — Salesforce (CRM) + HubSpot (MAP)' },
+      'Other',
+    ],
   },
   {
     key: 'A2',
@@ -75,18 +80,22 @@ export default function SectionA({ answers, onComplete, onSlackFormParsed }) {
         <div key={q.key} style={styles.question}>
           <label style={styles.label}>{q.label}</label>
           <div style={styles.optionGrid}>
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => handleSelect(q.key, opt)}
-                style={{
-                  ...styles.optionBtn,
-                  ...(local[q.key] === opt ? styles.optionSelected : {}),
-                }}
-              >
-                {opt}
-              </button>
-            ))}
+            {q.options.map((opt) => {
+              const value = typeof opt === 'object' ? opt.value : opt;
+              const label = typeof opt === 'object' ? opt.label : opt;
+              return (
+                <button
+                  key={value}
+                  onClick={() => handleSelect(q.key, value)}
+                  style={{
+                    ...styles.optionBtn,
+                    ...(local[q.key] === value ? styles.optionSelected : {}),
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}

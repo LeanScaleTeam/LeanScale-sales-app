@@ -1,5 +1,9 @@
 -- Allow 'dual' as a crm_type value and add columns for dual-system tracking
--- Note: crm_type is a TEXT column, no enum constraint to update
+
+-- Update the CHECK constraint on customers.crm_type to include 'dual'
+ALTER TABLE customers DROP CONSTRAINT IF EXISTS customers_crm_type_check;
+ALTER TABLE customers ADD CONSTRAINT customers_crm_type_check
+  CHECK (crm_type IN ('hubspot', 'salesforce', 'dual', 'other', 'unknown'));
 
 -- Add dual-system metadata columns to diagnostic results tables
 ALTER TABLE diagnostic_results

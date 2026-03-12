@@ -204,7 +204,8 @@ export default function IntakeForm() {
       const crmType = answers.A1;
       const crmConnected =
         (crmType === 'HubSpot' && hubspotStatus?.connected) ||
-        (crmType === 'Salesforce' && salesforceStatus?.connected);
+        (crmType === 'Salesforce' && salesforceStatus?.connected) ||
+        (crmType === 'Both' && salesforceStatus?.connected && hubspotStatus?.connected);
 
       // Save intake with appropriate status
       const status = crmConnected ? 'complete' : 'awaiting_crm_data';
@@ -257,7 +258,16 @@ export default function IntakeForm() {
 
   // After transcript step, navigate to CRM connection or Section B
   const handleTranscriptNext = () => {
-    if (answers.A1 === 'Salesforce') {
+    if (answers.A1 === 'Both') {
+      // Dual mode: connect SF first, then HS
+      if (salesforceStatus?.connected && hubspotStatus?.connected) {
+        setCurrentSection('B'); // both already connected
+      } else if (salesforceStatus?.connected) {
+        setCurrentSection('hs-connect'); // SF done, need HS
+      } else {
+        setCurrentSection('sf-connect'); // start with SF
+      }
+    } else if (answers.A1 === 'Salesforce') {
       setCurrentSection('sf-connect');
     } else if (answers.A1 === 'HubSpot') {
       if (hubspotStatus?.connected) {
@@ -474,11 +484,24 @@ export default function IntakeForm() {
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
-                setCurrentSection('B');
+                // Dual mode: after SF, go to HS connect
+                if (answers.A1 === 'Both') {
+                  if (hubspotStatus?.connected) {
+                    setCurrentSection('hs-analyzing');
+                  } else {
+                    setCurrentSection('hs-connect');
+                  }
+                } else {
+                  setCurrentSection('B');
+                }
               }}
               onError={(errMsg) => {
                 setSalesforceError(errMsg);
-                setCurrentSection('B');
+                if (answers.A1 === 'Both') {
+                  setCurrentSection('hs-connect');
+                } else {
+                  setCurrentSection('B');
+                }
               }}
             />
           )}

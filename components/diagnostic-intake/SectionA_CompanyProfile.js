@@ -9,7 +9,7 @@ const QUESTIONS = [
   {
     key: 'A1',
     label: 'What is your primary CRM?',
-    options: ['HubSpot', 'Salesforce', 'Other'],
+    options: ['HubSpot', 'Salesforce', 'Both', 'Other'],
   },
   {
     key: 'A2',
@@ -42,7 +42,7 @@ export default function SectionA({ answers, onComplete, onSlackFormParsed }) {
   });
 
   const visibleQuestions = QUESTIONS.filter((q) => {
-    if (q.hideWhenSalesforce && local.A1 === 'Salesforce') return false;
+    if (q.hideWhenSalesforce && (local.A1 === 'Salesforce' || local.A1 === 'Both')) return false;
     return true;
   });
 

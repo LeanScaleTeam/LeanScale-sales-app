@@ -76,10 +76,19 @@ export default async function handler(req, res) {
       { onConflict: 'customer_id,org_id' }
     );
 
+    // Check if HubSpot is also connected — upgrade to dual
+    const { data: hsConn } = await supabaseAdmin
+      .from('hubspot_connections')
+      .select('id')
+      .eq('customer_id', customerId)
+      .single();
+
+    const newCrmType = hsConn ? 'dual' : 'salesforce';
+
     // Update customer CRM type
     await supabaseAdmin
       .from('customers')
-      .update({ crm_type: 'salesforce' })
+      .update({ crm_type: newCrmType })
       .eq('id', customerId);
 
     // Download metadata (blocking)
@@ -93,37 +102,84 @@ export default async function handler(req, res) {
       .single();
 
     if (intake?.status === 'awaiting_crm_data') {
-      const { runDiagnostic } = await import('../../../lib/diagnostic-engine');
-      const { data: metadata } = await supabaseAdmin
-        .from('salesforce_metadata')
-        .select('id, computed_signals')
-        .eq('customer_id', customerId)
-        .order('fetched_at', { ascending: false })
-        .limit(1)
-        .single();
+      // Don't auto-run diagnostic for dual mode until both systems have metadata
+      if (newCrmType === 'dual') {
+        const { data: hsMetadata } = await supabaseAdmin
+          .from('hubspot_metadata')
+          .select('id')
+          .eq('customer_id', customerId)
+          .limit(1)
+          .single();
 
-      const result = runDiagnostic(intake.answers, metadata?.computed_signals || {}, 'salesforce');
+        if (!hsMetadata) {
+          // HubSpot metadata not ready yet — skip auto-run
+          // The HubSpot callback will trigger it when ready
+        } else {
+          const { runDiagnostic } = await import('../../../lib/diagnostic-engine');
+          const { data: metadata } = await supabaseAdmin
+            .from('salesforce_metadata')
+            .select('id, computed_signals')
+            .eq('customer_id', customerId)
+            .order('fetched_at', { ascending: false })
+            .limit(1)
+            .single();
 
-      await supabaseAdmin.from('diagnostic_results').upsert(
-        {
-          customer_id: customerId,
-          diagnostic_type: 'gtm',
-          version: 2,
-          crm_type: 'salesforce',
-          items: result.items,
-          scores: result.scores,
-          company_profile: result.company_profile,
-          metadata: result.metadata,
-          intake_id: intake.id,
-          salesforce_metadata_id: metadata?.id || null,
-        },
-        { onConflict: 'customer_id,diagnostic_type' }
-      );
+          const result = runDiagnostic(intake.answers, metadata?.computed_signals || {}, 'dual');
 
-      await supabaseAdmin
-        .from('diagnostic_intake')
-        .update({ status: 'complete' })
-        .eq('customer_id', customerId);
+          await supabaseAdmin.from('diagnostic_results').upsert(
+            {
+              customer_id: customerId,
+              diagnostic_type: 'gtm',
+              version: 2,
+              crm_type: 'dual',
+              items: result.items,
+              scores: result.scores,
+              company_profile: result.company_profile,
+              metadata: result.metadata,
+              intake_id: intake.id,
+              salesforce_metadata_id: metadata?.id || null,
+            },
+            { onConflict: 'customer_id,diagnostic_type' }
+          );
+
+          await supabaseAdmin
+            .from('diagnostic_intake')
+            .update({ status: 'complete' })
+            .eq('customer_id', customerId);
+        }
+      } else {
+        const { runDiagnostic } = await import('../../../lib/diagnostic-engine');
+        const { data: metadata } = await supabaseAdmin
+          .from('salesforce_metadata')
+          .select('id, computed_signals')
+          .eq('customer_id', customerId)
+          .order('fetched_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        const result = runDiagnostic(intake.answers, metadata?.computed_signals || {}, 'salesforce');
+
+        await supabaseAdmin.from('diagnostic_results').upsert(
+          {
+            customer_id: customerId,
+            diagnostic_type: 'gtm',
+            version: 2,
+            crm_type: 'salesforce',
+            items: result.items,
+            scores: result.scores,
+            company_profile: result.company_profile,
+            metadata: result.metadata,
+            intake_id: intake.id,
+            salesforce_metadata_id: metadata?.id || null,
+          },
+          { onConflict: 'customer_id,diagnostic_type' }
+        );
+
+        await supabaseAdmin
+          .from('diagnostic_intake')
+          .update({ status: 'complete' })
+          .eq('customer_id', customerId);
+      }
     }
 
     // Redirect back to intake form

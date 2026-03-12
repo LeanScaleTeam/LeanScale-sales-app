@@ -64,17 +64,114 @@ export default async function handler(req, res) {
       { onConflict: 'customer_id,portal_id' }
     );
 
+    // Check if Salesforce is also connected — upgrade to dual
+    const { data: sfConn } = await supabaseAdmin
+      .from('salesforce_connections')
+      .select('id')
+      .eq('customer_id', customerId)
+      .single();
+
+    const newCrmType = sfConn ? 'dual' : 'hubspot';
+
     // Update customer with CRM type and portal ID
     await supabaseAdmin
       .from('customers')
       .update({
-        crm_type: 'hubspot',
+        crm_type: newCrmType,
         hubspot_portal_id: portalId,
       })
       .eq('id', customerId);
 
     // Download metadata (blocking — ~15-30 seconds)
     await downloadAndStoreMetadata(customerId, portalId, tokens.access_token);
+
+    // Check if intake is awaiting CRM data — if so, auto-run diagnostic
+    const { data: intake } = await supabaseAdmin
+      .from('diagnostic_intake')
+      .select('id, status, answers')
+      .eq('customer_id', customerId)
+      .single();
+
+    if (intake?.status === 'awaiting_crm_data') {
+      // Don't auto-run diagnostic for dual mode until both systems have metadata
+      if (newCrmType === 'dual') {
+        const { data: sfMetadata } = await supabaseAdmin
+          .from('salesforce_metadata')
+          .select('id')
+          .eq('customer_id', customerId)
+          .limit(1)
+          .single();
+
+        if (!sfMetadata) {
+          // Salesforce metadata not ready yet — skip auto-run
+          // The Salesforce callback will trigger it when ready
+        } else {
+          const { runDiagnostic } = await import('../../../lib/diagnostic-engine');
+          const { data: hsMetadata } = await supabaseAdmin
+            .from('hubspot_metadata')
+            .select('id, computed_signals')
+            .eq('customer_id', customerId)
+            .order('fetched_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          const result = runDiagnostic(intake.answers, hsMetadata?.computed_signals || {}, 'dual');
+
+          await supabaseAdmin.from('diagnostic_results').upsert(
+            {
+              customer_id: customerId,
+              diagnostic_type: 'gtm',
+              version: 2,
+              crm_type: 'dual',
+              items: result.items,
+              scores: result.scores,
+              company_profile: result.company_profile,
+              metadata: result.metadata,
+              intake_id: intake.id,
+              hubspot_metadata_id: hsMetadata?.id || null,
+            },
+            { onConflict: 'customer_id,diagnostic_type' }
+          );
+
+          await supabaseAdmin
+            .from('diagnostic_intake')
+            .update({ status: 'complete' })
+            .eq('customer_id', customerId);
+        }
+      } else {
+        const { runDiagnostic } = await import('../../../lib/diagnostic-engine');
+        const { data: hsMetadata } = await supabaseAdmin
+          .from('hubspot_metadata')
+          .select('id, computed_signals')
+          .eq('customer_id', customerId)
+          .order('fetched_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        const result = runDiagnostic(intake.answers, hsMetadata?.computed_signals || {}, 'hubspot');
+
+        await supabaseAdmin.from('diagnostic_results').upsert(
+          {
+            customer_id: customerId,
+            diagnostic_type: 'gtm',
+            version: 2,
+            crm_type: 'hubspot',
+            items: result.items,
+            scores: result.scores,
+            company_profile: result.company_profile,
+            metadata: result.metadata,
+            intake_id: intake.id,
+            hubspot_metadata_id: hsMetadata?.id || null,
+          },
+          { onConflict: 'customer_id,diagnostic_type' }
+        );
+
+        await supabaseAdmin
+          .from('diagnostic_intake')
+          .update({ status: 'complete' })
+          .eq('customer_id', customerId);
+      }
+    }
 
     // Redirect back to intake form
     res.redirect(

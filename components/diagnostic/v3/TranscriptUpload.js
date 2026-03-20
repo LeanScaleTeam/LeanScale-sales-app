@@ -40,34 +40,44 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   /**
    * Call OpenRouter directly from the browser using a prepared prompt config.
    * This avoids Netlify function timeouts (~26s) since the browser has no timeout.
+   * Retries up to 3 times with exponential backoff on 429 rate limit errors.
    */
-  async function callOpenRouterDirect(apiKey, config) {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://leanscale.team',
-        'X-Title': 'LeanScale Diagnostic',
-      },
-      body: JSON.stringify({
-        model: config.model,
-        max_tokens: 4096,
-        messages: [
-          { role: 'system', content: config.systemPrompt },
-          { role: 'user', content: config.userMessage },
-        ],
-        tools: config.tools,
-        tool_choice: config.toolChoice,
-      }),
-    });
+  async function callOpenRouterDirect(apiKey, config, retries = 3) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://leanscale.team',
+          'X-Title': 'LeanScale Diagnostic',
+        },
+        body: JSON.stringify({
+          model: config.model,
+          max_tokens: config.maxTokens || 4096,
+          messages: [
+            { role: 'system', content: config.systemPrompt },
+            { role: 'user', content: config.userMessage },
+          ],
+          tools: config.tools,
+          tool_choice: config.toolChoice,
+        }),
+      });
 
-    if (!response.ok) {
+      if (response.ok) {
+        return response.json();
+      }
+
+      // Retry on 429 (rate limit) or 529 (overloaded) with exponential backoff
+      if ((response.status === 429 || response.status === 529) && attempt < retries) {
+        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 500;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
       const errorText = await response.text().catch(() => '');
       throw new Error(`AI analysis error (${response.status}): ${errorText.slice(0, 200)}`);
     }
-
-    return response.json();
   }
 
   async function handleUpload() {

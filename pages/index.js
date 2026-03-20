@@ -46,7 +46,7 @@ const quickLinks = [
     description: 'Start your engagement',
     links: [
       { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+      { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
       { href: '/getting-started/team', label: 'Your Team' },
     ],
   },

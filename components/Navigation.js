@@ -45,14 +45,14 @@ const gettingStartedLinks = {
   default: [
     { href: '/getting-started/availability', label: 'Cohort Availability' },
     { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
-    { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+    { href: '/getting-started/crm-migration', label: 'CRM Migration' },
     { href: '/getting-started/security', label: 'Security' },
     { href: '/getting-started/team', label: 'Your Team' },
   ],
   clay: [
     { href: '/getting-started/availability', label: 'Cohort Availability' },
     { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
-    { href: '/getting-started/investor-perks', label: 'Investor Perks' },
+    { href: '/getting-started/crm-migration', label: 'CRM Migration' },
     { href: '/getting-started/security', label: 'Security' },
     { href: '/getting-started/team', label: 'Your Team' },
     { href: '/getting-started/clay', label: 'Clay x LeanScale' },

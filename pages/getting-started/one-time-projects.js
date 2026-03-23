@@ -73,14 +73,15 @@ const projects = [
 - Overcomplicating waterfall logic`,
     },
   },
-  { 
-    id: 'crm-migration', 
-    name: 'CRM Migration', 
-    status: 'Available', 
+  {
+    id: 'crm-migration',
+    name: 'CRM Migration',
+    status: 'Available',
     icon: '🏠',
-    price: '$45,000',
-    duration: '3 months',
+    price: 'From $25,000',
+    duration: '30-60 days',
     playbookId: 'hubspot-to-salesforce-crm-migration',
+    landingPage: '/getting-started/crm-migration',
   },
   { 
     id: 'quote-to-cash', 
@@ -251,52 +252,73 @@ export default function OneTimeProjects() {
           gap: '1rem',
           marginBottom: '2rem',
         }}>
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => setSelectedProject(selectedProject?.id === project.id ? null : project)}
-              className="card"
-              style={{ 
-                cursor: 'pointer',
-                padding: '1.25rem',
-                border: selectedProject?.id === project.id ? '2px solid #7c3aed' : '1px solid #e5e7eb',
-                background: selectedProject?.id === project.id ? '#f5f3ff' : 'white',
-                transition: 'all 0.2s',
-              }}
-            >
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{project.icon}</div>
-              <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', lineHeight: 1.3 }}>
-                {project.name}
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem' }}>
-                <span style={{
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  background: project.status === 'Available' ? '#d1fae5' : '#fef3c7',
-                  color: project.status === 'Available' ? '#065f46' : '#92400e',
-                }}>
-                  {project.status}
-                </span>
-                {project.badge && (
+          {projects.map((project) => {
+            const CardWrapper = project.landingPage ? Link : 'div';
+            const cardProps = project.landingPage
+              ? { href: customerPath(project.landingPage), style: { textDecoration: 'none', color: 'inherit' } }
+              : { onClick: () => setSelectedProject(selectedProject?.id === project.id ? null : project) };
+
+            return (
+              <CardWrapper
+                key={project.id}
+                {...cardProps}
+                className="card"
+                style={{
+                  ...cardProps.style,
+                  cursor: 'pointer',
+                  padding: '1.25rem',
+                  border: selectedProject?.id === project.id ? '2px solid #7c3aed' : '1px solid #e5e7eb',
+                  background: selectedProject?.id === project.id ? '#f5f3ff' : 'white',
+                  transition: 'all 0.2s',
+                  display: 'block',
+                }}
+              >
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{project.icon}</div>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', lineHeight: 1.3 }}>
+                  {project.name}
+                </h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem' }}>
                   <span style={{
-                    background: '#7c3aed',
-                    color: 'white',
                     padding: '0.2rem 0.5rem',
                     borderRadius: '4px',
                     fontSize: '0.7rem',
                     fontWeight: 600,
+                    background: project.status === 'Available' ? '#d1fae5' : '#fef3c7',
+                    color: project.status === 'Available' ? '#065f46' : '#92400e',
                   }}>
-                    {project.badge}
+                    {project.status}
                   </span>
-                )}
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                {project.price} · {project.duration}
-              </div>
-            </div>
-          ))}
+                  {project.badge && (
+                    <span style={{
+                      background: '#7c3aed',
+                      color: 'white',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                    }}>
+                      {project.badge}
+                    </span>
+                  )}
+                  {project.landingPage && (
+                    <span style={{
+                      background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                      color: 'white',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                    }}>
+                      View Details →
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                  {project.price} · {project.duration}
+                </div>
+              </CardWrapper>
+            );
+          })}
         </div>
 
         {selectedProject && content && (

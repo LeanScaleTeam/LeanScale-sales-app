@@ -5,38 +5,38 @@ import { playbookContent } from '../../data/playbook-content';
 import { useCustomer } from '../../context/CustomerContext';
 
 const projects = [
-  { 
-    id: 'market-map', 
-    name: 'Market Map', 
-    status: 'Available', 
+  {
+    id: 'market-map',
+    name: 'Market Map',
+    status: 'Available',
     icon: '🗺️',
     price: '$45,000',
     duration: '3 months',
     playbookId: 'market-map',
   },
-  { 
-    id: 'automated-inbound-data-enrichment', 
-    name: 'Automated Inbound Enrichment', 
-    status: 'Available', 
+  {
+    id: 'automated-inbound-data-enrichment',
+    name: 'Automated Inbound Enrichment',
+    status: 'Available',
     icon: '🚀',
     price: '$45,000',
     duration: '3 months',
     playbookId: 'automated-inbound-data-enrichment',
   },
-  { 
-    id: 'automated-outbound-process', 
-    name: 'Automated Outbound Outreach', 
-    status: 'Available', 
+  {
+    id: 'automated-outbound-process',
+    name: 'Automated Outbound Outreach',
+    status: 'Available',
     icon: '📤',
     price: '$45,000',
     duration: '3 months',
     playbookId: 'automated-outbound-process',
   },
-  { 
-    id: 'clay-custom-enrichment', 
-    name: 'Custom Enrichment Signals', 
-    status: 'Available', 
-    icon: '🧩', 
+  {
+    id: 'clay-custom-enrichment',
+    name: 'Custom Enrichment Signals',
+    status: 'Available',
+    icon: '🧩',
     badge: 'Clay',
     price: '$45,000',
     duration: '3 months',
@@ -74,19 +74,9 @@ const projects = [
     },
   },
   {
-    id: 'crm-migration',
-    name: 'CRM Migration',
+    id: 'quote-to-cash',
+    name: 'Quote-to-Cash',
     status: 'Available',
-    icon: '🏠',
-    price: 'From $25,000',
-    duration: '30-60 days',
-    playbookId: 'hubspot-to-salesforce-crm-migration',
-    landingPage: '/getting-started/crm-migration',
-  },
-  { 
-    id: 'quote-to-cash', 
-    name: 'Quote-to-Cash', 
-    status: 'Available', 
     icon: '💰',
     price: '$45,000',
     duration: '3 months',
@@ -117,7 +107,7 @@ function formatInlineText(text) {
   const parts = [];
   let remaining = text;
   let keyIdx = 0;
-  
+
   while (remaining.length > 0) {
     const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
     if (boldMatch) {
@@ -135,12 +125,12 @@ function formatInlineText(text) {
 
 function renderMarkdownContent(text) {
   if (!text) return null;
-  
+
   const lines = text.split('\n');
   const elements = [];
   let currentList = [];
   let listType = null;
-  
+
   const flushList = () => {
     if (currentList.length > 0) {
       if (listType === 'ul') {
@@ -164,10 +154,10 @@ function renderMarkdownContent(text) {
       listType = null;
     }
   };
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
     if (line.match(/^---+$/)) {
       flushList();
       elements.push(<hr key={elements.length} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1rem 0' }} />);
@@ -224,6 +214,7 @@ function renderMarkdownContent(text) {
 export default function OneTimeProjects() {
   const { customerPath } = useCustomer();
   const [selectedProject, setSelectedProject] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   const getProjectContent = (project) => {
     if (project.customContent) return project.customContent;
@@ -235,17 +226,85 @@ export default function OneTimeProjects() {
 
   return (
     <Layout title="One-Time Projects">
-      <div className="container" style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>📋</span> One-Time Projects
+      {/* Dark gradient hero */}
+      <div style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+        padding: `clamp(2.5rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 5vw, 3.5rem)`,
+      }}>
+        {/* Radial glow decoration */}
+        <div style={{
+          position: 'absolute',
+          top: '-40%',
+          right: '-10%',
+          width: '600px',
+          height: '600px',
+          background: 'radial-gradient(circle, rgba(163,230,53,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          left: '-5%',
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          {/* Pill badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '9999px',
+            padding: '0.4rem 1rem',
+            marginBottom: '1.25rem',
+            fontSize: '0.8rem',
+            color: 'rgba(255,255,255,0.7)',
+            fontWeight: 500,
+          }}>
+            <span style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: '#a3e635',
+              display: 'inline-block',
+              boxShadow: '0 0 6px rgba(163,230,53,0.5)',
+            }} />
+            Fixed-Scope Delivery
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 800,
+            color: '#fff',
+            margin: '0 0 0.75rem 0',
+            lineHeight: 1.15,
+            letterSpacing: '-0.02em',
+          }}>
+            One-Time <span style={{ color: '#a3e635' }}>Projects</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
-            Fixed-scope GTM operations projects delivered in 3 months. Each project includes discovery, 
+
+          <p style={{
+            color: 'rgba(255,255,255,0.6)',
+            maxWidth: 560,
+            margin: '0 auto',
+            lineHeight: 1.7,
+            fontSize: '1.05rem',
+          }}>
+            Fixed-scope GTM operations projects delivered in 3 months. Each project includes discovery,
             implementation, training, and 30-day post-launch support.
           </p>
         </div>
+      </div>
 
+      {/* Project cards grid */}
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '2.5rem 1.5rem 0' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -253,34 +312,42 @@ export default function OneTimeProjects() {
           marginBottom: '2rem',
         }}>
           {projects.map((project) => {
+            const isSelected = selectedProject?.id === project.id;
+            const isHovered = hoveredCard === project.id;
             const CardWrapper = project.landingPage ? Link : 'div';
             const cardProps = project.landingPage
               ? { href: customerPath(project.landingPage), style: { textDecoration: 'none', color: 'inherit' } }
-              : { onClick: () => setSelectedProject(selectedProject?.id === project.id ? null : project) };
+              : { onClick: () => setSelectedProject(isSelected ? null : project) };
 
             return (
               <CardWrapper
                 key={project.id}
                 {...cardProps}
-                className="card"
+                onMouseEnter={() => setHoveredCard(project.id)}
+                onMouseLeave={() => setHoveredCard(null)}
                 style={{
                   ...cardProps.style,
                   cursor: 'pointer',
                   padding: '1.25rem',
-                  border: selectedProject?.id === project.id ? '2px solid #7c3aed' : '1px solid #e5e7eb',
-                  background: selectedProject?.id === project.id ? '#f5f3ff' : 'white',
-                  transition: 'all 0.2s',
+                  borderRadius: '16px',
+                  border: isSelected ? '2px solid #a3e635' : '1px solid rgba(0,0,0,0.06)',
+                  background: isSelected ? 'rgba(163,230,53,0.04)' : 'white',
+                  boxShadow: isHovered
+                    ? '0 8px 24px rgba(0,0,0,0.08)'
+                    : '0 2px 12px rgba(0,0,0,0.04)',
+                  transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+                  transition: 'all 0.2s ease',
                   display: 'block',
                 }}
               >
                 <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{project.icon}</div>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', lineHeight: 1.3 }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', lineHeight: 1.3, color: '#1f2937' }}>
                   {project.name}
                 </h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem' }}>
                   <span style={{
                     padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
+                    borderRadius: '9999px',
                     fontSize: '0.7rem',
                     fontWeight: 600,
                     background: project.status === 'Available' ? '#d1fae5' : '#fef3c7',
@@ -293,7 +360,7 @@ export default function OneTimeProjects() {
                       background: '#7c3aed',
                       color: 'white',
                       padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
+                      borderRadius: '9999px',
                       fontSize: '0.7rem',
                       fontWeight: 600,
                     }}>
@@ -305,7 +372,7 @@ export default function OneTimeProjects() {
                       background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                       color: 'white',
                       padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
+                      borderRadius: '9999px',
                       fontSize: '0.7rem',
                       fontWeight: 600,
                     }}>
@@ -321,28 +388,45 @@ export default function OneTimeProjects() {
           })}
         </div>
 
+        {/* Detail panel */}
         {selectedProject && content && (
-          <div className="card" style={{ padding: '2rem' }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+            padding: '2rem',
+            marginBottom: '2rem',
+          }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{selectedProject.icon}</div>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{selectedProject.name}</h2>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem', color: '#1f2937', fontWeight: 700 }}>{selectedProject.name}</h2>
                 <div style={{ color: '#7c3aed', fontWeight: 600 }}>
                   {selectedProject.price} · {selectedProject.duration}
                 </div>
               </div>
               <button
                 onClick={() => setSelectedProject(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#9ca3af' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#9ca3af',
+                  padding: '0.25rem',
+                  lineHeight: 1,
+                }}
               >
                 ×
               </button>
             </div>
 
             {content.definition && (content.definition.whatItIs || content.definition.whatItIsNot) && (
-              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f9fafb', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>📋</span> Definition
+              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1f2937' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed', display: 'inline-block' }} />
+                  Definition
                 </h3>
                 {content.definition.whatItIs && (
                   <div style={{ marginBottom: '0.75rem' }}>
@@ -360,9 +444,10 @@ export default function OneTimeProjects() {
             )}
 
             {content.icpValueProp && (content.icpValueProp.painSolves || content.icpValueProp.outcome) && (
-              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f9fafb', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>💎</span> Value Proposition
+              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1f2937' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+                  Value Proposition
                 </h3>
                 {content.icpValueProp.painSolves && (
                   <div style={{ marginBottom: '0.75rem' }}>
@@ -386,9 +471,10 @@ export default function OneTimeProjects() {
             )}
 
             {content.implementation && (
-              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f9fafb', borderRadius: '8px' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span>⚙️</span> Implementation Overview
+              <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1f2937' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                  Implementation Overview
                 </h3>
                 <div style={{ color: '#374151' }}>
                   {renderMarkdownContent(content.implementation)}
@@ -398,9 +484,10 @@ export default function OneTimeProjects() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {content.dependencies && (
-                <div style={{ padding: '1.25rem', background: '#f9fafb', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>🔗</span> Dependencies
+                <div style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1f2937' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }} />
+                    Dependencies
                   </h3>
                   <div style={{ color: '#374151', fontSize: '0.9rem' }}>
                     {renderMarkdownContent(content.dependencies)}
@@ -408,9 +495,10 @@ export default function OneTimeProjects() {
                 </div>
               )}
               {content.pitfalls && (
-                <div style={{ padding: '1.25rem', background: '#f9fafb', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>⚠️</span> Common Pitfalls
+                <div style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1f2937' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+                    Common Pitfalls
                   </h3>
                   <div style={{ color: '#374151', fontSize: '0.9rem' }}>
                     {renderMarkdownContent(content.pitfalls)}
@@ -419,16 +507,38 @@ export default function OneTimeProjects() {
               )}
             </div>
 
+            {/* Bottom CTA buttons in detail panel */}
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
               {selectedProject.playbookId && (
                 <Link href={customerPath(`/playbooks/${selectedProject.playbookId}`)} style={{ textDecoration: 'none' }}>
-                  <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
+                  <button style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(0,0,0,0.15)',
+                    color: '#374151',
+                    padding: '0.65rem 1.5rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}>
                     View Full Playbook
                   </button>
                 </Link>
               )}
               <Link href={customerPath('/getting-started')} style={{ textDecoration: 'none' }}>
-                <button className="btn btn-primary">
+                <button style={{
+                  background: '#a3e635',
+                  border: 'none',
+                  color: '#1a2e05',
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(163,230,53,0.3)',
+                }}>
                   Start Engagement →
                 </button>
               </Link>
@@ -436,16 +546,48 @@ export default function OneTimeProjects() {
           </div>
         )}
 
+        {/* Bottom CTA when no project selected */}
         {!selectedProject && (
-          <div style={{ textAlign: 'center', padding: '2rem', background: '#f9fafb', borderRadius: '12px' }}>
-            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
+          <div style={{
+            textAlign: 'center',
+            padding: '2.5rem 2rem',
+            background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 50%, #2d1845 100%)',
+            borderRadius: '20px',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Subtle glow */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '300px',
+              height: '300px',
+              background: 'radial-gradient(circle, rgba(163,230,53,0.06) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1.25rem', position: 'relative', zIndex: 1, fontSize: '1rem' }}>
               Click on any project above to see full details, or start your engagement now.
             </p>
-            <Link href={customerPath('/getting-started')}>
-              <button className="btn btn-primary">
-                Start Engagement →
-              </button>
-            </Link>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+              <Link href={customerPath('/getting-started')} style={{ textDecoration: 'none' }}>
+                <button style={{
+                  background: '#a3e635',
+                  border: 'none',
+                  color: '#1a2e05',
+                  padding: '0.7rem 1.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 12px rgba(163,230,53,0.3)',
+                }}>
+                  Start Engagement →
+                </button>
+              </Link>
+            </div>
           </div>
         )}
       </div>

@@ -46,25 +46,161 @@ const glossaryTerms = [
 export default function Glossary() {
   return (
     <Layout title="GTM Ops Glossary">
-      <div className="container">
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>📖</span> GTM Ops Glossary
+      {/* Dark gradient hero */}
+      <section style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        padding: 'clamp(3rem, 8vw, 6rem) 1.5rem clamp(3rem, 8vw, 5rem)',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle glow */}
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '600px',
+          height: '300px',
+          background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto' }}>
+          {/* Pill badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.4rem 1rem',
+            background: 'rgba(124,58,237,0.25)',
+            border: '1px solid rgba(124,58,237,0.4)',
+            borderRadius: '9999px',
+            marginBottom: '1.5rem',
+          }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#a3e635',
+              boxShadow: '0 0 8px rgba(163,230,53,0.6)',
+            }} />
+            <span style={{
+              color: 'rgba(255,255,255,0.8)',
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              letterSpacing: '0.02em',
+            }}>
+              Quick Reference Guide
+            </span>
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3.25rem)',
+            fontWeight: 800,
+            color: '#ffffff',
+            margin: '0 0 1rem 0',
+            lineHeight: 1.15,
+            letterSpacing: '-0.02em',
+          }}>
+            GTM Ops{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #65a30d 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              Glossary
+            </span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-            Plain English definitions for common GTM and RevOps terms
+
+          <p style={{
+            fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+            color: 'rgba(255,255,255,0.6)',
+            maxWidth: '600px',
+            margin: '0 auto',
+            lineHeight: 1.6,
+          }}>
+            Plain English definitions for common GTM and RevOps terms.
           </p>
         </div>
+      </section>
 
-        <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {glossaryTerms.map((item) => (
-            <div key={item.term} className="card">
-              <h3 className="card-title" style={{ color: 'var(--ls-purple)' }}>{item.term}</h3>
-              <p className="card-subtitle">{item.definition}</p>
-            </div>
-          ))}
+      {/* Glossary terms section */}
+      <section style={{
+        background: '#ffffff',
+        padding: 'clamp(2.5rem, 6vw, 4rem) 1.5rem',
+      }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          {/* Section label */}
+          <div style={{ marginBottom: '2rem' }}>
+            <p style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: '#7c3aed',
+              margin: '0 0 0.5rem 0',
+            }}>
+              {glossaryTerms.length} Terms
+            </p>
+            <h2 style={{
+              fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+              fontWeight: 700,
+              color: '#111827',
+              margin: 0,
+            }}>
+              All Terms A&ndash;Z
+            </h2>
+          </div>
+
+          {/* Card grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '1.25rem',
+          }}>
+            {glossaryTerms.map((item) => (
+              <div
+                key={item.term}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#c4b5fd';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <h3 style={{
+                  margin: '0 0 0.5rem 0',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  color: '#7c3aed',
+                  lineHeight: 1.3,
+                }}>
+                  {item.term}
+                </h3>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#4b5563',
+                  margin: 0,
+                  lineHeight: 1.6,
+                }}>
+                  {item.definition}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
     </Layout>
   );
 }

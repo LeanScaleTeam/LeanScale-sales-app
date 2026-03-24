@@ -58,22 +58,25 @@ export default function YourTeam() {
 
     return (
       <div
-        className="card"
         onClick={() => toggleMember(member.id)}
         style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '1.5rem',
           border: highlighted ? '2px solid #7c3aed' : '1px solid #e5e7eb',
           position: 'relative',
           cursor: 'pointer',
-          transition: 'all 0.25s ease',
+          transition: 'all 0.3s ease',
           textAlign: 'center',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
         }}
         onMouseOver={(e) => {
           e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.1)';
+          e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)';
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
         }}
       >
         {/* Selection indicator */}
@@ -211,15 +214,80 @@ export default function YourTeam() {
 
   return (
     <Layout title="Your Team">
-      <div className="container" style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>👥</span> Your Team
+      {/* Dark Gradient Hero */}
+      <div style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        padding: 'clamp(2.5rem, 6vw, 4rem) 1.5rem',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '600px',
+          height: '400px',
+          background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(124,58,237,0.2)',
+            border: '1px solid rgba(124,58,237,0.3)',
+            borderRadius: '9999px',
+            padding: '0.375rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.8rem',
+            color: 'rgba(255,255,255,0.85)',
+            fontWeight: 500,
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#a3e635',
+              display: 'inline-block',
+            }} />
+            Meet Your Operators
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 800,
+            color: 'white',
+            marginBottom: '0.75rem',
+            lineHeight: 1.15,
+          }}>
+            Your{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              Team
+            </span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto' }}>
+
+          <p style={{
+            fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
+            color: 'rgba(255,255,255,0.7)',
+            maxWidth: 550,
+            margin: '0 auto',
+            lineHeight: 1.6,
+          }}>
             Meet the LeanScale operators who will be working with you. Click on team members to build your ideal team.
           </p>
         </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '2.5rem 1.5rem 3rem' }}>
 
         {/* Selected Team Section */}
         {selectedMembers.length > 0 && (
@@ -349,23 +417,52 @@ export default function YourTeam() {
           )}
         </section>
 
+        {/* Bottom CTA */}
         <div style={{
           marginTop: '3rem',
-          padding: '2rem',
-          background: '#f9fafb',
-          borderRadius: '12px',
+          padding: 'clamp(2rem, 4vw, 3rem) 2rem',
+          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          borderRadius: '20px',
           textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
-          <h3 style={{ marginBottom: '0.5rem' }}>Ready to meet your team?</h3>
-          <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
-            {selectedIds.length > 0
-              ? `You've selected ${selectedIds.length} team member${selectedIds.length > 1 ? 's' : ''}. Schedule a kickoff call to get started.`
-              : 'Schedule a kickoff call to meet the operators assigned to your engagement.'
-            }
-          </p>
-          <a href="/getting-started" style={{ textDecoration: 'none' }}>
-            <button className="btn btn-primary">Get Started</button>
-          </a>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '500px',
+            height: '300px',
+            background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.35rem', fontWeight: 700 }}>
+              Ready to meet your team?
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', maxWidth: 500, margin: '0 auto 1.5rem' }}>
+              {selectedIds.length > 0
+                ? `You've selected ${selectedIds.length} team member${selectedIds.length > 1 ? 's' : ''}. Schedule a kickoff call to get started.`
+                : 'Schedule a kickoff call to meet the operators assigned to your engagement.'
+              }
+            </p>
+            <a href="/getting-started" style={{ textDecoration: 'none' }}>
+              <button style={{
+                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                color: '#0a0118',
+                fontWeight: 700,
+                padding: '0.875rem 2rem',
+                fontSize: '1rem',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}>
+                Get Started
+              </button>
+            </a>
+          </div>
         </div>
       </div>
     </Layout>

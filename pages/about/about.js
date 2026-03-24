@@ -49,163 +49,435 @@ const deepCapabilities = [
 export default function AboutUs() {
   return (
     <Layout title="About Us">
-      <div className="container">
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>👋</span> About Us
-          </h1>
+      {/* ── Dark Gradient Hero ── */}
+      <section
+        style={{
+          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          padding: 'clamp(4rem, 10vw, 8rem) clamp(1rem, 5vw, 3rem)',
+          textAlign: 'center',
+          color: '#fff',
+        }}
+      >
+        {/* Pill Badge */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '999px',
+            padding: '0.4rem 1.25rem',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            marginBottom: '2rem',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#a3e635',
+              display: 'inline-block',
+            }}
+          />
+          About LeanScale
         </div>
 
-        {/* Mission */}
-        <section style={{ marginBottom: '3rem' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Our Mission</h2>
-          <p style={{ fontSize: '1.25rem', lineHeight: 1.7, maxWidth: 800 }}>
-            To attract and develop the world&apos;s best startup operators and help startups,
-            their people, and their investors succeed.
-          </p>
-        </section>
+        <h1
+          style={{
+            fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+            fontWeight: 800,
+            lineHeight: 1.15,
+            margin: '0 auto 1.5rem',
+            maxWidth: 800,
+          }}
+        >
+          We Help Startups{' '}
+          <span
+            style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Succeed
+          </span>
+        </h1>
 
-        {/* Values */}
-        <section style={{ marginBottom: '3rem' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Our Values</h2>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <p
+          style={{
+            fontSize: 'clamp(1.05rem, 2vw, 1.35rem)',
+            lineHeight: 1.7,
+            maxWidth: 720,
+            margin: '0 auto',
+            color: 'rgba(255,255,255,0.8)',
+          }}
+        >
+          To attract and develop the world&apos;s best startup operators and help startups,
+          their people, and their investors succeed.
+        </p>
+      </section>
+
+      {/* ── Values Section ── */}
+      <section
+        style={{
+          padding: 'clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 3rem)',
+          background: '#fff',
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
+          <span
+            style={{
+              display: 'inline-block',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              color: '#7c3aed',
+              marginBottom: '0.75rem',
+            }}
+          >
+            What We Stand For
+          </span>
+          <h2
+            style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
+              fontWeight: 800,
+              color: '#0f0524',
+              marginBottom: '2.5rem',
+            }}
+          >
+            Our Values
+          </h2>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             {values.map((value) => (
               <div
                 key={value}
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
                   padding: '0.75rem 1.5rem',
-                  background: 'var(--ls-lime-green)',
-                  borderRadius: '8px',
-                  fontWeight: 500,
+                  background: 'linear-gradient(135deg, rgba(163,230,53,0.12) 0%, rgba(132,204,22,0.12) 100%)',
+                  border: '1px solid rgba(163,230,53,0.3)',
+                  borderRadius: '999px',
+                  fontWeight: 600,
+                  fontSize: 'clamp(0.9rem, 1.5vw, 1.05rem)',
+                  color: '#365314',
                 }}
               >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                    flexShrink: 0,
+                  }}
+                />
                 {value}
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* What Sets Us Apart */}
-        <section style={{ marginBottom: '3rem' }}>
-          <h2 style={{ marginBottom: '1.5rem' }}>What Sets Us Apart</h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.5rem'
-          }}>
+      {/* ── What Sets Us Apart ── */}
+      <section
+        style={{
+          padding: 'clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 3rem)',
+          background: '#f5f3ff',
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: '#7c3aed',
+                marginBottom: '0.75rem',
+              }}
+            >
+              Our Differentiators
+            </span>
+            <h2
+              style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
+                fontWeight: 800,
+                color: '#0f0524',
+              }}
+            >
+              What Sets Us Apart
+            </h2>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 'clamp(1rem, 2vw, 1.5rem)',
+            }}
+          >
             {differentiators.map((item) => (
-              <div 
-                key={item.title} 
+              <div
+                key={item.title}
                 style={{
-                  padding: '1.5rem',
-                  border: '2px solid var(--ls-purple)',
-                  borderRadius: '8px',
-                  background: 'white',
+                  background: '#fff',
+                  borderRadius: '14px',
+                  padding: '2rem',
+                  border: '1px solid #e9e5f5',
+                  borderTop: '4px solid transparent',
+                  borderImage: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%) 1',
+                  borderImageSlice: '1',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                 }}
               >
-                <h3 style={{ 
-                  color: 'var(--ls-purple)', 
-                  marginBottom: '0.75rem',
-                  fontSize: '1.25rem'
-                }}>
+                <h3
+                  style={{
+                    fontSize: 'clamp(1.05rem, 1.8vw, 1.25rem)',
+                    fontWeight: 700,
+                    color: '#1a0a2e',
+                    marginBottom: '0.75rem',
+                  }}
+                >
                   {item.title}
                 </h3>
-                <p style={{ lineHeight: 1.6, margin: 0 }}>{item.description}</p>
+                <p
+                  style={{
+                    lineHeight: 1.7,
+                    margin: 0,
+                    color: '#4a4a5a',
+                    fontSize: 'clamp(0.9rem, 1.4vw, 1rem)',
+                  }}
+                >
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Who We Hire */}
-        <section>
-          <h2 style={{ marginBottom: '1.5rem', fontSize: '1.75rem' }}>Who We Hire</h2>
-          <div style={{ 
-            background: 'var(--ls-lime-green)', 
-            borderRadius: '12px', 
-            padding: '2rem',
-          }}>
-            <div style={{
+      {/* ── Who We Hire ── */}
+      <section
+        style={{
+          padding: 'clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 3rem)',
+          background: '#fafafa',
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: '#7c3aed',
+                marginBottom: '0.75rem',
+              }}
+            >
+              Our Team
+            </span>
+            <h2
+              style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
+                fontWeight: 800,
+                color: '#0f0524',
+              }}
+            >
+              Who We Hire
+            </h2>
+          </div>
+
+          <div
+            style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '3rem'
-            }}>
-              {/* Top Talent Column */}
-              <div>
-                <h3 style={{ 
-                  textAlign: 'center', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 'clamp(1.5rem, 3vw, 3rem)',
+            }}
+          >
+            {/* Top Talent Column */}
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 3vw, 2.5rem)',
+                border: '1px solid #e9e5f5',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+            >
+              <h3
+                style={{
+                  textAlign: 'center',
                   marginBottom: '1.5rem',
-                  fontSize: '0.875rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: 'var(--ls-purple)'
-                }}>
-                  Top Talent
-                </h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {topTalent.map((item) => (
-                    <li 
-                      key={item} 
-                      style={{ 
-                        padding: '0.5rem 0',
-                        borderBottom: '1px solid rgba(0,0,0,0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
+                  letterSpacing: '0.12em',
+                  color: '#7c3aed',
+                }}
+              >
+                Top Talent
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {topTalent.map((item) => (
+                  <li
+                    key={item}
+                    style={{
+                      padding: '0.65rem 0',
+                      borderBottom: '1px solid #f0edf5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      fontSize: 'clamp(0.9rem, 1.4vw, 1rem)',
+                      color: '#2d2d3a',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                        flexShrink: 0,
                       }}
-                    >
-                      <span style={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        background: 'var(--ls-purple)',
-                        flexShrink: 0
-                      }} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              {/* Deep Capabilities Column */}
-              <div>
-                <h3 style={{ 
-                  textAlign: 'center', 
+            {/* Deep Capabilities Column */}
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 3vw, 2.5rem)',
+                border: '1px solid #e9e5f5',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+            >
+              <h3
+                style={{
+                  textAlign: 'center',
                   marginBottom: '1.5rem',
-                  fontSize: '0.875rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: 'var(--ls-purple)'
-                }}>
-                  Deep Capabilities
-                </h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {deepCapabilities.map((item) => (
-                    <li 
-                      key={item} 
-                      style={{ 
-                        padding: '0.5rem 0',
-                        borderBottom: '1px solid rgba(0,0,0,0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
+                  letterSpacing: '0.12em',
+                  color: '#7c3aed',
+                }}
+              >
+                Deep Capabilities
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {deepCapabilities.map((item) => (
+                  <li
+                    key={item}
+                    style={{
+                      padding: '0.65rem 0',
+                      borderBottom: '1px solid #f0edf5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      fontSize: 'clamp(0.9rem, 1.4vw, 1rem)',
+                      color: '#2d2d3a',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                        flexShrink: 0,
                       }}
-                    >
-                      <span style={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        background: 'var(--ls-purple)',
-                        flexShrink: 0
-                      }} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* ── Dark Gradient Footer CTA ── */}
+      <section
+        style={{
+          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          padding: 'clamp(3rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem)',
+          textAlign: 'center',
+          color: '#fff',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+            fontWeight: 800,
+            marginBottom: '1rem',
+          }}
+        >
+          Ready to{' '}
+          <span
+            style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Lean on Us
+          </span>
+          ?
+        </h2>
+        <p
+          style={{
+            fontSize: 'clamp(1rem, 1.8vw, 1.2rem)',
+            color: 'rgba(255,255,255,0.7)',
+            maxWidth: 600,
+            margin: '0 auto 2rem',
+            lineHeight: 1.7,
+          }}
+        >
+          Let our team of experienced startup operators handle your revenue operations
+          so you can focus on growth.
+        </p>
+        <a
+          href="/contact"
+          style={{
+            display: 'inline-block',
+            padding: '0.9rem 2.5rem',
+            background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+            color: '#1a0a2e',
+            fontWeight: 700,
+            fontSize: '1rem',
+            borderRadius: '999px',
+            textDecoration: 'none',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            boxShadow: '0 4px 20px rgba(163,230,53,0.3)',
+          }}
+        >
+          Get in Touch
+        </a>
+      </section>
     </Layout>
   );
 }

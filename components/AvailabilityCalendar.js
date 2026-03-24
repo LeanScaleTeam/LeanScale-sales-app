@@ -168,7 +168,7 @@ export default function AvailabilityCalendar({ onSelect, selectedDate, compact =
               )}
               
               <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-                Cohort #{cohort.cohortNumber}
+                Team #{cohort.cohortNumber}
               </div>
               
               <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>

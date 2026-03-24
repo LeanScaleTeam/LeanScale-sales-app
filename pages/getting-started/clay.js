@@ -79,35 +79,91 @@ export default function ClayPartnership() {
   const { customerPath } = useCustomer();
   return (
     <Layout title="Clay x LeanScale">
-      <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', color: 'white', padding: '4rem 0' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+      {/* Dark Gradient Hero */}
+      <div style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        padding: 'clamp(2.5rem, 6vw, 4rem) 1.5rem',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '600px',
+          height: '400px',
+          background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 800, margin: '0 auto' }}>
+          {/* Pill badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(124,58,237,0.2)',
+            border: '1px solid rgba(124,58,237,0.3)',
+            borderRadius: '9999px',
+            padding: '0.375rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.8rem',
+            color: 'rgba(255,255,255,0.85)',
+            fontWeight: 500,
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#a3e635',
+              display: 'inline-block',
+            }} />
+            Clay Enterprise Partner
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
             <div style={{ background: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1a1a2e' }}>LeanScale</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0a0118' }}>LeanScale</span>
             </div>
-            <span style={{ fontSize: '2rem', color: '#f59e0b' }}>×</span>
+            <span style={{ fontSize: '2rem', color: '#a3e635' }}>×</span>
             <div style={{ background: '#E8DED1', padding: '0.75rem 1.5rem', borderRadius: '8px' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1a1a2e' }}>Clay</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0a0118' }}>Clay</span>
             </div>
           </div>
-          
-          <p style={{ color: '#a5b4fc', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '1rem' }}>
-            Clay Enterprise Partner
-          </p>
-          
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '1rem', lineHeight: 1.2 }}>
-            Stop burning credits.<br />
-            <span style={{ color: '#a3e635' }}>Start growing revenue.</span>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3.25rem)',
+            fontWeight: 800,
+            color: 'white',
+            marginBottom: '0.75rem',
+            lineHeight: 1.15,
+          }}>
+            Stop burning credits.{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              Start growing revenue.
+            </span>
           </h1>
-          
-          <p style={{ fontSize: '1.1rem', color: '#94a3b8', maxWidth: 600, margin: '0 auto 2rem' }}>
+
+          <p style={{
+            fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+            color: 'rgba(255,255,255,0.6)',
+            maxWidth: 600,
+            margin: '0 auto 2rem',
+            lineHeight: 1.6,
+          }}>
             See how the fastest growing B2B startups use Clay as their intelligence layer to multiply every part of their Go-to-Market engine.
           </p>
 
-          <div style={{ 
-            maxWidth: 800, 
-            margin: '0 auto 2rem', 
-            borderRadius: '12px', 
+          <div style={{
+            maxWidth: 800,
+            margin: '0 auto 2rem',
+            borderRadius: '12px',
             overflow: 'hidden',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           }}>
@@ -122,58 +178,69 @@ export default function ClayPartnership() {
             </div>
           </div>
 
-          <a 
-            href="https://go.leanscale.team/clay/start#booking-form" 
-            target="_blank" 
+          <a
+            href="https://go.leanscale.team/clay/start#booking-form"
+            target="_blank"
             rel="noopener noreferrer"
-            style={{ 
+            style={{
               display: 'inline-block',
-              background: '#a3e635', 
-              color: '#1a1a2e', 
-              padding: '1rem 2rem', 
-              borderRadius: '8px', 
-              fontWeight: 600,
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              color: '#0a0118',
+              padding: '0.875rem 2rem',
+              borderRadius: '12px',
+              fontWeight: 700,
               textDecoration: 'none',
-              fontSize: '1.1rem',
+              fontSize: '1rem',
+              transition: 'all 0.2s ease',
             }}
           >
             Get Free Clay Diagnostic
           </a>
-          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.5rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', marginTop: '0.75rem' }}>
             No Cost. No pitch. Just insights.
           </p>
         </div>
       </div>
 
-      <div className="container" style={{ padding: '4rem 1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
+      {/* Main Content on white */}
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '2.5rem 1.5rem 3rem' }}>
+
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
           {stats.map((stat, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#7c3aed' }}>{stat.value}</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#7c3aed' }}>{stat.value}</div>
               <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>{stat.label}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ background: '#f9fafb', borderRadius: '16px', padding: '3rem', marginBottom: '4rem' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '0.5rem', fontSize: '1.75rem' }}>
+        {/* What Clay Is / Is Not */}
+        <div style={{
+          background: '#f9fafb',
+          borderRadius: '16px',
+          padding: 'clamp(1.5rem, 4vw, 3rem)',
+          marginBottom: '3rem',
+          border: '1px solid rgba(0,0,0,0.06)',
+        }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '0.5rem', fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>
             Understanding what Clay actually is
           </h2>
           <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: '2rem' }}>
             versus common misconceptions
           </p>
-          
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             <div>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', marginBottom: '1rem' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', marginBottom: '1rem', fontSize: '1rem', fontWeight: 700 }}>
                 <span style={{ fontSize: '1.25rem' }}>✕</span> What Clay is NOT
               </h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {whatClayIsNot.map((item, i) => (
-                  <li key={i} style={{ 
-                    padding: '0.75rem 1rem', 
-                    background: '#fef2f2', 
-                    borderRadius: '8px', 
+                  <li key={i} style={{
+                    padding: '0.75rem 1rem',
+                    background: '#fef2f2',
+                    borderRadius: '8px',
                     marginBottom: '0.5rem',
                     color: '#991b1b',
                     fontSize: '0.9rem',
@@ -184,15 +251,15 @@ export default function ClayPartnership() {
               </ul>
             </div>
             <div>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', marginBottom: '1rem' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', marginBottom: '1rem', fontSize: '1rem', fontWeight: 700 }}>
                 <span style={{ fontSize: '1.25rem' }}>✓</span> What Clay IS
               </h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {whatClayIs.map((item, i) => (
-                  <li key={i} style={{ 
-                    padding: '0.75rem 1rem', 
-                    background: '#ecfdf5', 
-                    borderRadius: '8px', 
+                  <li key={i} style={{
+                    padding: '0.75rem 1rem',
+                    background: '#ecfdf5',
+                    borderRadius: '8px',
                     marginBottom: '0.5rem',
                     color: '#065f46',
                     fontSize: '0.9rem',
@@ -205,11 +272,12 @@ export default function ClayPartnership() {
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <p style={{ color: '#7c3aed', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+        {/* Use Case Pyramid */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem', fontWeight: 600 }}>
             The Clay Use-Case Pyramid
           </p>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111827' }}>
             The 4 proven use-cases that drive real business outcomes.
           </h2>
           <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
@@ -217,23 +285,27 @@ export default function ClayPartnership() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
           {useCases.map((useCase, i) => (
-            <div key={i} style={{ 
-              background: 'white', 
-              border: '1px solid #e5e7eb', 
-              borderRadius: '12px', 
+            <div key={i} style={{
+              background: 'white',
+              border: '1px solid rgba(0,0,0,0.06)',
+              borderRadius: '16px',
               padding: '1.5rem',
-              transition: 'box-shadow 0.2s',
-            }}>
+              transition: 'all 0.3s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <span style={{ 
-                  background: '#7c3aed', 
-                  color: 'white', 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '4px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 600 
+                <span style={{
+                  background: '#7c3aed',
+                  color: 'white',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
                 }}>
                   {useCase.number}
                 </span>
@@ -241,16 +313,16 @@ export default function ClayPartnership() {
                   {useCase.tag}
                 </span>
               </div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{useCase.title}</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111827' }}>{useCase.title}</h3>
               <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1rem' }}>
                 {useCase.description}
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {useCase.benefits.map((benefit, j) => (
-                  <span key={j} style={{ 
-                    background: '#f3f4f6', 
-                    padding: '0.25rem 0.75rem', 
-                    borderRadius: '9999px', 
+                  <span key={j} style={{
+                    background: '#f3f4f6',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
                     fontSize: '0.75rem',
                     color: '#374151',
                   }}>
@@ -262,50 +334,70 @@ export default function ClayPartnership() {
           ))}
         </div>
 
-        <div style={{ 
-          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', 
-          borderRadius: '16px', 
-          padding: '3rem', 
+        {/* F1 Engine CTA - Dark gradient section */}
+        <div style={{
+          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          borderRadius: '20px',
+          padding: 'clamp(2rem, 4vw, 3rem) 2rem',
           textAlign: 'center',
           color: 'white',
-          marginBottom: '4rem',
+          marginBottom: '3rem',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>
-            Clay is a Formula 1 engine
-          </h2>
-          <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: 600, margin: '0 auto 1.5rem' }}>
-            But useless without the car. Clay needs the pit crew, race plan, and the rest of the car.
-            Without having a strategy to implement Clay, you won&apos;t see the impact.
-          </p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>
-            That&apos;s why we offer a free Clay diagnostic.
-          </p>
-          <a 
-            href="https://go.leanscale.team/clay/start#booking-form" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ 
-              display: 'inline-block',
-              background: 'white', 
-              color: '#7c3aed', 
-              padding: '1rem 2rem', 
-              borderRadius: '8px', 
-              fontWeight: 600,
-              textDecoration: 'none',
-              fontSize: '1rem',
-            }}
-          >
-            Get Free Clay Diagnostic →
-          </a>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '500px',
+            height: '300px',
+            background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{
+              fontSize: 'clamp(1.25rem, 3vw, 1.75rem)',
+              fontWeight: 700,
+              marginBottom: '1rem',
+            }}>
+              Clay is a Formula 1 engine
+            </h2>
+            <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: 'rgba(255,255,255,0.6)', maxWidth: 600, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+              But useless without the car. Clay needs the pit crew, race plan, and the rest of the car.
+              Without having a strategy to implement Clay, you won&apos;t see the impact.
+            </p>
+            <p style={{ fontSize: '1.15rem', fontWeight: 600, marginBottom: '1.5rem', color: 'white' }}>
+              That&apos;s why we offer a free Clay diagnostic.
+            </p>
+            <a
+              href="https://go.leanscale.team/clay/start#booking-form"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                color: '#0a0118',
+                padding: '0.875rem 2rem',
+                borderRadius: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                fontSize: '1rem',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Get Free Clay Diagnostic →
+            </a>
+          </div>
         </div>
 
         {/* Claybook Pricing Section */}
-        <div style={{ marginBottom: '4rem' }}>
+        <div style={{ marginBottom: '3rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <p style={{ color: '#7c3aed', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+            <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem', fontWeight: 600 }}>
               Claybook Pricing Menu
             </p>
-            <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#111827' }}>
               Fixed pricing for Clay implementations
             </h2>
             <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
@@ -313,22 +405,26 @@ export default function ClayPartnership() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
             {claybooks.map((book) => (
               <div key={book.id} style={{
                 background: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.25rem',
-                transition: 'box-shadow 0.2s',
-              }}>
+                border: '1px solid rgba(0,0,0,0.06)',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                   <div>
-                    <span style={{ 
-                      background: '#f3f4f6', 
-                      color: '#6b7280', 
-                      padding: '0.15rem 0.5rem', 
-                      borderRadius: '4px', 
+                    <span style={{
+                      background: '#f3f4f6',
+                      color: '#6b7280',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '4px',
                       fontSize: '0.7rem',
                       marginRight: '0.5rem',
                     }}>
@@ -348,7 +444,7 @@ export default function ClayPartnership() {
                     ${book.price.toLocaleString()}
                   </div>
                 </div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>{book.name}</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#111827' }}>{book.name}</h3>
                 <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.5, marginBottom: '0.75rem' }}>
                   {book.description}
                 </p>
@@ -362,89 +458,188 @@ export default function ClayPartnership() {
             ))}
           </div>
 
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>Bundles (Save More)</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          {/* Bundles */}
+          <div style={{ marginBottom: '2.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', textAlign: 'center', color: '#111827' }}>Bundles (Save More)</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
               {bundles.map((bundle, i) => (
                 <div key={i} style={{
-                  background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-                  borderRadius: '12px',
+                  background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+                  borderRadius: '16px',
                   padding: '1.5rem',
                   color: 'white',
                   textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '0.25rem' }}>
-                    Save ${bundle.savings.toLocaleString()}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '300px',
+                    height: '200px',
+                    background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                  }} />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{
+                      display: 'inline-block',
+                      background: 'rgba(163,230,53,0.15)',
+                      border: '1px solid rgba(163,230,53,0.3)',
+                      borderRadius: '9999px',
+                      padding: '0.2rem 0.75rem',
+                      fontSize: '0.7rem',
+                      color: '#a3e635',
+                      fontWeight: 600,
+                      marginBottom: '0.5rem',
+                    }}>
+                      Save ${bundle.savings.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+                      ${bundle.price.toLocaleString()}
+                    </div>
+                    <h4 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', fontWeight: 600 }}>{bundle.name}</h4>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>
+                      {bundle.includes.map((item, j) => (
+                        <li key={j} style={{ marginBottom: '0.25rem' }}>✓ {item}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <div style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    ${bundle.price.toLocaleString()}
-                  </div>
-                  <h4 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>{bundle.name}</h4>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>
-                    {bundle.includes.map((item, j) => (
-                      <li key={j} style={{ marginBottom: '0.25rem' }}>✓ {item}</li>
-                    ))}
-                  </ul>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div style={{ 
-          background: '#f9fafb', 
-          borderRadius: '12px', 
-          padding: '2rem', 
-          maxWidth: 700, 
+        {/* Testimonial */}
+        <div style={{
+          background: '#f9fafb',
+          borderRadius: '16px',
+          padding: '2rem',
+          maxWidth: 700,
           margin: '0 auto 3rem',
+          border: '1px solid rgba(0,0,0,0.06)',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-            <div style={{ fontSize: '2rem' }}>&ldquo;</div>
+            <div style={{ fontSize: '2rem', color: '#7c3aed' }}>&ldquo;</div>
             <div>
               <p style={{ fontSize: '1rem', lineHeight: 1.7, color: '#374151', marginBottom: '1rem', fontStyle: 'italic' }}>
-                By partnering with LeanScale, we successfully automated account and contact enrichment processes using Clay. 
-                The outcome was a significant reduction in manual processing time, improved data accuracy, and enhanced sales 
+                By partnering with LeanScale, we successfully automated account and contact enrichment processes using Clay.
+                The outcome was a significant reduction in manual processing time, improved data accuracy, and enhanced sales
                 intelligence capabilities. Our sales team is now able to focus on high-value activities.
               </p>
-              <div style={{ fontWeight: 600 }}>Kelsey L.</div>
+              <div style={{ fontWeight: 600, color: '#111827' }}>Kelsey L.</div>
               <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>RevOps at Fountain</div>
             </div>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center' }}>
-          <h3 style={{ marginBottom: '1rem' }}>Ready to unlock Clay&apos;s full potential?</h3>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a 
-              href="https://go.leanscale.team/clay/start" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <button className="btn btn-primary">
-                Visit Clay x LeanScale
-              </button>
-            </a>
-            <a 
-              href="https://www.clay.com/experts/partner/leanscale" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
+        {/* Bottom CTA - Dark gradient footer */}
+        <div style={{
+          padding: 'clamp(2rem, 4vw, 3rem) 2rem',
+          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          borderRadius: '20px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          marginBottom: '2rem',
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '500px',
+            height: '300px',
+            background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{
+              fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+              fontWeight: 700,
+              color: 'white',
+              marginBottom: '0.5rem',
+            }}>
+              Ready to unlock Clay&apos;s full potential?
+            </h2>
+            <p style={{
+              color: 'rgba(255,255,255,0.6)',
+              maxWidth: 500,
+              margin: '0 auto 1.5rem',
+              lineHeight: 1.6,
+            }}>
+              Get started with a free diagnostic or explore our implementation options.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a
+                href="https://go.leanscale.team/clay/start"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                  color: '#0a0118',
+                  fontWeight: 700,
+                  padding: '0.875rem 2rem',
+                  fontSize: '1rem',
+                  border: 'none',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Visit Clay x LeanScale →
+              </a>
+              <a
+                href="https://www.clay.com/experts/partner/leanscale"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  background: 'rgba(255,255,255,0.08)',
+                  color: 'white',
+                  fontWeight: 600,
+                  padding: '0.875rem 2rem',
+                  fontSize: '1rem',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
                 View on Clay Directory
-              </button>
-            </a>
-            <Link href={customerPath('/getting-started/one-time-projects')} style={{ textDecoration: 'none' }}>
-              <button className="btn" style={{ background: 'white', border: '1px solid #e5e7eb' }}>
+              </a>
+              <Link href={customerPath('/getting-started/one-time-projects')} style={{
+                display: 'inline-block',
+                background: 'rgba(255,255,255,0.08)',
+                color: 'white',
+                fontWeight: 600,
+                padding: '0.875rem 2rem',
+                fontSize: '1rem',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}>
                 Custom Enrichment Project
-              </button>
-            </Link>
-            <Link href={customerPath('/getting-started/clay-intake')} style={{ textDecoration: 'none' }}>
-              <button className="btn btn-primary">
-                Start Clay Project Intake
-              </button>
-            </Link>
+              </Link>
+              <Link href={customerPath('/getting-started/clay-intake')} style={{
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                color: '#0a0118',
+                fontWeight: 700,
+                padding: '0.875rem 2rem',
+                fontSize: '1rem',
+                border: 'none',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}>
+                Start Clay Project Intake →
+              </Link>
+            </div>
           </div>
         </div>
       </div>

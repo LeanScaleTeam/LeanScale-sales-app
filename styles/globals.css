@@ -168,7 +168,7 @@ body {
   font-family: var(--font-family);
   background: var(--ls-off-white);
   color: var(--text-primary);
-  padding-top: 60px; /* Account for fixed nav */
+  padding-top: 72px; /* Account for fixed nav */
 }
 
 a {
@@ -180,382 +180,17 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Navigation */
-.nav {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
-  backdrop-filter: saturate(200%) blur(24px);
-  -webkit-backdrop-filter: saturate(200%) blur(24px);
-  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
-  padding: 0.625rem var(--space-8);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
-  height: 60px;
+/* Navigation - styles now inline in Navigation.js */
+
+/* Service cards hover */
+.service-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transform: translateX(4px);
 }
 
-.nav::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc, #a855f7, #7c3aed);
-  background-size: 200% 100%;
-  animation: gradientShift 8s ease infinite;
-}
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: transform 0.2s ease;
-}
-
-.nav-logo img {
-  transition: filter 0.2s ease;
-}
-
-.nav-logo:hover {
-  text-decoration: none;
-  transform: scale(1.02);
-}
-
-.nav-logo:hover img {
-  filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.2));
-}
-
-.nav-logo img {
-  height: 32px;
-}
-
-.nav-customer-logo {
-  height: 28px;
-  max-width: 120px;
-  object-fit: contain;
-}
-
-.nav-logo-divider {
-  color: var(--gray-300);
-  font-size: var(--text-xl);
-  font-weight: 300;
-}
-
-.nav-logo-divider-small {
-  color: #c4b5fd;
-  font-size: var(--text-base);
-  font-weight: 400;
-  margin: 0 var(--space-1);
-}
-
-.nav-brand-text {
-  font-weight: 800;
-  font-size: var(--text-xl);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  display: inline;
-}
-
-.nav-brand-leanscale {
-  background-image: linear-gradient(135deg, var(--ls-purple) 0%, #8b5cf6 100%);
-}
-
-.nav-brand-customer {
-  background-image: linear-gradient(135deg, #059669 0%, #10b981 100%);
-}
-
-.nav-links {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.nav-item {
-  position: relative;
-}
-
-.nav-button {
-  background: none;
-  border: none;
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--gray-600);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
-  letter-spacing: -0.01em;
-  position: relative;
-}
-
-.nav-button:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, rgba(168, 85, 247, 0.04) 100%);
-  color: var(--ls-purple-light);
-}
-
-.nav-button span {
-  font-size: 0.65rem;
-  opacity: 0.6;
-  transition: transform var(--transition-fast);
-}
-
-.nav-item:hover .nav-button span {
-  transform: rotate(180deg);
-}
-
-.nav-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-8px) scale(0.98);
-  background: white;
-  border: 1px solid rgba(124, 58, 237, 0.08);
-  border-radius: var(--radius-xl);
-  padding: var(--space-2);
-  min-width: 220px;
-  box-shadow: 0 20px 50px rgba(124, 58, 237, 0.15), 0 4px 12px rgba(0, 0, 0, 0.05);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: top center;
-}
-
-.nav-dropdown::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-left: 1px solid rgba(124, 58, 237, 0.08);
-  border-top: 1px solid rgba(124, 58, 237, 0.08);
-}
-
-.nav-item:hover .nav-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0) scale(1);
-}
-
-.nav-dropdown a {
-  display: block;
-  padding: var(--space-2) var(--space-3);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.nav-dropdown a:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%);
-  color: var(--ls-purple-light);
-  text-decoration: none;
-  padding-left: var(--space-4);
-}
-
-.nav-badge-new {
-  background: linear-gradient(135deg, var(--status-healthy) 0%, #16a34a 100%);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: var(--font-semibold);
-  padding: 0.15rem var(--space-1);
-  border-radius: var(--radius-sm);
-  margin-left: var(--space-2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.nav-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  background: #7c3aed;
-  border-radius: 50%;
-  margin-left: 4px;
-  vertical-align: middle;
-  font-size: 0 !important;
-  opacity: 1 !important;
-}
-
-/* Mobile Menu Button */
-.mobile-menu-btn {
-  display: none;
-  background: none;
-  border: none;
-  font-size: var(--text-xl);
-  cursor: pointer;
-  padding: var(--space-2);
-  color: var(--text-primary);
-  width: 44px;
-  height: 44px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
-}
-
-.mobile-menu-btn:hover {
-  background: var(--bg-subtle);
-}
-
-/* Mobile Navigation Styles */
-@media (max-width: 768px) {
-  body {
-    padding-top: 60px;
-  }
-
-  .nav {
-    padding: var(--space-2) var(--space-4);
-    height: 60px;
-  }
-
-  .nav-logo {
-    font-size: var(--text-sm);
-    flex-shrink: 0;
-    gap: var(--space-1);
-    max-width: calc(100vw - 100px);
-    overflow: hidden;
-  }
-
-  .nav-logo img {
-    height: 24px;
-  }
-
-  .nav-customer-logo {
-    height: 24px;
-    max-width: 80px;
-  }
-
-  .nav-logo-divider,
-  .nav-logo-divider-small {
-    font-size: var(--text-sm);
-  }
-
-  .nav-brand-text {
-    font-size: var(--text-sm);
-  }
-
-  .mobile-menu-btn {
-    display: flex;
-    flex-shrink: 0;
-  }
-
-  .nav-links {
-    display: none;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bg-white);
-    flex-direction: column;
-    padding: 0;
-    overflow-y: auto;
-    gap: 0;
-    z-index: 999;
-    border-top: 1px solid var(--border-color);
-  }
-
-  .nav-links-open {
-    display: flex;
-    animation: slideDown 0.2s ease-out;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .nav-item {
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .nav-item:last-of-type {
-    border-bottom: none;
-  }
-
-  .nav-button {
-    width: 100%;
-    justify-content: space-between;
-    padding: var(--space-4) var(--space-5);
-    font-size: var(--text-base);
-    min-height: 56px;
-  }
-
-  .nav-button span {
-    font-size: var(--text-xs);
-    transition: transform var(--transition-fast);
-  }
-
-  .nav-dropdown {
-    position: static;
-    display: none;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    min-width: auto;
-    background: var(--bg-subtle);
-    border-radius: 0;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-
-  .nav-dropdown-open {
-    display: block;
-    animation: fadeIn 0.15s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .nav-item:hover .nav-dropdown {
-    display: none;
-  }
-
-  .nav-dropdown a {
-    padding: var(--space-3) var(--space-6);
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .nav-dropdown a:last-child {
-    border-bottom: none;
-  }
-
-}
 
 /* Layout */
 .container {
@@ -2538,4 +2173,96 @@ a:hover {
 
 .diagnostic-modal-close-btn:hover {
   background: var(--border-color);
+}
+
+/* ============================================
+   Enhanced Mobile Responsive Styles
+   ============================================ */
+
+/* Full-width sections that break out of container */
+.section-full {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+/* Responsive grid helpers */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Stats grids should be 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Quick links stack on mobile */
+  .quick-links-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Highlights stack on mobile */
+  .highlights-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Page headers tighter on mobile */
+  .page-header h1,
+  .page-title {
+    font-size: 1.75rem !important;
+  }
+
+  .page-header p,
+  .page-subtitle {
+    font-size: 0.9rem !important;
+  }
+
+  /* Cards less padding on mobile */
+  .card {
+    padding: 1rem;
+  }
+
+  /* CTA banners */
+  .cta-banner {
+    padding: 1.5rem !important;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cta-buttons .btn {
+    text-align: center;
+  }
+
+  /* Testimonial cards */
+  .testimonial-card {
+    padding: 1.25rem !important;
+  }
+
+  /* Video containers */
+  .video-container {
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  .stat-card {
+    padding: 0.75rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.25rem !important;
+  }
 }

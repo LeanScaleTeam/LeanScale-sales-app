@@ -10,69 +10,238 @@ export default function StartDiagnostic() {
 
   return (
     <Layout title="Start Diagnostic">
-      <div className="container" style={{ maxWidth: 900, margin: '0 auto' }}>
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>🚀</span> Start Diagnostic
-          </h1>
-        </div>
+      {/* Dark Gradient Hero */}
+      <section style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        padding: 'clamp(3rem, 8vw, 5rem) 1.5rem clamp(2.5rem, 6vw, 4rem)',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '600px',
+          height: '400px',
+          background: 'radial-gradient(ellipse, rgba(163,230,53,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
 
-        {/* NDA Section */}
-        <section className="card" style={{ marginBottom: '2rem' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Step 1: Sign NDA</h2>
-          <p style={{ marginBottom: '1.5rem', lineHeight: 1.7 }}>
-            Before we begin the diagnostic process, please sign our mutual NDA to protect both parties.
-          </p>
-
-          {/* Embedded DocuSign PowerForm */}
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 620, margin: '0 auto' }}>
+          {/* Pill badge */}
           <div style={{
-            width: '100%',
-            minHeight: '600px',
-            border: '1px solid #eee',
-            borderRadius: '8px',
-            overflow: 'hidden'
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(163,230,53,0.1)',
+            border: '1px solid rgba(163,230,53,0.25)',
+            borderRadius: '999px',
+            padding: '0.4rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: '#a3e635',
+            letterSpacing: '0.02em',
           }}>
-            <iframe
-              src={ndaLink}
-              style={{
-                width: '100%',
-                height: '600px',
-                border: 'none'
-              }}
-              title="Sign NDA via DocuSign"
-            />
+            <span style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#a3e635',
+              display: 'inline-block',
+              boxShadow: '0 0 6px rgba(163,230,53,0.6)',
+            }} />
+            Get Started
           </div>
 
-          <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#666' }}>
-            Having trouble? <a href={ndaLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ls-purple)' }}>Open in new tab</a>
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 800,
+            color: '#ffffff',
+            lineHeight: 1.15,
+            margin: '0 0 1rem',
+            letterSpacing: '-0.02em',
+          }}>
+            Start{' '}
+            <span style={{ color: '#a3e635' }}>Diagnostic</span>
+          </h1>
+
+          <p style={{
+            fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+            color: 'rgba(255,255,255,0.6)',
+            lineHeight: 1.7,
+            maxWidth: 480,
+            margin: '0 auto',
+          }}>
+            Complete two quick steps to kick off your GTM diagnostic assessment
           </p>
+        </div>
+      </section>
+
+      {/* Step Cards */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 1.5rem' }}>
+        {/* Step 1: NDA */}
+        <section style={{
+          marginTop: '-1.5rem',
+          marginBottom: '2rem',
+          position: 'relative',
+          zIndex: 2,
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+            overflow: 'hidden',
+          }}>
+            {/* Step Header */}
+            <div style={{
+              padding: '1.5rem 2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              borderBottom: '1px solid rgba(0,0,0,0.06)',
+            }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1rem',
+                fontWeight: 800,
+                color: '#1a1a1a',
+                flexShrink: 0,
+              }}>1</div>
+              <div>
+                <h2 style={{
+                  fontSize: '1.15rem',
+                  fontWeight: 700,
+                  margin: 0,
+                  color: '#1a1a1a',
+                }}>Sign NDA</h2>
+                <p style={{
+                  fontSize: '0.85rem',
+                  color: '#6b7280',
+                  margin: '0.15rem 0 0',
+                  lineHeight: 1.5,
+                }}>
+                  Sign our mutual NDA to protect both parties before we begin
+                </p>
+              </div>
+            </div>
+
+            {/* Iframe Container */}
+            <div style={{ padding: '1.5rem 2rem 2rem' }}>
+              <div style={{
+                width: '100%',
+                minHeight: '600px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                overflow: 'hidden',
+              }}>
+                <iframe
+                  src={ndaLink}
+                  style={{
+                    width: '100%',
+                    height: '600px',
+                    border: 'none',
+                  }}
+                  title="Sign NDA via DocuSign"
+                />
+              </div>
+              <p style={{
+                marginTop: '0.75rem',
+                fontSize: '0.8rem',
+                color: '#9ca3af',
+              }}>
+                Having trouble?{' '}
+                <a
+                  href={ndaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#a3e635', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  Open in new tab
+                </a>
+              </p>
+            </div>
+          </div>
         </section>
 
-        {/* Intake Form */}
-        <section className="card">
-          <h2 style={{ marginBottom: '1rem' }}>Step 2: GTM Diagnostic Intake</h2>
-          <p style={{ marginBottom: '1.5rem', lineHeight: 1.7 }}>
-            Help us prepare for your diagnostic by sharing information about your current GTM tech stack.
-            This covers your CRM, marketing automation, sales engagement, revenue intelligence, and more.
-          </p>
-
-          {/* Embedded Fillout Form */}
-          <div style={{ 
-            width: '100%', 
-            minHeight: '800px',
-            border: '1px solid #eee',
-            borderRadius: '8px',
-            overflow: 'hidden'
+        {/* Step 2: Intake Form */}
+        <section style={{ marginBottom: '3rem' }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+            overflow: 'hidden',
           }}>
-            <iframe
-              src={intakeFormLink}
-              style={{
+            {/* Step Header */}
+            <div style={{
+              padding: '1.5rem 2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              borderBottom: '1px solid rgba(0,0,0,0.06)',
+            }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1rem',
+                fontWeight: 800,
+                color: '#1a1a1a',
+                flexShrink: 0,
+              }}>2</div>
+              <div>
+                <h2 style={{
+                  fontSize: '1.15rem',
+                  fontWeight: 700,
+                  margin: 0,
+                  color: '#1a1a1a',
+                }}>GTM Diagnostic Intake</h2>
+                <p style={{
+                  fontSize: '0.85rem',
+                  color: '#6b7280',
+                  margin: '0.15rem 0 0',
+                  lineHeight: 1.5,
+                }}>
+                  Share information about your current GTM tech stack including CRM, marketing automation, sales engagement, and more
+                </p>
+              </div>
+            </div>
+
+            {/* Iframe Container */}
+            <div style={{ padding: '1.5rem 2rem 2rem' }}>
+              <div style={{
                 width: '100%',
-                height: '800px',
-                border: 'none'
-              }}
-              title="GTM Diagnostic Intake Form"
-            />
+                minHeight: '800px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                overflow: 'hidden',
+              }}>
+                <iframe
+                  src={intakeFormLink}
+                  style={{
+                    width: '100%',
+                    height: '800px',
+                    border: 'none',
+                  }}
+                  title="GTM Diagnostic Intake Form"
+                />
+              </div>
+            </div>
           </div>
         </section>
       </div>

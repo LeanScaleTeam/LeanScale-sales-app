@@ -10,7 +10,7 @@ const stats = [
 
 const comparisonRows = [
   { label: 'Timeline', theirs: '6-18 months', ours: '30 days' },
-  { label: 'Cost', theirs: '$100K-300K', ours: '$25,000 flat' },
+  { label: 'Cost', theirs: '$100K-300K', ours: '$50,000 flat' },
   { label: 'Day 1', theirs: 'Kickoff meeting', ours: 'Building' },
   { label: 'Week 4', theirs: 'Still in discovery', ours: 'Your team is live' },
   { label: 'Deliverable', theirs: 'A 40-slide deck', ours: 'A working pipeline' },
@@ -298,28 +298,19 @@ export default function CrmMigration() {
             Whether you&apos;re starting from scratch or migrating from an existing CRM, we have a fixed-scope package that gets you live fast.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '1rem' }}>
-          <a href="#packages" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ background: 'white', border: '2px solid #7c3aed', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.2s', cursor: 'pointer' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🚀</div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>30-Day Implementation</h3>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#7c3aed', marginBottom: '0.5rem' }}>$25,000</div>
-              <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
-                No CRM or a barely-used one? We build your HubSpot or Salesforce from the ground up — live pipeline in 30 days.
-              </p>
-            </div>
-          </a>
-          <a href="#migration" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ background: 'white', border: '2px solid #f59e0b', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.2s', cursor: 'pointer' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔄</div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>60-Day Migration</h3>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.5rem' }}>$35,000</div>
-              <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
-                Switching CRMs? Full data migration, workflow rebuild, and team retraining — zero data loss, zero downtime.
-              </p>
-            </div>
-          </a>
-        </div>
+        <a href="#packages" style={{ textDecoration: 'none', color: 'inherit', display: 'block', maxWidth: 520, margin: '0 auto 1rem' }}>
+          <div style={{ background: 'white', border: '2px solid #7c3aed', borderRadius: '16px', padding: '2.5rem', textAlign: 'center', transition: 'all 0.2s', cursor: 'pointer' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🚀</div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem' }}>30-Day Implementation</h3>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#7c3aed', marginBottom: '0.5rem' }}>$50,000</div>
+            <p style={{ fontSize: '0.9rem', color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
+              No CRM or a barely-used one? We build your HubSpot or Salesforce from the ground up — live pipeline in 30 days.
+            </p>
+          </div>
+        </a>
+        <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af', margin: 0 }}>
+          Need a full CRM migration? <a href="#migration" style={{ color: '#7c3aed', fontWeight: 500 }}>60-Day Migration — $65,000</a>
+        </p>
       </div>
 
       {/* STATS BAR */}
@@ -367,7 +358,7 @@ export default function CrmMigration() {
       <div id="packages" style={{ background: '#fafafa', padding: '4rem 0' }}>
         <div className="container" style={{ padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>30-Day Implementation Sprint — $25,000</p>
+            <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>30-Day Implementation Sprint — $50,000</p>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>4 weeks. Live pipeline. Reps logging deals.</h2>
             <p style={{ color: '#6b7280', maxWidth: 550, margin: '0 auto' }}>
               For companies with no CRM or a barely-used one. Post-funding teams scaling sales. HubSpot or Salesforce — your choice.
@@ -397,50 +388,39 @@ export default function CrmMigration() {
               <div style={{ color: '#e9d5ff', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: '0.25rem' }}>The Guarantee</div>
               <div style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600 }}>If your team isn&apos;t using it by Day 30, we keep working — at no additional cost — until they are.</div>
             </div>
-            <div style={{ color: '#a3e635', fontSize: '1.5rem', fontWeight: 800, whiteSpace: 'nowrap' }}>$25,000</div>
+            <div style={{ color: '#a3e635', fontSize: '1.5rem', fontWeight: 800, whiteSpace: 'nowrap' }}>$50,000</div>
           </div>
         </div>
       </div>
 
-      {/* 60-DAY MIGRATION */}
-      <div className="container" style={{ padding: '4rem 2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>60-Day CRM Migration — $35,000</p>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Zero data loss. Zero downtime. 60 days.</h2>
-          <p style={{ color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
-            Salesforce to HubSpot. HubSpot to Salesforce. Legacy CRM to modern platform. Full data migration, workflow rebuild, and team retraining.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-          {migrationWeeks.map((phase, i) => (
-            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #f59e0b, #f59e0b88)' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <span style={{ background: '#f59e0b', color: 'white', padding: '0.25rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap' }}>WK {phase.week}</span>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>{phase.title}</h3>
-              </div>
-              {phase.items.map((item, j) => (
-                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.3rem 0', fontSize: '0.82rem', color: '#4b5563', lineHeight: 1.4 }}>
-                  <span style={{ color: '#f59e0b', flexShrink: 0, marginTop: '2px' }}>+</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ color: '#fef3c7', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: '0.25rem' }}>The Migration Guarantee</div>
-            <div style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600 }}>Zero data loss. Zero downtime. If we miss either, we fix it free.</div>
+      {/* 60-DAY MIGRATION — secondary footnote section */}
+      <div id="migration" className="container" style={{ padding: '3rem 2rem' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.25rem' }}>🔄</span>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>60-Day CRM Migration</h3>
+            <span style={{ marginLeft: 'auto', fontSize: '1.1rem', fontWeight: 800, color: '#7c3aed' }}>$65,000</span>
           </div>
-          <div style={{ color: 'white', fontSize: '1.5rem', fontWeight: 800, whiteSpace: 'nowrap' }}>$35,000</div>
+          <p style={{ color: '#6b7280', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem' }}>
+            Switching CRMs? Salesforce to HubSpot, HubSpot to Salesforce, or legacy to modern. Full data migration, workflow rebuild, and team retraining — zero data loss, zero downtime.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.5rem' }}>
+            {migrationWeeks.map((phase, i) => (
+              <div key={i} style={{ padding: '0.6rem 0' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>Week {phase.week}: {phase.title}</div>
+                {phase.items.map((item, j) => (
+                  <div key={j} style={{ fontSize: '0.78rem', color: '#6b7280', lineHeight: 1.5, padding: '0.1rem 0' }}>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* PLATFORM DEEP DIVES */}
-      <div style={{ background: '#fafafa', padding: '4rem 0' }}>
+      <div id="platform-expertise" style={{ background: '#fafafa', padding: '4rem 0' }}>
         <div className="container" style={{ padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Platform Expertise</p>
@@ -631,7 +611,7 @@ export default function CrmMigration() {
           </h2>
           <p style={{ color: '#a1a1aa', fontSize: '1.1rem', maxWidth: 500, margin: '0 auto 0.75rem' }}>Limited to 4 sprints per month.</p>
           <p style={{ color: '#71717a', fontSize: '0.9rem', maxWidth: 450, margin: '0 auto 2rem' }}>
-            50+ implementations. HubSpot or Salesforce. $25K implementation. $35K migration. No hourly billing. No scope creep.
+            50+ implementations. HubSpot or Salesforce. $50K implementation. $65K migration. No hourly billing. No scope creep.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="#packages" style={{

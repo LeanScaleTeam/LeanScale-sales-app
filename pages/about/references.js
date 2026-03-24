@@ -81,107 +81,188 @@ function getSegmentColor(segment) {
 export default function CustomerReferences() {
   return (
     <Layout title="Customer References">
-      <div className="container">
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>⭐</span> Customer References
+
+      {/* DARK HERO */}
+      <div style={{
+        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        color: 'white',
+        padding: '5rem 0 4rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: '-20%', left: '10%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'rgba(124,58,237,0.2)',
+            border: '1px solid rgba(124,58,237,0.4)',
+            borderRadius: '9999px',
+            padding: '0.4rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.8rem',
+            color: '#c4b5fd',
+            letterSpacing: '0.05em',
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#a3e635', boxShadow: '0 0 8px #a3e635' }} />
+            TRUSTED BY B2B LEADERS
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+            fontWeight: 800,
+            marginBottom: '1rem',
+            lineHeight: 1.1,
+            letterSpacing: '-0.02em',
+          }}>
+            Customer{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              References
+            </span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-            Hear from the teams we&apos;ve helped scale their GTM operations
+
+          <p style={{
+            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+            color: '#a1a1aa',
+            maxWidth: 600,
+            margin: '0 auto',
+            lineHeight: 1.6,
+          }}>
+            Hear from the teams we&apos;ve helped scale their go-to-market operations
           </p>
         </div>
+      </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', 
-          gap: '1.5rem',
-          marginTop: '2rem'
-        }}>
-          {testimonials.map((testimonial, i) => (
-            <div 
-              key={i} 
-              style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                border: '1px solid #eee',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div style={{ 
-                fontSize: '2rem', 
-                color: 'var(--ls-purple)', 
-                marginBottom: '0.75rem',
-                lineHeight: 1
-              }}>
-                &ldquo;
-              </div>
-              <p style={{ 
-                fontStyle: 'italic', 
-                lineHeight: 1.6, 
-                flex: 1,
-                marginBottom: '1.5rem',
-                fontSize: '0.95rem'
-              }}>
-                {testimonial.quote}
-              </p>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '1rem',
-                borderTop: '1px solid #eee',
-                paddingTop: '1rem'
-              }}>
-                <div 
-                  style={{ 
-                    width: 48, 
-                    height: 48, 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, var(--ls-purple) 0%, #8B5CF6 100%)',
+      {/* TESTIMONIAL GRID */}
+      <div style={{ background: '#f9fafb', padding: '4rem 0' }}>
+        <div className="container">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '1.5rem',
+          }}>
+            {testimonials.map((testimonial, i) => (
+              <div
+                key={i}
+                style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  padding: '2rem',
+                  border: '1px solid #e5e7eb',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                {/* Large quote mark */}
+                <div style={{
+                  fontSize: '3.5rem',
+                  lineHeight: 1,
+                  color: '#7c3aed',
+                  fontFamily: 'Georgia, serif',
+                  marginBottom: '0.5rem',
+                  opacity: 0.3,
+                  userSelect: 'none',
+                }}>
+                  &ldquo;
+                </div>
+
+                {/* Quote text */}
+                <p style={{
+                  fontStyle: 'italic',
+                  lineHeight: 1.7,
+                  flex: 1,
+                  marginBottom: '1.5rem',
+                  fontSize: '0.95rem',
+                  color: '#374151',
+                }}>
+                  {testimonial.quote}
+                </p>
+
+                {/* Author row */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  borderTop: '1px solid #e5e7eb',
+                  paddingTop: '1rem',
+                }}>
+                  {/* Avatar with initials */}
+                  <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    flexShrink: 0
-                  }}
-                >
-                  {getInitials(testimonial.name)}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <a 
-                    href={testimonial.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ 
-                      fontWeight: 600, 
-                      color: 'var(--ls-purple)',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    {testimonial.name}
-                  </a>
-                  <div style={{ fontSize: '0.875rem', color: '#666' }}>
-                    {testimonial.role}, {testimonial.company}
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    flexShrink: 0,
+                    letterSpacing: '0.02em',
+                  }}>
+                    {getInitials(testimonial.name)}
                   </div>
+
+                  {/* Name and role */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <a
+                      href={testimonial.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontWeight: 700,
+                        color: '#1f2937',
+                        textDecoration: 'none',
+                        fontSize: '0.9rem',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#7c3aed'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#1f2937'; }}
+                    >
+                      {testimonial.name}
+                    </a>
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.1rem' }}>
+                      {testimonial.role}, {testimonial.company}
+                    </div>
+                  </div>
+
+                  {/* Segment badge */}
+                  <span style={{
+                    padding: '0.25rem 0.6rem',
+                    background: getSegmentColor(testimonial.segment),
+                    borderRadius: '9999px',
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    color: '#374151',
+                    letterSpacing: '0.01em',
+                  }}>
+                    {testimonial.segment}
+                  </span>
                 </div>
-                <span style={{
-                  padding: '0.25rem 0.5rem',
-                  background: getSegmentColor(testimonial.segment),
-                  borderRadius: '4px',
-                  fontSize: '0.7rem',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {testimonial.segment}
-                </span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
+
     </Layout>
   );
 }

@@ -2,49 +2,78 @@ const team = [
   {
     id: "izzy",
     name: "Izzy Navin",
+    title: "GTM Architect",
     role: "Architect",
+    location: "New York, NY",
     photo: "https://leanscale.team/wp-content/uploads/2024/03/Izzy_Side_Head_Shot_Website_c7becb29c8-1024x1024.jpg",
     experience: [
-      "2 years of RevOps Experience",
-      "2 years of Salesforce Administration and Data Analytics"
+      "4+ years of RevOps Experience",
+      "Been an Architect, Analyst, & Engineer at LeanScale across 20+ customer engagements",
+      "Salesforce Administration and Data Analytics",
+      "HubSpot RevOps Certified"
     ],
     personal: "Enjoys playing pickleball, practicing yoga, and has a true passion for fashion."
   },
   {
+    id: "kylee",
+    name: "Kylee Wharton-Ward",
+    title: "GTM Architect",
+    role: "Architect",
+    location: "Salt Lake City, UT",
+    photo: "/images/team/kylee.jpg",
+    experience: [
+      "5+ years of Marketing & Sales Operations experience",
+      "Most recently scaled GTM Operations at Series A startup Vasion",
+      "Expertise in GTM process optimization and MarTech",
+      "Certifications in Marketo, Salesforce, LeanData, Salesloft, & Gong"
+    ],
+    personal: "Always has a knitting project going, loves to read, and loses all track of time on the pickleball court."
+  },
+  {
     id: "brian",
     name: "Brian Reeves",
+    title: "Sr. GTM Architect",
     role: "Architect",
+    location: "Phoenix, AZ",
     photo: "https://leanscale.team/wp-content/uploads/2025/08/image-40.png",
     experience: [
-      "8 years of experience in Marketing Operations and Marketing Automation",
+      "9+ years of experience in Marketing Operations and Marketing Automation",
+      "Spent 7 years at Keap being a key cog in Marketing Operations",
+      "8+ years as a Marketo Expert",
       "HubSpot RevOps & Marketing Certified",
-      "Marketo wizard"
+      "Additional Certifications in Qualified & ZoomInfo"
     ],
     personal: "Passionate about designing, implementing, and optimizing workflows and campaigns that drive lead generation, customer engagement, and conversion."
   },
   {
-    id: "john",
-    name: "John Attley",
-    role: "Architect",
-    photo: "https://leanscale.team/wp-content/uploads/2024/12/John-Attley.jpg",
-    experience: [
-      "6 years of Ops Experience",
-      "5+ GTMs Experienced",
-      "5 years of Startup Experience"
-    ],
-    personal: "Loves playing in Friday Night Adult Men's Soccer League & rooting for the Toronto Maple Leafs."
-  },
-  {
     id: "derek",
     name: "Derek Mogar",
+    title: "GTM Architect",
     role: "Architect",
+    location: "Phoenix, AZ",
     photo: "/images/team/derek.jpg",
     experience: [
-      "3 years of B2B Ops Experience",
-      "10 years of Sales Experience in a variety of different industries",
-      "4 years as a Product Marketer"
+      "3+ years of Revenue Operations leader experience",
+      "10+ years of Sales Experience across multiple industries",
+      "4+ years as a Product Marketer",
+      "HubSpot Sales Hub Certified"
     ],
-    personal: "Spends downtime coaching baseball and competing in national softball tournaments."
+    personal: "Spends downtime coaching youth baseball and competing in national softball tournaments."
+  },
+  {
+    id: "john",
+    name: "John Attley",
+    title: "Director, GTM Operations",
+    role: "Architect",
+    location: "Vancouver, BC",
+    photo: "https://leanscale.team/wp-content/uploads/2024/12/John-Attley.jpg",
+    experience: [
+      "6+ years of Operations Experience",
+      "Nearly a decade of Sales & Account Management experience",
+      "GTM Experience across SaaS and Services",
+      "5+ years of Startup Experience"
+    ],
+    personal: "Loves playing in Friday Night Adult Men's Soccer League & rooting for the Toronto Maple Leafs."
   },
 {
     id: "kavean",

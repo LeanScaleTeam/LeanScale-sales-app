@@ -142,7 +142,7 @@ export default function YourTeam() {
             <span style={{ fontSize: '2.5rem', color: '#9ca3af' }}>👤</span>
           )}
         </div>
-        <h3 style={{ color: '#7c3aed', marginBottom: '0.5rem', fontSize: '1.1rem' }}>
+        <h3 style={{ color: '#7c3aed', marginBottom: '0.25rem', fontSize: '1.1rem' }}>
           {member.name}
         </h3>
         <div style={{
@@ -153,10 +153,15 @@ export default function YourTeam() {
           borderRadius: '4px',
           fontSize: '0.7rem',
           fontWeight: 600,
-          marginBottom: '0.75rem',
+          marginBottom: '0.25rem',
         }}>
-          {member.role}
+          {member.title || member.role}
         </div>
+        {member.location && (
+          <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.5rem' }}>
+            {member.location}
+          </div>
+        )}
         <ul style={{ paddingLeft: '1.25rem', marginBottom: '1rem', fontSize: '0.85rem', lineHeight: 1.6, color: '#374151', textAlign: 'left' }}>
           {member.experience.map((exp, i) => (
             <li key={i}>{exp}</li>

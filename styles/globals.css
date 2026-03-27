@@ -168,7 +168,6 @@ body {
   font-family: var(--font-family);
   background: var(--ls-off-white);
   color: var(--text-primary);
-  padding-top: 72px; /* Account for fixed nav */
 }
 
 a {

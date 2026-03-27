@@ -615,10 +615,6 @@ export default function Navigation() {
         @media (max-width: 768px) {
           .nav-mobile-btn { display: flex !important; }
           .nav-desktop-links { display: none !important; }
-          body { padding-top: 72px; }
-        }
-        @media (min-width: 769px) {
-          body { padding-top: 72px; }
         }
       `}</style>
     </nav>

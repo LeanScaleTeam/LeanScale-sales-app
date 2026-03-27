@@ -18,7 +18,7 @@ export default function Layout({ children, title = "LeanScale" }) {
           rel="stylesheet"
         />
       </Head>
-      {customerType === 'active' && (
+      {customerType === 'active' && displayName && (
         <div style={{
           background: 'var(--ls-purple)',
           color: 'white',

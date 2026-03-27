@@ -3,161 +3,150 @@ import Layout from '../../components/Layout';
 import { useCustomer } from '../../context/CustomerContext';
 
 const stats = [
-  { value: '68', label: 'Playbooks Delivered' },
-  { value: '12-16', label: 'Week Engagement' },
-  { value: '6', label: 'Workstreams' },
-  { value: '$200K', label: 'Fixed Investment' },
+  { value: '7', label: 'Operational Phases' },
+  { value: '8', label: 'Week Engagement' },
+  { value: '11+', label: 'Executive Dashboards' },
+  { value: '$75K', label: 'Fixed Investment' },
 ];
 
 const comparisonRows = [
-  { label: 'Timeline', theirs: '12-24 months', ours: '12-16 weeks' },
-  { label: 'Cost', theirs: '$500K-1M+', ours: '$200,000 flat' },
-  { label: 'Scope', theirs: 'One workstream at a time', ours: 'All 6 workstreams in parallel' },
+  { label: 'Timeline', theirs: '12-24 months', ours: '8 weeks' },
+  { label: 'Cost', theirs: '$500K-1M+', ours: '$75,000 flat' },
+  { label: 'Scope', theirs: 'One workstream at a time', ours: 'Full-stack GTM in parallel' },
   { label: 'Day 1', theirs: 'Discovery workshop', ours: 'Building' },
-  { label: 'Week 4', theirs: 'Still scoping', ours: 'First playbooks delivered' },
+  { label: 'Week 4', theirs: 'Still scoping', ours: 'Infrastructure live' },
   { label: 'Deliverable', theirs: 'Recommendations deck', ours: 'Working systems + trained team' },
-  { label: 'Ongoing support', theirs: 'Billable hours', ours: '30-day post-launch included' },
+  { label: 'Ongoing support', theirs: 'Billable hours', ours: 'High potential to convert to embedded' },
 ];
 
 const phases = [
   {
-    week: '1-2',
-    title: 'Discovery & Architecture',
+    week: '1',
+    title: 'Planning & Growth Model',
     color: '#7c3aed',
     items: [
-      'Full GTM audit — processes, tools, data, team structure',
-      'Growth model and GTM lifecycle mapping',
-      'ICP refinement and market segmentation',
-      'Architecture blueprint for all 6 workstreams',
+      'Growth models and financial planning',
+      'Market mapping and ICP refinement',
+      'GTM motion design and architecture',
       'Priority sequencing based on revenue impact',
     ],
   },
   {
-    week: '3-6',
-    title: 'Foundation Build',
+    week: '2',
+    title: 'Marketing Process',
     color: '#a855f7',
     items: [
-      'CRM optimization — deduplication, hygiene, automations',
-      'Lead lifecycle and routing implementation',
-      'Sales lifecycle and territory design',
-      'Marketing-to-Sales SLA and handoff process',
-      'Foundational reporting and dashboards',
+      'Attribution model and tracking setup',
+      'Lead routing and enrichment workflows',
+      'Marketing dashboards and reporting',
+      'Campaign infrastructure and automation',
     ],
   },
   {
-    week: '7-12',
-    title: 'Full Stack Deployment',
+    week: '3-4',
+    title: 'Sales Process',
     color: '#8b5cf6',
     items: [
-      'Lead scoring, attribution, and enrichment live',
-      'Sales engagement platform and outbound automation',
-      'CPQ, billing, and quote-to-cash workflows',
-      'Customer success lifecycle and health scoring',
-      'ABM/ABS system and nurture programs deployed',
+      'Territory design and quota planning',
+      'Forecasting process and pipeline management',
+      'CPQ and deal desk workflows',
+      'Sales engagement and activity tracking',
     ],
   },
   {
-    week: '13-16',
-    title: 'Optimization & Handoff',
+    week: '5',
+    title: 'Customer Success & Partnerships',
     color: '#6d28d9',
     items: [
-      'Executive reporting suite and ARR dashboards',
-      'Pipeline analytics and forecasting process',
-      'Commission design and revenue intelligence',
-      'Full team training — reps, managers, leadership',
-      'Runbooks, SOPs, and 30-day post-launch support',
+      'Health methodology and scoring',
+      'Renewal tracking and expansion playbooks',
+      'Partner taxonomy and territory design',
+      'Partnership reporting and dashboards',
+    ],
+  },
+  {
+    week: '6',
+    title: 'Executive Dashboards',
+    color: '#5b21b6',
+    items: [
+      '11+ executive dashboards deployed',
+      'ARR, pipeline, and forecasting views',
+      'Board-ready reporting suite',
+      'Cross-functional GTM analytics',
+    ],
+  },
+  {
+    week: '7-8',
+    title: 'Optimization & Ad-Hoc Support',
+    color: '#4c1d95',
+    items: [
+      'System tuning and optimization',
+      'Team training — reps, managers, leadership',
+      'Ad-hoc support and iteration',
+      'Embedded engagement transition planning',
     ],
   },
 ];
 
 const workstreams = [
   {
-    title: 'Foundation & Strategy',
+    title: 'Planning',
     icon: '🏗️',
     color: '#7c3aed',
     items: [
-      'Growth Model',
-      'GTM Lifecycle',
-      'Market Map & ICP',
+      'Growth Models & Financial Planning',
+      'Market Mapping & ICP',
+      'GTM Motion Design',
       'GTM Org Design',
     ],
   },
   {
-    title: 'Marketing Operations',
+    title: 'Marketing Process',
     icon: '📣',
     color: '#a855f7',
     items: [
-      'Lead Lifecycle',
-      'Automated Inbound Enrichment',
-      'Lead Scoring Model',
       'Multi-Touch Attribution',
-      'Lead Routing',
-      'Marketing-to-Sales SLA',
-      'MAP Implementation',
+      'Lead Routing & Enrichment',
+      'Marketing Dashboards',
+      'Campaign Infrastructure',
       'Inbound Journey Mapping',
-      'Form & Lead Capture',
-      'Email Nurture Programs',
-      'Database Segmentation',
       'ABM/ABS System',
-      'Event ROI Reporting',
-      'Marketing Reporting Pack',
     ],
   },
   {
-    title: 'Sales Operations',
+    title: 'Sales Process',
     icon: '💼',
     color: '#8b5cf6',
     items: [
-      'Sales Lifecycle',
       'Territory Design',
-      'Quotas & Targets',
       'Forecasting Process',
-      'Rules of Engagement',
-      'Sales Qualification',
-      'Automated Outbound',
-      'Activity Capture',
+      'CPQ & Deal Desk',
       'Sales Engagement Platform',
-      'E-Signature Setup',
-      'Conversation Intelligence',
-      'Commission Design',
-      'Revenue Intelligence',
-    ],
-  },
-  {
-    title: 'Quote-to-Cash',
-    icon: '💰',
-    color: '#6d28d9',
-    items: [
-      'Pricing & Packaging',
-      'CPQ Implementation',
-      'Billing Infrastructure',
-      'Revenue Recognition',
+      'Pipeline Management',
+      'Activity Tracking',
     ],
   },
   {
     title: 'Customer Success',
     icon: '🤝',
-    color: '#5b21b6',
+    color: '#6d28d9',
     items: [
-      'Customer Lifecycle',
+      'Health Methodology & Scoring',
+      'Renewal Tracking',
+      'Expansion Playbooks',
       'Sales-to-CS Handoff',
       'NRR/GRR Reporting',
-      'Health Scoring',
     ],
   },
   {
-    title: 'CRM Optimization',
-    icon: '🧹',
-    color: '#4c1d95',
+    title: 'Partnerships',
+    icon: '🤝',
+    color: '#5b21b6',
     items: [
-      'CRM Deduplication',
-      'Ongoing Dedupe Tool',
-      'Foundational Automations',
-      'Reporting Logic',
-      'Opportunity UX',
-      'Lead Routing Config',
-      'Data Hygiene',
-      'Integration Audit',
+      'Partner Taxonomy',
+      'Territory Design',
+      'Partnership Reporting',
+      'Co-Sell Workflows',
     ],
   },
 ];
@@ -236,7 +225,7 @@ export default function UltimateGTM() {
             letterSpacing: '0.05em',
           }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#a3e635', boxShadow: '0 0 8px #a3e635' }} />
-            68 PLAYBOOKS. 6 WORKSTREAMS. ONE ENGAGEMENT.
+            FULL-STACK GTM INFRASTRUCTURE. 8 WEEKS. $75K.
           </div>
 
           <h1 style={{
@@ -264,7 +253,7 @@ export default function UltimateGTM() {
             margin: '0 auto 1rem',
             lineHeight: 1.6,
           }}>
-            The complete revenue operations overhaul. Every system, every process, fully optimized. All the bells and whistles — nothing held back.
+            Full-stack GTM infrastructure built by purpose-built agents and guided by a prescriptive playbook. 7 operational phases, 11+ executive dashboards — air tight scope, zero gaps.
           </p>
 
           <p style={{
@@ -274,7 +263,7 @@ export default function UltimateGTM() {
             margin: '0 auto 2.5rem',
             fontWeight: 500,
           }}>
-            $200,000 fixed. 12-16 weeks. Done.
+            $75,000 fixed. 8 weeks. Done.
           </p>
 
           <a
@@ -342,10 +331,10 @@ export default function UltimateGTM() {
       <div style={{ background: '#fafafa', padding: '4rem 0' }}>
         <div className="container" style={{ padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>The 16-Week Playbook</p>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>From audit to fully operational in one quarter</h2>
+            <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>The 8-Week Playbook</p>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>From zero to fully operational in 8 weeks</h2>
             <p style={{ color: '#6b7280', maxWidth: 550, margin: '0 auto' }}>
-              Four phases. Six workstreams running in parallel. Every deliverable has an owner, a deadline, and a definition of done.
+              Seven phases. Purpose-built agents running in parallel. Every deliverable has an owner, a deadline, and a definition of done.
             </p>
           </div>
 
@@ -370,9 +359,9 @@ export default function UltimateGTM() {
           <div style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', borderRadius: '12px', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ color: '#e9d5ff', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: '0.25rem' }}>The Guarantee</div>
-              <div style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600 }}>Every playbook delivered, every system live, every team trained — or we keep working until it is.</div>
+              <div style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600 }}>Every system live, every dashboard deployed, every team trained — or we keep working until it is.</div>
             </div>
-            <div style={{ color: '#a3e635', fontSize: '1.5rem', fontWeight: 800, whiteSpace: 'nowrap' }}>$200,000</div>
+            <div style={{ color: '#a3e635', fontSize: '1.5rem', fontWeight: 800, whiteSpace: 'nowrap' }}>$75,000</div>
           </div>
         </div>
       </div>
@@ -381,7 +370,7 @@ export default function UltimateGTM() {
       <div id="review-scope" className="container" style={{ padding: '4rem 2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Full Scope</p>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>6 workstreams. 68 playbooks. Zero gaps.</h2>
+          <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>5 pillars. 7 phases. Zero gaps.</h2>
           <p style={{ color: '#6b7280', maxWidth: 550, margin: '0 auto' }}>
             Every deliverable below is included. Not upsold. Not phased. Delivered.
           </p>
@@ -508,12 +497,12 @@ export default function UltimateGTM() {
               You&apos;ve found product-market fit. Revenue is growing. But your GTM engine is held together with duct tape and spreadsheets. Ultimate GTM fixes that — permanently.
             </p>
             {[
-              'Series B-D B2B tech companies',
-              '100-1,000 employees',
-              'Sales teams of 15-100+ reps',
-              'Multiple GTM motions (inbound, outbound, PLG)',
+              'Series A-C B2B tech companies',
+              '$5M-$50M ARR',
+              '50-300 employees',
+              'Raised capital but lack GTM infrastructure',
               'Board asking for predictable, scalable revenue',
-              'RevOps team exists but is underwater',
+              'CRO or revenue leader driving the initiative',
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem 0', fontSize: '0.9rem', color: '#374151' }}>
                 <span style={{ color: '#a3e635', fontWeight: 700 }}>+</span> {item}
@@ -524,13 +513,13 @@ export default function UltimateGTM() {
             <p style={{ color: '#ef4444', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Who This Is NOT For</p>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '1rem' }}>Not every company needs this.</h2>
             <p style={{ color: '#6b7280', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-              If you need one or two playbooks, start with Embedded. Ultimate GTM is for companies that need the whole engine rebuilt.
+              If you want something custom, go with Embedded with rolling 90-day outs. Ultimate GTM is for companies ready for the full stack.
             </p>
             {[
               'Pre-revenue or pre-PMF startups',
-              'Companies that only need CRM help (see Ultimate CRM)',
-              'Teams looking for a single-function fix',
+              'Companies looking for a single-function fix',
               'Organizations not ready to commit executive sponsorship',
+              'Teams that want a la carte projects (we don\'t do those)',
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem 0', fontSize: '0.9rem', color: '#6b7280' }}>
                 <span style={{ color: '#ef4444' }}>-</span> {item}
@@ -584,9 +573,9 @@ export default function UltimateGTM() {
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, marginBottom: '1rem', letterSpacing: '-0.02em' }}>
             Stop patching. Start building.
           </h2>
-          <p style={{ color: '#a1a1aa', fontSize: '1.1rem', maxWidth: 500, margin: '0 auto 0.75rem' }}>68 playbooks. 6 workstreams. 12-16 weeks.</p>
+          <p style={{ color: '#a1a1aa', fontSize: '1.1rem', maxWidth: 500, margin: '0 auto 0.75rem' }}>7 phases. 11+ dashboards. 8 weeks.</p>
           <p style={{ color: '#71717a', fontSize: '0.9rem', maxWidth: 450, margin: '0 auto 2rem' }}>
-            $200,000 fixed investment. No hourly billing. No scope creep. No surprises.
+            $75,000 fixed investment. No hourly billing. No scope creep. No surprises.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href={customerPath(diagnosticHref)} style={{

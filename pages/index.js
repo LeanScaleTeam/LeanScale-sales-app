@@ -16,24 +16,16 @@ const services = [
   {
     icon: '\u{1F680}',
     title: 'Ultimate GTM',
-    price: '$200K',
-    description: '68 playbooks across 6 workstreams. The complete revenue operations overhaul — every system, every process, fully optimized in 12-16 weeks.',
+    price: '$75K',
+    description: 'Full-stack GTM infrastructure in 8 weeks. Purpose-built agents, prescriptive playbooks, and 11+ executive dashboards — everything you need to go from zero to operational.',
     href: '/getting-started/ultimate-gtm',
     borderColor: '#a855f7',
   },
   {
-    icon: '\u{1F3E0}',
-    title: 'Ultimate CRM',
-    price: '$50K',
-    description: 'CRM implementation in 30 days or full migration in 60. HubSpot or Salesforce — live pipeline, trained team, zero surprises.',
-    href: '/getting-started/ultimate-crm',
-    borderColor: '#8b5cf6',
-  },
-  {
     icon: '\u{1F91D}',
-    title: 'Embedded Support',
-    price: 'From $15K/mo',
-    description: 'Dedicated GTM operators embedded in your team. Flexible engagements tailored to your needs — from single workstreams to full RevOps coverage.',
+    title: 'Embedded',
+    price: 'Custom',
+    description: 'Dedicated GTM operators embedded in your team. Custom engagements with rolling 90-day outs — exactly how we sell today, tailored to your needs.',
     href: '/getting-started/embedded',
     borderColor: '#7c3aed',
   },
@@ -134,7 +126,7 @@ export default function Home() {
             margin: '0 auto 2.5rem',
             lineHeight: 1.6,
           }}>
-            We build, optimize, and run the revenue engine behind the fastest-growing B2B companies. From CRM to pipeline to closed-won — we own the full stack.
+            We build full-stack GTM infrastructure for the fastest-growing B2B companies. Two products — Ultimate GTM or Embedded. No a la carte.
           </p>
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3.5rem' }}>
@@ -233,9 +225,9 @@ export default function Home() {
         <div className="container" style={{ position: 'relative', zIndex: 1, padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
             <p style={{ color: '#a3e635', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>How We Work</p>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Three ways to engage</h2>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Two ways to engage</h2>
             <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 500, margin: '0 auto', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Fixed-scope packages that deliver. No hourly billing, no scope creep.
+              You get the whopper, or you get embedded. No a la carte projects.
             </p>
           </div>
 

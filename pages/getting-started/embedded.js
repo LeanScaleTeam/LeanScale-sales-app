@@ -8,7 +8,7 @@ const tiers = [
     hours: 50,
     price: '$15,000',
     rate: '$300/hr',
-    description: 'Perfect for tactical needs',
+    description: 'Single workstream focus',
     color: '#7c3aed',
     featured: false,
   },
@@ -17,7 +17,7 @@ const tiers = [
     hours: 100,
     price: '$25,000',
     rate: '$250/hr',
-    description: 'Save $5,000 vs hourly',
+    description: 'Multi-workstream coverage',
     color: '#7c3aed',
     featured: true,
   },
@@ -26,7 +26,7 @@ const tiers = [
     hours: 225,
     price: '$50,000',
     rate: '$222/hr',
-    description: 'Save $17,500 vs hourly',
+    description: 'Full RevOps coverage',
     color: '#7c3aed',
     featured: false,
   },
@@ -60,7 +60,7 @@ export default function Embedded() {
     : '/diagnostic/start';
 
   return (
-    <Layout title="Embedded Support">
+    <Layout title="Embedded">
       {/* Dark Gradient Hero */}
       <div style={{
         background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
@@ -100,7 +100,7 @@ export default function Embedded() {
               background: '#a3e635',
               display: 'inline-block',
             }} />
-            Flexible Expertise
+            Custom Engagements · Rolling 90-Day Outs
           </div>
 
           <h1 style={{
@@ -128,7 +128,7 @@ export default function Embedded() {
             margin: '0 auto',
             lineHeight: 1.6,
           }}>
-            Augment your team with dedicated RevOps or Marketing Ops expertise. Flexible hours you can use however you need.
+            Dedicated GTM operators embedded in your team. Custom engagements tailored to your needs with rolling 90-day outs — exactly how we sell today.
           </p>
         </div>
       </div>

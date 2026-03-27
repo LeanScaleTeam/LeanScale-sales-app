@@ -367,7 +367,8 @@ export default function UltimateGTM() {
       </div>
 
       {/* WORKSTREAMS */}
-      <div id="review-scope" className="container" style={{ padding: '4rem 2rem' }}>
+      <div id="workstreams" className="container" style={{ padding: '4rem 2rem' }}>
+        <span id="review-scope" />
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Full Scope</p>
           <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>5 pillars. 7 phases. Zero gaps.</h2>

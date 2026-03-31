@@ -168,7 +168,6 @@ body {
   font-family: var(--font-family);
   background: var(--ls-off-white);
   color: var(--text-primary);
-  padding-top: 72px; /* Account for fixed nav */
 }
 
 a {
@@ -199,9 +198,18 @@ a:hover {
   padding: var(--space-8);
 }
 
+/* Add nav clearance when .container is the first child of main (non-hero pages) */
+main > .container:first-child {
+  padding-top: calc(72px + var(--space-8));
+}
+
 @media (max-width: 768px) {
   .container {
     padding: var(--space-4);
+  }
+
+  main > .container:first-child {
+    padding-top: calc(72px + var(--space-4));
   }
 
   .page-title {

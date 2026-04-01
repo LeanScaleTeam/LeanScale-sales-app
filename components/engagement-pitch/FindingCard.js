@@ -2,17 +2,17 @@ import { motion } from 'framer-motion';
 import { fadeUpItem } from '../../lib/animations';
 
 const FUNCTION_COLORS = {
-  'Marketing': { bg: '#EFF6FF', text: '#1E40AF', border: '#BFDBFE' },
-  'Sales': { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
-  'Customer Success': { bg: '#FFF7ED', text: '#9A3412', border: '#FED7AA' },
-  'Partnerships': { bg: '#FAF5FF', text: '#6B21A8', border: '#E9D5FF' },
-  'Cross Functional': { bg: '#F8FAFC', text: '#475569', border: '#E2E8F0' },
+  'Marketing': { bg: 'rgba(96, 165, 250, 0.08)', text: '#60a5fa', border: 'rgba(96, 165, 250, 0.2)' },
+  'Sales': { bg: 'rgba(34, 197, 94, 0.08)', text: '#86efac', border: 'rgba(34, 197, 94, 0.2)' },
+  'Customer Success': { bg: 'rgba(251, 146, 60, 0.08)', text: '#fdba74', border: 'rgba(251, 146, 60, 0.2)' },
+  'Partnerships': { bg: 'rgba(167, 139, 250, 0.08)', text: '#a78bfa', border: 'rgba(167, 139, 250, 0.2)' },
+  'Cross Functional': { bg: 'rgba(255, 255, 255, 0.04)', text: 'rgba(255, 255, 255, 0.5)', border: 'rgba(255, 255, 255, 0.1)' },
 };
 
 const STATUS_BADGES = {
-  warning: { label: 'Critical', bg: '#FEF2F2', text: '#991B1B', border: '#FECACA' },
-  careful: { label: 'Needs Work', bg: '#FEFCE8', text: '#854D0E', border: '#FEF08A' },
-  healthy: { label: 'Healthy', bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
+  warning: { label: 'Critical', bg: 'rgba(239, 68, 68, 0.12)', text: '#fca5a5', border: 'rgba(239, 68, 68, 0.3)' },
+  careful: { label: 'Needs Work', bg: 'rgba(234, 179, 8, 0.12)', text: '#fde047', border: 'rgba(234, 179, 8, 0.3)' },
+  healthy: { label: 'Healthy', bg: 'rgba(34, 197, 94, 0.12)', text: '#86efac', border: 'rgba(34, 197, 94, 0.3)' },
 };
 
 const FINDING_STATUS_CYCLE = ['warning', 'careful', 'healthy'];
@@ -37,7 +37,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
       style={{
         padding: 0,
         overflow: 'hidden',
-        border: '1px solid var(--border-color)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
         opacity: item.excluded ? 0.4 : 1,
         transition: 'opacity 0.2s ease',
       }}
@@ -140,13 +140,13 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
           fontSize: 'var(--text-base)',
           fontWeight: 'var(--font-semibold)',
           marginBottom: 'var(--space-3)',
-          color: '#1a1a2e',
+          color: 'rgba(255, 255, 255, 0.95)',
         }}>
           {item.name}
         </h3>
 
         {/* Problem */}
-        <Section label="PROBLEM" color="#991B1B">
+        <Section label="PROBLEM" color="#fca5a5">
           {editMode ? (
             <textarea
               value={item.description || ''}
@@ -160,7 +160,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
                 resize: 'vertical',
                 fontFamily: 'inherit',
                 lineHeight: 1.5,
-                color: '#374151',
+                color: 'rgba(255, 255, 255, 0.7)',
               }}
               rows={2}
             />
@@ -171,7 +171,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
 
         {/* Impact */}
         {(impact?.statement || editMode) && (
-          <Section label="IMPACT" color="#92400E">
+          <Section label="IMPACT" color="#fbbf24">
             {editMode ? (
               <textarea
                 value={item.impactOverride ?? impact?.statement ?? ''}
@@ -185,7 +185,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
                   resize: 'vertical',
                   fontFamily: 'inherit',
                   lineHeight: 1.5,
-                  color: '#374151',
+                  color: 'rgba(255, 255, 255, 0.7)',
                 }}
                 rows={2}
               />
@@ -208,7 +208,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
 
         {/* Solution + Playbook Links */}
         {services && services.length > 0 && (
-          <Section label="SOLUTION" color="#6C5CE7">
+          <Section label="SOLUTION" color="#7c3aed">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               {services.map(svc => (
                 <div
@@ -234,8 +234,8 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
                       fontSize: '0.6rem',
                       padding: '0 0.3rem',
                       borderRadius: '3px',
-                      background: '#E2E8F0',
-                      color: '#475569',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      color: 'rgba(255, 255, 255, 0.5)',
                     }}>
                       managed
                     </span>
@@ -262,7 +262,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
 
         {/* Outcome */}
         {(item.outcomeStatement || editMode) && (
-          <Section label="OUTCOME" color="#166534">
+          <Section label="OUTCOME" color="#86efac">
             {editMode ? (
               <textarea
                 value={item.outcomeStatement || ''}
@@ -276,7 +276,7 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
                   resize: 'vertical',
                   fontFamily: 'inherit',
                   lineHeight: 1.5,
-                  color: '#374151',
+                  color: 'rgba(255, 255, 255, 0.7)',
                 }}
                 rows={2}
               />
@@ -303,7 +303,7 @@ function Section({ label, color, children }) {
       }}>
         {label}
       </div>
-      <div style={{ fontSize: 'var(--text-sm)', color: '#374151', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 'var(--text-sm)', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.5 }}>
         {children}
       </div>
     </div>

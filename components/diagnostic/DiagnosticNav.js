@@ -11,6 +11,9 @@ const VIEWS = [
   { id: 'layers', label: 'Layers', icon: '\uD83D\uDDC2\uFE0F' },
   // v3 views
   { id: 'scorecard', label: 'Score Card', icon: '\uD83D\uDCCA' },
+  { id: 'power10', label: 'Power 10', icon: '\uD83D\uDCCA' },
+  { id: 'systems', label: 'Systems', icon: '\u2699\uFE0F' },
+  { id: 'findings', label: 'Findings', icon: '\uD83D\uDD0D' },
   { id: 'roadmap', label: 'Roadmap', icon: '\uD83D\uDDFA\uFE0F' },
   { id: 'transcript', label: 'Transcripts', icon: '\uD83C\uDFA4' },
   { id: 'consultant', label: 'Consultant', icon: '\uD83D\uDC64' },
@@ -92,8 +95,8 @@ export default function DiagnosticNav({
                 fontSize: 'var(--text-2xs)',
                 padding: '0.15rem 0.5rem',
                 borderRadius: '4px',
-                background: saving ? '#FEF3C7' : '#ECFDF5',
-                color: saving ? '#92400E' : '#065F46',
+                background: saving ? 'rgba(251, 191, 36, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+                color: saving ? '#fbbf24' : '#86efac',
                 fontWeight: 600,
                 transition: 'all 0.2s',
               }}

@@ -33,6 +33,28 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to fetch result' });
     }
 
+    // Fetch transcript assessments (keyed by competency_id_department)
+    const { data: transcriptRows } = await supabaseAdmin
+      .from('transcript_assessments')
+      .select('competency_id, department, score, confidence, evidence_quotes, assessment, reasoning')
+      .eq('customer_id', customerId);
+
+    const transcript_assessments = {};
+    if (transcriptRows) {
+      for (const row of transcriptRows) {
+        const key = `${row.competency_id}_${row.department}`;
+        if (!transcript_assessments[key] || row.confidence > transcript_assessments[key].confidence) {
+          transcript_assessments[key] = {
+            score: row.score,
+            confidence: row.confidence,
+            evidence: row.evidence_quotes || [],
+            assessment: row.assessment,
+            reasoning: row.reasoning,
+          };
+        }
+      }
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -50,6 +72,7 @@ export default async function handler(req, res) {
         metadata: data.metadata,
         transcript_ids: data.transcript_ids,
         engagement_overrides: data.engagement_overrides || null,
+        transcript_assessments,
         created_at: data.created_at,
         updated_at: data.updated_at,
       },

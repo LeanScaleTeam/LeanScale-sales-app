@@ -288,8 +288,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
           <div
             style={{
               ...styles.dropZone,
-              borderColor: dragOver ? 'var(--ls-purple, #6C5CE7)' : '#CBD5E0',
-              background: dragOver ? '#F3F0FF' : '#FAFAFA',
+              borderColor: dragOver ? '#a78bfa' : 'rgba(255, 255, 255, 0.15)',
+              background: dragOver ? 'rgba(167, 139, 250, 0.1)' : 'rgba(255, 255, 255, 0.03)',
             }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -405,7 +405,7 @@ const styles = {
     padding: '1.25rem',
     border: '1px solid var(--border-color, #E2E8F0)',
     borderRadius: 'var(--radius-lg, 12px)',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.03)',
   },
   title: {
     margin: '0 0 1rem',
@@ -422,23 +422,25 @@ const styles = {
   },
   dropText: {
     fontSize: '0.85rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   divider: {
     textAlign: 'center',
     fontSize: '0.75rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
     margin: '0.75rem 0',
   },
   textarea: {
     width: '100%',
     padding: '0.75rem',
-    border: '1px solid var(--border-color, #E2E8F0)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: 'var(--radius-md, 8px)',
     fontSize: '0.85rem',
     fontFamily: 'inherit',
     resize: 'vertical',
     boxSizing: 'border-box',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: '#fff',
   },
   actions: {
     display: 'flex',
@@ -450,7 +452,7 @@ const styles = {
     padding: '0.5rem 1.25rem',
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
-    background: 'var(--ls-purple, #6C5CE7)',
+    background: 'var(--ls-purple, #7c3aed)',
     color: 'white',
     fontSize: '0.85rem',
     fontWeight: 600,
@@ -458,45 +460,45 @@ const styles = {
   },
   charCount: {
     fontSize: '0.75rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   status: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
     padding: '1rem',
-    background: '#F7FAFC',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 'var(--radius-md, 8px)',
     marginTop: '0.75rem',
     fontSize: '0.85rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   spinner: {
     width: '1rem',
     height: '1rem',
-    border: '2px solid #E2E8F0',
-    borderTop: '2px solid var(--ls-purple, #6C5CE7)',
+    border: '2px solid rgba(255, 255, 255, 0.1)',
+    borderTop: '2px solid #a78bfa',
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
   error: {
     padding: '0.75rem 1rem',
-    background: '#FFF5F5',
-    border: '1px solid #FEB2B2',
+    background: 'rgba(239, 68, 68, 0.1)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
     borderRadius: 'var(--radius-md, 8px)',
-    color: '#C53030',
+    color: '#fca5a5',
     fontSize: '0.85rem',
     marginTop: '0.75rem',
   },
   results: {
     padding: '1rem',
-    background: '#F0FFF4',
-    border: '1px solid #C6F6D5',
+    background: 'rgba(34, 197, 94, 0.08)',
+    border: '1px solid rgba(34, 197, 94, 0.25)',
     borderRadius: 'var(--radius-md, 8px)',
   },
   resultHeader: {
     fontWeight: 600,
-    color: '#22543D',
+    color: '#86efac',
     marginBottom: '0.75rem',
   },
   resultStats: {
@@ -512,19 +514,19 @@ const styles = {
   statValue: {
     fontSize: '1.25rem',
     fontWeight: 700,
-    color: '#2D3748',
+    color: '#ffffff',
   },
   statLabel: {
     fontSize: '0.7rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   resetBtn: {
     background: 'none',
-    border: '1px solid #C6F6D5',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
     borderRadius: 'var(--radius-sm, 4px)',
     padding: '0.35rem 0.75rem',
     cursor: 'pointer',
     fontSize: '0.8rem',
-    color: '#22543D',
+    color: '#86efac',
   },
 };

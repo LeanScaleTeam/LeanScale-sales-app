@@ -28,8 +28,13 @@ import RoadmapView from './v3/RoadmapView';
 import V3Summary from './v3/V3Summary';
 import DataCoverage from './v3/DataCoverage';
 import TranscriptUpload from './v3/TranscriptUpload';
+import PerformanceToPlan from './v3/PerformanceToPlan';
+import PresenterMode from './v3/PresenterMode';
+import buildPresenterSlides from '../../lib/diagnostic-engine/v3/build-presenter-slides';
 import ConsultantAuditForm from './v3/ConsultantAuditForm';
 import SuggestedProjects, { findNewSuggestedProjects } from './v3/SuggestedProjects';
+import DiagnosticVisualizations from './v3/DiagnosticVisualizations';
+import SystemsHealth from './v3/SystemsHealth';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 
@@ -38,7 +43,9 @@ import LifecycleView from './views/LifecycleView';
 import CpqMetricsView from './views/CpqMetricsView';
 
 // Engagement Pitch view
-import EngagementPitch from '../engagement-pitch/EngagementPitch';
+import EngagementPitch, { reconstructCompetencies, adaptV3ToPitchItems } from '../engagement-pitch/EngagementPitch';
+import Power10Anchor from '../engagement-pitch/Power10Anchor';
+import FindingsWalkthrough from '../engagement-pitch/FindingsWalkthrough';
 
 /**
  * Derive Power 10 metrics array from intake D5_* answers.
@@ -102,6 +109,17 @@ function sortByPriority(processes) {
  *
  * @param {string} diagnosticType - 'gtm' | 'clay' | 'cpq'
  */
+const sectionDivider = {
+  fontSize: '0.68rem',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'rgba(255,255,255,0.2)',
+  paddingBottom: '0.4rem',
+  marginBottom: '0.5rem',
+  borderBottom: '1px solid rgba(255,255,255,0.04)',
+};
+
 export default function DiagnosticResults({ diagnosticType }) {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
@@ -145,6 +163,8 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [roadmapDirty, setRoadmapDirty] = useState(false);
   const [roadmapSaving, setRoadmapSaving] = useState(false);
   const [suggestedProjects, setSuggestedProjects] = useState([]);
+  const [transcriptAssessments, setTranscriptAssessments] = useState({});
+  const [showPresenter, setShowPresenter] = useState(false);
 
   if (!config) {
     return (
@@ -203,6 +223,9 @@ export default function DiagnosticResults({ diagnosticType }) {
               if (json.data.engagement_overrides) {
                 setEngagementOverrides(json.data.engagement_overrides);
               }
+              if (json.data.transcript_assessments) {
+                setTranscriptAssessments(json.data.transcript_assessments);
+              }
               // Derive Power 10 from intake answers for engagement details
               if (intakeRes.ok) {
                 const intakeJson = await intakeRes.json();
@@ -239,7 +262,6 @@ export default function DiagnosticResults({ diagnosticType }) {
               setDiagnosticVersion(1);
               setEditableProcesses(json.data.processes || []);
               setEditableTools(json.data.tools || []);
-              console.log('[DiagnosticLoad] power10_metrics from API:', json.data.power10_metrics?.length, 'metrics', json.data.power10_metrics?.slice(0, 2));
               if (json.data.power10_metrics && json.data.power10_metrics.length > 0) {
                 setEditablePower10(json.data.power10_metrics);
               }
@@ -337,7 +359,6 @@ export default function DiagnosticResults({ diagnosticType }) {
       if (eo !== undefined) {
         payload.engagementOverrides = eo;
       }
-      console.log('[DiagnosticSave] Saving with power10:', p10?.length, 'metrics');
       await fetch(`/api/diagnostics/${diagnosticType}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -484,7 +505,6 @@ export default function DiagnosticResults({ diagnosticType }) {
     setEditableProcesses(importedProcesses);
     setEditableTools(importedTools || []);
     setEditablePower10(importedPower10 || []);
-    console.log('[DiagnosticImport] Power10 received:', importedPower10?.length, 'metrics', importedPower10?.slice(0, 2));
     setShowImport(false);
     await saveToApi(importedProcesses, importedTools || [], importedPower10 || []);
     try {
@@ -653,8 +673,8 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   const availableViews = isV3
     ? (isDemo
-      ? ['scorecard', 'pitch']
-      : ['scorecard', 'pitch', 'transcript', 'consultant'])
+      ? ['scorecard', 'power10', 'systems', 'findings', 'pitch']
+      : ['scorecard', 'power10', 'systems', 'findings', 'pitch', 'transcript', 'consultant'])
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {
@@ -687,102 +707,104 @@ export default function DiagnosticResults({ diagnosticType }) {
 
   return (
     <Layout title={config.title}>
-      <div className="container">
-        {/* Page header */}
-        <div className="page-header" style={{ textAlign: 'center' }}>
-          <h1 className="page-title" style={{ justifyContent: 'center' }}>
-            <span>{config.icon}</span> {config.title}
-          </h1>
-          <p className="page-subtitle">{config.subtitle}</p>
-          {/* CRM type badge */}
-          {isV3 && (() => {
-            const effectiveCrmType = crmSignals.crmType || v3Result?.crm_type || 'salesforce';
-            return (
-              <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                {effectiveCrmType === 'dual' ? (
-                  <>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      padding: '0.25rem 0.75rem',
-                      background: 'linear-gradient(135deg, #EBF5FF, #F0FFF4)',
-                      border: '1px solid #93C5FD',
-                      borderRadius: '999px',
-                      fontSize: 'var(--text-xs)',
-                      fontWeight: 600,
-                      color: '#1E40AF',
-                    }}>
-                      Salesforce (CRM) + HubSpot (MAP)
-                    </span>
-                    {v3Result?.metadata?.apiDataAvailable && (
-                      <div style={{
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-muted)',
-                        marginTop: '0.25rem',
-                      }}>
-                        Dual-system analysis: CRM + Marketing Automation data
-                      </div>
-                    )}
-                  </>
-                ) : effectiveCrmType === 'hubspot' ? (
+      <div className={`container${isV3 ? ' v3-dark-theme' : ''}`}>
+        {/* Page header — compact single row */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap',
+          marginBottom: '0.5rem',
+        }}>
+          {/* Left: title + CRM badge + last run */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)',
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}>
+              <span>{config.icon}</span> {config.title}
+            </h1>
+            {/* CRM type badge */}
+            {isV3 && (() => {
+              const effectiveCrmType = crmSignals.crmType || v3Result?.crm_type || 'salesforce';
+              const badgeStyle = {
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '999px',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+              };
+              if (effectiveCrmType === 'dual') {
+                return (
                   <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.25rem 0.75rem',
-                    background: '#FFF5F0',
-                    border: '1px solid #FB923C',
-                    borderRadius: '999px',
-                    fontSize: 'var(--text-xs)',
-                    fontWeight: 600,
-                    color: '#C2410C',
+                    ...badgeStyle,
+                    background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.1), rgba(134, 239, 172, 0.1))',
+                    border: '1px solid rgba(147, 197, 253, 0.3)',
+                    color: '#93c5fd',
+                  }}>
+                    Salesforce + HubSpot
+                  </span>
+                );
+              }
+              if (effectiveCrmType === 'hubspot') {
+                return (
+                  <span style={{
+                    ...badgeStyle,
+                    background: 'rgba(251, 146, 60, 0.15)',
+                    border: '1px solid rgba(251, 146, 60, 0.3)',
+                    color: '#fb923c',
                   }}>
                     HubSpot
                   </span>
-                ) : (
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.25rem 0.75rem',
-                    background: '#EBF5FF',
-                    border: '1px solid #93C5FD',
-                    borderRadius: '999px',
-                    fontSize: 'var(--text-xs)',
-                    fontWeight: 600,
-                    color: '#1E40AF',
-                  }}>
-                    Salesforce
-                  </span>
-                )}
-              </div>
-            );
-          })()}
+                );
+              }
+              return (
+                <span style={{
+                  ...badgeStyle,
+                  background: 'rgba(147, 197, 253, 0.1)',
+                  border: '1px solid rgba(147, 197, 253, 0.3)',
+                  color: '#93c5fd',
+                }}>
+                  Salesforce
+                </span>
+              );
+            })()}
+            {/* Last run timestamp */}
+            {isAdmin && ((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (
+              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
+                Last run: {new Date(v3RunTimestamp || v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+
+          {/* Right: action buttons */}
           {isAdmin && diagnosticType === 'gtm' && (
-            <div style={{ marginTop: '0.75rem' }}>
-              {((isV2 && v2RunTimestamp) || (isV3 && v3RunTimestamp)) && (
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                  Last run: {new Date(v3RunTimestamp || v2RunTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                </div>
-              )}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
               {diagnosticResultId ? (
-                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <>
                   <a
                     href={customerPath('/diagnostic/intake')}
                     style={{
                       display: 'inline-block',
-                      padding: '0.5rem 1.25rem',
-                      background: 'white',
-                      color: 'var(--ls-purple)',
-                      border: '1px solid var(--ls-purple)',
+                      padding: '0.4rem 1rem',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      color: 'rgba(255, 255, 255, 0.85)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       borderRadius: 'var(--radius-md, 8px)',
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 'var(--font-semibold)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
                       textDecoration: 'none',
                     }}
                   >
-                    Re-run Diagnostic
+                    Re-run
                   </a>
                   {isV3 && (
                     <a
@@ -790,32 +812,52 @@ export default function DiagnosticResults({ diagnosticType }) {
                       download
                       style={{
                         display: 'inline-block',
-                        padding: '0.5rem 1.25rem',
-                        background: 'white',
-                        color: '#4A5568',
-                        border: '1px solid var(--border-color)',
+                        padding: '0.4rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
                         borderRadius: 'var(--radius-md, 8px)',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
                         textDecoration: 'none',
                       }}
                     >
-                      Download Brief
+                      Download
                     </a>
                   )}
-                </div>
+                  {isV3 && (
+                    <button
+                      onClick={() => setShowPresenter(true)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.4rem 1rem',
+                        background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 'var(--radius-md, 8px)',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      &#9654; Present
+                    </button>
+                  )}
+                </>
               ) : (
                 <a
                   href={customerPath('/diagnostic/intake')}
                   style={{
                     display: 'inline-block',
-                    padding: '0.5rem 1.25rem',
+                    padding: '0.4rem 1rem',
                     background: 'var(--ls-purple)',
                     color: 'white',
                     border: 'none',
                     borderRadius: 'var(--radius-md, 8px)',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-semibold)',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
                     textDecoration: 'none',
                   }}
                 >
@@ -859,45 +901,128 @@ export default function DiagnosticResults({ diagnosticType }) {
         <div style={{ marginTop: 'var(--space-4)' }}>
           {/* --- v3 views --- */}
           {isV3 && activeView === 'scorecard' && (
-            <>
-              <V3Summary
-                overallScore={v3Result.overall_score}
-                overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
-                pillarScores={v3Result.pillar_scores}
-                departmentScores={v3Result.department_scores}
-                companyProfile={v3Result.company_profile}
-                dataCoverage={v3Result.data_coverage}
-              />
-              <ScoreCardGrid
-                scoreCard={v3Result.score_card}
-                pillarScores={v3Result.pillar_scores}
-                departmentScores={v3Result.department_scores}
-                competencies={v3Result.competencies}
-                editMode={editMode}
-                onCellClick={(compId, dept, score) => {
-                  // Admin override
-                  if (!editMode) return;
-                  fetch('/api/diagnostic/v3/run', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      customerId: customer.id,
-                      overrides: [{ competencyId: compId, department: dept, score }],
-                    }),
-                  })
-                    .then((r) => r.json())
-                    .then((json) => {
-                      if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
-                    });
-                }}
-              />
-              <DataCoverage
-                dataCoverage={v3Result.data_coverage}
-                onUploadTranscript={() => setActiveView('transcript')}
-                onStartConsultant={() => setActiveView('consultant')}
-              />
-            </>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {power10Data && power10Data.length > 0 && (
+                <PerformanceToPlan metrics={power10Data} />
+              )}
+
+              <div>
+                <div style={sectionDivider}>Overview</div>
+                <V3Summary
+                  overallScore={v3Result.overall_score}
+                  overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
+                  pillarScores={v3Result.pillar_scores}
+                  departmentScores={v3Result.department_scores}
+                  companyProfile={v3Result.company_profile}
+                  dataCoverage={v3Result.data_coverage}
+                />
+              </div>
+
+              <div>
+                <div style={sectionDivider}>Analytics</div>
+                <DiagnosticVisualizations
+                  overallScore={v3Result.overall_score}
+                  pillarScores={v3Result.pillar_scores}
+                  departmentScores={v3Result.department_scores}
+                  competencies={v3Result.competencies}
+                />
+              </div>
+
+              <div>
+                <div style={sectionDivider}>Detailed Scores</div>
+                <ScoreCardGrid
+                  scoreCard={v3Result.score_card}
+                  pillarScores={v3Result.pillar_scores}
+                  departmentScores={v3Result.department_scores}
+                  competencies={v3Result.competencies}
+                  transcriptAssessments={transcriptAssessments}
+                  editMode={editMode}
+                  onCellClick={(compId, dept, score) => {
+                    // Admin override
+                    if (!editMode) return;
+                    fetch('/api/diagnostic/v3/run', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        customerId: customer.id,
+                        overrides: [{ competencyId: compId, department: dept, score }],
+                      }),
+                    })
+                      .then((r) => r.json())
+                      .then((json) => {
+                        if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
+                      });
+                  }}
+                />
+              </div>
+
+              <div>
+                <div style={sectionDivider}>Data Sources</div>
+                <DataCoverage
+                  dataCoverage={v3Result.data_coverage}
+                  onUploadTranscript={() => setActiveView('transcript')}
+                  onStartConsultant={() => setActiveView('consultant')}
+                />
+              </div>
+            </div>
           )}
+
+          {/* --- Power 10 standalone view --- */}
+          {isV3 && activeView === 'power10' && (
+            <Power10Anchor
+              power10Data={power10Data}
+              editMode={editMode}
+              overrides={engagementOverrides}
+              onOverride={(section, key, value) => {
+                const next = {
+                  ...engagementOverrides,
+                  [section]: { ...engagementOverrides?.[section], [key]: { ...engagementOverrides?.[section]?.[key], ...value } },
+                };
+                handleEngagementOverridesChange(next);
+              }}
+            />
+          )}
+
+          {/* --- Systems Health view --- */}
+          {isV3 && activeView === 'systems' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {/* CRM Section */}
+              <div>
+                <h2 style={{
+                  fontSize: 'clamp(1.25rem, 2vw, 1.5rem)',
+                  fontWeight: 700,
+                  margin: '0 0 1.25rem',
+                  color: 'rgba(255,255,255,0.95)',
+                  letterSpacing: '-0.01em',
+                }}>
+                  CRM
+                </h2>
+                <SystemsHealth editMode={editMode} />
+              </div>
+            </div>
+          )}
+
+          {/* --- Findings standalone view --- */}
+          {isV3 && activeView === 'findings' && (() => {
+            const comps = v3Result?.competencies || reconstructCompetencies(v3Result?.score_card);
+            const items = comps.length > 0 ? adaptV3ToPitchItems(comps) : [];
+            return (
+              <FindingsWalkthrough
+                items={items}
+                companyProfile={v3Result?.company_profile || {}}
+                editMode={editMode}
+                overrides={engagementOverrides}
+                onOverride={(section, key, value) => {
+                  const next = {
+                    ...engagementOverrides,
+                    [section]: { ...engagementOverrides?.[section], [key]: { ...engagementOverrides?.[section]?.[key], ...value } },
+                  };
+                  handleEngagementOverridesChange(next);
+                }}
+                customerPath={customerPath}
+              />
+            );
+          })()}
 
           {isV3 && activeView === 'roadmap' && (
             <>
@@ -909,9 +1034,9 @@ export default function DiagnosticResults({ diagnosticType }) {
                     padding: '0.4rem 1rem',
                     fontSize: '0.8rem',
                     borderRadius: 'var(--radius-md, 8px)',
-                    border: roadmapEditMode ? '1px solid #E53E3E' : '1px solid var(--border-color)',
-                    background: roadmapEditMode ? '#FFF5F5' : 'white',
-                    color: roadmapEditMode ? '#E53E3E' : '#4A5568',
+                    border: roadmapEditMode ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.12)',
+                    background: roadmapEditMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.06)',
+                    color: roadmapEditMode ? '#fca5a5' : 'rgba(255, 255, 255, 0.7)',
                     cursor: 'pointer',
                     fontWeight: 600,
                   }}
@@ -945,13 +1070,14 @@ export default function DiagnosticResults({ diagnosticType }) {
                   justifyContent: 'center',
                   gap: '0.75rem',
                   padding: '0.75rem 1.5rem',
-                  background: 'white',
-                  border: '1px solid var(--border-color)',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   borderRadius: 'var(--radius-lg, 12px)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                  backdropFilter: 'blur(16px)',
                   zIndex: 50,
                 }}>
-                  <span style={{ fontSize: '0.85rem', color: '#4A5568', alignSelf: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)', alignSelf: 'center' }}>
                     Unsaved roadmap changes
                   </span>
                   <button
@@ -962,7 +1088,7 @@ export default function DiagnosticResults({ diagnosticType }) {
                       fontSize: '0.85rem',
                       borderRadius: 'var(--radius-md, 8px)',
                       border: 'none',
-                      background: '#6C5CE7',
+                      background: '#7c3aed',
                       color: 'white',
                       cursor: 'pointer',
                       fontWeight: 600,
@@ -978,8 +1104,8 @@ export default function DiagnosticResults({ diagnosticType }) {
                       fontSize: '0.85rem',
                       borderRadius: 'var(--radius-md, 8px)',
                       border: '1px solid var(--border-color)',
-                      background: 'white',
-                      color: '#718096',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      color: 'rgba(255, 255, 255, 0.6)',
                       cursor: 'pointer',
                     }}
                   >
@@ -1239,34 +1365,6 @@ export default function DiagnosticResults({ diagnosticType }) {
           )}
         </div>
 
-        {/* CTA Banner */}
-        <div className="cta-banner" style={{ marginTop: '2rem' }}>
-          <h3 className="cta-title">
-            {diagnosticType === 'clay'
-              ? 'Ready to optimize your Clay implementation?'
-              : diagnosticType === 'cpq'
-              ? 'Ready to optimize your Quote-to-Cash process?'
-              : 'Ready to see your recommended engagement?'}
-          </h3>
-          <p className="cta-subtitle">
-            View prioritized projects and timeline based on your diagnostic results.
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {!isDemo && diagnosticResultId ? (
-              <button
-                className="btn cta-btn-primary"
-                onClick={() => { setActiveView('pitch'); }}
-                style={{ border: 'none', cursor: 'pointer' }}
-              >
-                View Engagement Details
-              </button>
-            ) : (
-              <a href={customerPath('/diagnostic/start')} className="btn cta-btn-primary" style={{ textDecoration: 'none' }}>
-                Start Your Diagnostic
-              </a>
-            )}
-          </div>
-        </div>
 
         {/* Diagnostic Item Detail Modal */}
         <DiagnosticItemModal
@@ -1288,6 +1386,20 @@ export default function DiagnosticResults({ diagnosticType }) {
           onDeleteNote={handleDeleteNote}
         />
       </div>
+
+      {/* Presenter Mode overlay */}
+      {showPresenter && isV3 && v3Result && (
+        <PresenterMode
+          slides={buildPresenterSlides({
+            v3Result,
+            transcriptAssessments,
+            companyProfile: v3Result.company_profile,
+            power10Data,
+            roadmap: roadmapOverrides || v3Result.roadmap,
+          })}
+          onClose={() => setShowPresenter(false)}
+        />
+      )}
     </Layout>
   );
 }

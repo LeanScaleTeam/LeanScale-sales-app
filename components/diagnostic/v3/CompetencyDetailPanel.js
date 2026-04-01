@@ -5,8 +5,6 @@
  * evidence quotes, consultant notes, linked services, and rubric reference.
  */
 
-import Link from 'next/link';
-import { useCustomer } from '../../../context/CustomerContext';
 import {
   V3_STATUS,
   V3_STATUS_COLORS,
@@ -23,17 +21,16 @@ export default function CompetencyDetailPanel({
   editMode,
   onScoreChange,
 }) {
-  const { customerPath } = useCustomer();
   const statusColor = score !== null && score !== undefined
-    ? V3_STATUS_COLORS[Math.round(score)] || '#CBD5E0'
-    : '#CBD5E0';
+    ? V3_STATUS_COLORS[Math.round(score)] || 'rgba(148, 163, 184, 0.5)'
+    : 'rgba(148, 163, 184, 0.5)';
 
   return (
     <div style={styles.panel}>
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <span style={{ ...styles.scoreChip, backgroundColor: statusColor, color: score && score <= 3 && score >= 3 ? '#1A202C' : '#FFF' }}>
+          <span style={{ ...styles.scoreChip, backgroundColor: statusColor, color: '#FFF' }}>
             {score !== null && score !== undefined ? score : '--'}
           </span>
           <div>
@@ -49,7 +46,7 @@ export default function CompetencyDetailPanel({
                 style={{
                   ...styles.scoreBtn,
                   backgroundColor: s === score ? V3_STATUS_COLORS[s] : 'transparent',
-                  color: s === score ? '#FFF' : '#4A5568',
+                  color: s === score ? '#FFF' : 'rgba(255, 255, 255, 0.6)',
                   border: `1px solid ${V3_STATUS_COLORS[s]}`,
                 }}
                 onClick={() => onScoreChange?.(competency.id, department, s)}
@@ -116,7 +113,7 @@ export default function CompetencyDetailPanel({
                 style={{
                   ...styles.rubricRow,
                   fontWeight: Number(level) === score ? 600 : 400,
-                  backgroundColor: Number(level) === score ? '#F3F0FF' : 'transparent',
+                  backgroundColor: Number(level) === score ? 'rgba(167, 139, 250, 0.12)' : 'transparent',
                 }}
               >
                 <span style={{ ...styles.rubricScore, color: V3_STATUS_COLORS[level] }}>
@@ -130,23 +127,18 @@ export default function CompetencyDetailPanel({
         </div>
       )}
 
-      {/* Linked services */}
+      {/* Related areas */}
       {competency.serviceIds?.length > 0 && (
         <div style={styles.section}>
-          <div style={styles.sectionTitle}>Recommended Services</div>
+          <div style={styles.sectionTitle}>Related Areas</div>
           <div style={styles.services}>
             {competency.serviceIds.map((sid) => {
               const service = lookupServiceV3(sid);
               if (!service) return null;
               return (
-                <Link
-                  key={sid}
-                  href={customerPath(`/playbooks/${sid}`)}
-                  style={styles.serviceChip}
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <span key={sid} style={styles.serviceChip}>
                   {service.icon} {service.name}
-                </Link>
+                </span>
               );
             })}
           </div>
@@ -161,9 +153,9 @@ function SourceBadge({ label, active, confidence }) {
     <span
       style={{
         ...styles.sourceBadge,
-        backgroundColor: active ? '#EBF4FF' : '#F7FAFC',
-        color: active ? '#3182CE' : '#A0AEC0',
-        borderColor: active ? '#BEE3F8' : '#E2E8F0',
+        backgroundColor: active ? 'rgba(124, 58, 237, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+        color: active ? '#60a5fa' : 'rgba(255, 255, 255, 0.4)',
+        borderColor: active ? 'rgba(96, 165, 250, 0.3)' : 'rgba(255, 255, 255, 0.1)',
       }}
     >
       {label}
@@ -177,9 +169,9 @@ function SourceBadge({ label, active, confidence }) {
 const styles = {
   panel: {
     padding: '1rem',
-    border: '1px solid var(--border-color, #E2E8F0)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: 'var(--radius-md, 8px)',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.03)',
   },
   header: {
     display: 'flex',
@@ -205,7 +197,7 @@ const styles = {
   },
   compId: {
     fontSize: '0.7rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontFamily: 'monospace',
   },
   compName: {
@@ -229,7 +221,7 @@ const styles = {
   },
   description: {
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     margin: '0.25rem 0 0.75rem',
     lineHeight: 1.5,
   },
@@ -252,12 +244,12 @@ const styles = {
   section: {
     marginTop: '0.75rem',
     paddingTop: '0.75rem',
-    borderTop: '1px solid #EDF2F7',
+    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
   },
   sectionTitle: {
     fontSize: '0.75rem',
     fontWeight: 600,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     marginBottom: '0.5rem',
@@ -265,21 +257,21 @@ const styles = {
   quote: {
     fontSize: '0.8rem',
     fontStyle: 'italic',
-    color: '#2D3748',
-    borderLeft: '3px solid #CBD5E0',
+    color: 'rgba(255, 255, 255, 0.75)',
+    borderLeft: '3px solid rgba(163, 230, 53, 0.4)',
     padding: '0.25rem 0.75rem',
     margin: '0.25rem 0',
-    background: '#F7FAFC',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: '0 4px 4px 0',
   },
   assessment: {
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     margin: '0.5rem 0 0',
   },
   notes: {
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     margin: 0,
   },
   rubric: {
@@ -302,10 +294,10 @@ const styles = {
   rubricLabel: {
     fontWeight: 500,
     minWidth: '5rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   rubricDesc: {
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     flex: 1,
   },
   services: {
@@ -317,9 +309,9 @@ const styles = {
     fontSize: '0.75rem',
     padding: '0.2rem 0.6rem',
     borderRadius: '1rem',
-    background: '#F3F0FF',
-    color: '#6C5CE7',
-    border: '1px solid #E9E4FF',
+    background: 'rgba(167, 139, 250, 0.12)',
+    color: '#a78bfa',
+    border: '1px solid rgba(167, 139, 250, 0.25)',
     textDecoration: 'none',
     cursor: 'pointer',
     transition: 'background 0.15s ease',

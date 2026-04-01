@@ -145,7 +145,7 @@ export default function ConsultantForm({ customerId, existingAssessments, apiSco
           <div style={{
             ...styles.progressFill,
             width: `${tier1Percent}%`,
-            background: tier1Percent === 100 ? '#48BB78' : tier1Percent >= 50 ? '#ECC94B' : '#E53E3E',
+            background: tier1Percent === 100 ? '#4ade80' : tier1Percent >= 50 ? '#fbbf24' : '#f87171',
           }} />
         </div>
         <span style={styles.progressLabel}>{tier1Percent}% complete</span>
@@ -386,7 +386,7 @@ function ScoreButtons({ currentScore, onSelect }) {
           style={{
             ...styles.scoreBtn,
             backgroundColor: currentScore === s ? V3_STATUS_COLORS[s] : 'transparent',
-            color: currentScore === s ? '#FFF' : '#4A5568',
+            color: currentScore === s ? '#FFF' : 'rgba(255, 255, 255, 0.6)',
             border: `1px solid ${V3_STATUS_COLORS[s]}`,
           }}
           onClick={() => onSelect(s)}
@@ -405,7 +405,7 @@ const styles = {
   container: {
     border: '1px solid var(--border-color, #E2E8F0)',
     borderRadius: 'var(--radius-lg, 12px)',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.03)',
     overflow: 'hidden',
   },
   header: {
@@ -427,13 +427,13 @@ const styles = {
   },
   count: {
     fontSize: '0.8rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   saveBtn: {
     padding: '0.4rem 1rem',
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
-    background: 'var(--ls-purple, #6C5CE7)',
+    background: 'var(--ls-purple, #7c3aed)',
     color: 'white',
     fontSize: '0.8rem',
     fontWeight: 600,
@@ -449,7 +449,7 @@ const styles = {
     flex: 1,
     height: '6px',
     borderRadius: '3px',
-    background: '#EDF2F7',
+    background: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
   progressFill: {
@@ -459,7 +459,7 @@ const styles = {
   },
   progressLabel: {
     fontSize: '0.7rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.5)',
     minWidth: '5rem',
     textAlign: 'right',
   },
@@ -471,8 +471,8 @@ const styles = {
     alignItems: 'baseline',
     gap: '0.5rem',
     padding: '0.75rem 1.25rem',
-    background: 'var(--bg-secondary, #F7FAFC)',
-    borderBottom: '1px solid #EDF2F7',
+    background: 'rgba(255, 255, 255, 0.04)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
   },
   tierHeaderCollapsible: {
     width: '100%',
@@ -480,7 +480,7 @@ const styles = {
     alignItems: 'baseline',
     gap: '0.5rem',
     padding: '0.75rem 1.25rem',
-    background: 'var(--bg-secondary, #F7FAFC)',
+    background: 'rgba(255, 255, 255, 0.04)',
     border: 'none',
     cursor: 'pointer',
     textAlign: 'left',
@@ -492,11 +492,11 @@ const styles = {
   },
   tierSubtext: {
     fontSize: '0.75rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
     flex: 1,
   },
   pillarSection: {
-    borderBottom: '1px solid #EDF2F7',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
   },
   pillarHeader: {
     width: '100%',
@@ -516,18 +516,18 @@ const styles = {
   },
   pillarCount: {
     fontSize: '0.7rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   chevron: {
     fontSize: '0.6rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   pillarBody: {
     padding: '0.5rem 1.25rem 1rem',
   },
   compRow: {
     padding: '0.75rem 0',
-    borderBottom: '1px solid #EDF2F7',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
   },
   compInfo: {
     display: 'flex',
@@ -538,7 +538,7 @@ const styles = {
   compId: {
     fontSize: '0.7rem',
     fontFamily: 'monospace',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   compName: {
     fontSize: '0.85rem',
@@ -553,12 +553,12 @@ const styles = {
   deptCell: {
     padding: '0.5rem',
     borderRadius: 'var(--radius-sm, 4px)',
-    background: '#FAFAFA',
+    background: 'rgba(255, 255, 255, 0.03)',
   },
   deptName: {
     fontSize: '0.7rem',
     fontWeight: 600,
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     textTransform: 'uppercase',
     marginBottom: '0.35rem',
   },
@@ -582,10 +582,12 @@ const styles = {
   notesInput: {
     width: '100%',
     padding: '0.25rem 0.5rem',
-    border: '1px solid #E2E8F0',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '4px',
     fontSize: '0.75rem',
     boxSizing: 'border-box',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   // Tier 2 styles
   apiScoreDisplay: {
@@ -608,9 +610,9 @@ const styles = {
   confirmBtn: {
     padding: '0.2rem 0.5rem',
     borderRadius: '4px',
-    border: '1px solid #48BB78',
+    border: '1px solid #4ade80',
     background: 'transparent',
-    color: '#48BB78',
+    color: '#4ade80',
     fontSize: '0.7rem',
     fontWeight: 600,
     cursor: 'pointer',
@@ -618,9 +620,9 @@ const styles = {
   overrideBtn: {
     padding: '0.2rem 0.5rem',
     borderRadius: '4px',
-    border: '1px solid #A0AEC0',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
     background: 'transparent',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontSize: '0.7rem',
     cursor: 'pointer',
   },
@@ -630,7 +632,7 @@ const styles = {
   },
   autoRow: {
     padding: '0.4rem 0',
-    borderBottom: '1px solid #EDF2F7',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
   },
   autoDeptRow: {
     display: 'flex',
@@ -646,7 +648,7 @@ const styles = {
   },
   autoDeptLabel: {
     fontSize: '0.65rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
     textTransform: 'uppercase',
   },
   autoScoreBadge: {
@@ -662,10 +664,10 @@ const styles = {
   },
   autoNoScore: {
     fontSize: '0.7rem',
-    color: '#CBD5E0',
+    color: 'rgba(255, 255, 255, 0.3)',
   },
   autoSource: {
     fontSize: '0.6rem',
-    color: '#CBD5E0',
+    color: 'rgba(255, 255, 255, 0.3)',
   },
 };

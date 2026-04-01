@@ -1,30 +1,70 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeUpItem, staggerContainer } from '../../lib/animations';
+import allTeam from '../../data/team';
 
 /**
- * Phase1Scope — Step 5 of the Engagement Pitch.
- * Zooms into Phase 1 (Stabilize) with specific projects, milestones, and investment.
+ * Phase1Scope — "Let's Start" step of the Engagement Pitch.
+ * Hype-focused: cohort availability front and center with scarcity signals,
+ * quick investment summary, and a compact 90-day preview.
  */
-const STATUS_STYLES = {
-  available: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0', label: 'Available' },
-  limited: { bg: '#FEFCE8', text: '#854D0E', border: '#FEF08A', label: 'Limited' },
-  waitlist: { bg: '#FFF7ED', text: '#9A3412', border: '#FED7AA', label: 'Waitlist' },
-  sold_out: { bg: '#F3F4F6', text: '#4B5563', border: '#E5E7EB', label: 'Sold Out' },
+
+const STATUS_CONFIG = {
+  available: {
+    bg: 'rgba(34, 197, 94, 0.06)',
+    border: 'rgba(34, 197, 94, 0.25)',
+    text: '#86efac',
+    glow: 'rgba(34, 197, 94, 0.12)',
+    label: 'Open',
+    dot: '#4ade80',
+  },
+  limited: {
+    bg: 'rgba(250, 204, 21, 0.06)',
+    border: 'rgba(250, 204, 21, 0.25)',
+    text: '#fde047',
+    glow: 'rgba(250, 204, 21, 0.1)',
+    label: 'Almost Full',
+    dot: '#facc15',
+  },
+  waitlist: {
+    bg: 'rgba(251, 146, 60, 0.06)',
+    border: 'rgba(251, 146, 60, 0.25)',
+    text: '#fdba74',
+    glow: 'rgba(251, 146, 60, 0.08)',
+    label: 'Waitlist',
+    dot: '#fb923c',
+  },
+  sold_out: {
+    bg: 'rgba(255, 255, 255, 0.02)',
+    border: 'rgba(255, 255, 255, 0.06)',
+    text: 'rgba(255, 255, 255, 0.3)',
+    glow: 'none',
+    label: 'Sold Out',
+    dot: 'rgba(255, 255, 255, 0.2)',
+  },
 };
+
+function daysUntil(dateStr) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr + 'T00:00:00');
+  const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  return diff;
+}
 
 export default function Phase1Scope({ roadmap, customerPath, editMode }) {
   const [cohorts, setCohorts] = useState([]);
+  const [selectedCohort, setSelectedCohort] = useState(null);
 
   useEffect(() => {
     fetch('/api/availability')
       .then(res => res.ok ? res.json() : { dates: [] })
       .then(json => {
-        // Show next 3 upcoming cohorts that aren't sold out
-        const upcoming = (json.dates || [])
-          .filter(d => d.status !== 'sold_out')
-          .slice(0, 3);
-        setCohorts(upcoming);
+        // Show next 5 cohorts (mix of sold out + available for scarcity)
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const allUpcoming = (json.dates || []).filter(d => new Date(d.date + 'T00:00:00') >= now);
+        setCohorts(allUpcoming.slice(0, 6));
       })
       .catch(() => setCohorts([]));
   }, []);
@@ -34,309 +74,383 @@ export default function Phase1Scope({ roadmap, customerPath, editMode }) {
   const phase1 = roadmap.phases[0];
   if (!phase1) return null;
   const projects = phase1.projects || [];
-  const managed = phase1.managedServices || [];
+
+  // Find the first bookable cohort (not sold out)
+  const firstAvailable = cohorts.find(c => c.status !== 'sold_out');
+  const urgencyDays = firstAvailable ? daysUntil(firstAvailable.date) : null;
 
   return (
     <motion.div
       variants={staggerContainer}
       initial="hidden"
       animate="show"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}
     >
-      {/* Header */}
-      <motion.div variants={fadeUpItem} style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-2)' }}>
-          Let&apos;s Start: {phase1.name}
+      {/* Hero header */}
+      <motion.div variants={fadeUpItem} style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
+        <h2 style={{
+          fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+          fontWeight: 800,
+          margin: 0,
+          letterSpacing: '-0.03em',
+          background: 'linear-gradient(135deg, #fff 0%, #a78bfa 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          Reserve Your Spot
         </h2>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-          {phase1.tagline} — here&apos;s what the first phase looks like in detail.
+        <p style={{
+          fontSize: '0.85rem',
+          color: 'rgba(255, 255, 255, 0.5)',
+          margin: '0.35rem auto 0',
+          maxWidth: '420px',
+        }}>
+          We onboard in cohorts every 2 weeks. Spots are limited to ensure quality.
         </p>
       </motion.div>
 
-      {/* Investment Summary */}
+      {/* Urgency banner */}
+      {urgencyDays !== null && urgencyDays <= 21 && (
+        <motion.div
+          variants={fadeUpItem}
+          style={{
+            textAlign: 'center',
+            padding: '0.6rem 1rem',
+            borderRadius: 10,
+            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(250, 204, 21, 0.08) 100%)',
+            border: '1px solid rgba(250, 204, 21, 0.2)',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ color: '#fde047' }}>Next available cohort starts in {urgencyDays} days</span>
+          {firstAvailable?.spotsLeft != null && (
+            <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: '0.5rem' }}>
+              — {firstAvailable.spotsLeft} spot{firstAvailable.spotsLeft !== 1 ? 's' : ''} remaining
+            </span>
+          )}
+        </motion.div>
+      )}
+
+      {/* Cohort timeline — the main event */}
+      <motion.div variants={fadeUpItem}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '0.6rem',
+        }}>
+          {cohorts.map(cohort => {
+            const s = STATUS_CONFIG[cohort.status] || STATUS_CONFIG.available;
+            const days = daysUntil(cohort.date);
+            const dateObj = new Date(cohort.date + 'T00:00:00');
+            const monthDay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const year = dateObj.getFullYear();
+            const isBookable = cohort.status !== 'sold_out';
+            const isSelected = selectedCohort === cohort.cohortNumber;
+            const isSoldOut = cohort.status === 'sold_out';
+
+            return (
+              <motion.div
+                key={cohort.cohortNumber}
+                whileHover={isBookable ? { y: -3, scale: 1.02 } : {}}
+                whileTap={isBookable ? { scale: 0.98 } : {}}
+                onClick={() => isBookable && setSelectedCohort(isSelected ? null : cohort.cohortNumber)}
+                style={{
+                  padding: '1rem',
+                  borderRadius: 12,
+                  background: isSelected
+                    ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(167, 139, 250, 0.08) 100%)'
+                    : s.bg,
+                  border: `1.5px solid ${isSelected ? '#7c3aed' : s.border}`,
+                  cursor: isBookable ? 'pointer' : 'default',
+                  opacity: isSoldOut ? 0.5 : 1,
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'border-color 0.2s, background 0.2s',
+                  boxShadow: isSelected ? '0 0 20px rgba(124, 58, 237, 0.15)' : 'none',
+                }}
+              >
+                {/* Cohort label */}
+                <div style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.35)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  marginBottom: '0.35rem',
+                }}>
+                  Cohort {cohort.cohortNumber}
+                </div>
+
+                {/* Date */}
+                <div style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: isSoldOut ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.95)',
+                  letterSpacing: '-0.01em',
+                }}>
+                  {monthDay}
+                </div>
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: 'rgba(255,255,255,0.35)',
+                  marginBottom: '0.5rem',
+                }}>
+                  {year}
+                </div>
+
+                {/* Status badge */}
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '9999px',
+                  background: isSoldOut ? 'rgba(255,255,255,0.04)' : `${s.bg}`,
+                  border: `1px solid ${s.border}`,
+                  fontSize: '0.6rem',
+                  fontWeight: 700,
+                  color: s.text,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}>
+                  <span style={{
+                    width: 5, height: 5, borderRadius: '50%',
+                    background: s.dot,
+                    animation: isBookable && cohort.status !== 'waitlist' ? 'pulse 2s infinite' : 'none',
+                  }} />
+                  {s.label}
+                </div>
+
+                {/* Spots */}
+                {cohort.spotsLeft != null && isBookable && (
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: cohort.spotsLeft <= 1 ? '#f87171' : 'rgba(255,255,255,0.4)',
+                    fontWeight: cohort.spotsLeft <= 1 ? 600 : 400,
+                    marginTop: '0.35rem',
+                  }}>
+                    {cohort.spotsLeft}/{cohort.spotsTotal || 3} spots left
+                  </div>
+                )}
+
+                {/* Days countdown */}
+                {isBookable && days > 0 && (
+                  <div style={{
+                    fontSize: '0.6rem',
+                    color: 'rgba(255,255,255,0.25)',
+                    marginTop: '0.15rem',
+                  }}>
+                    in {days} days
+                  </div>
+                )}
+
+                {/* Selected check */}
+                {isSelected && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#7c3aed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.6rem',
+                    color: 'white',
+                  }}>
+                    ✓
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Selected cohort CTA */}
+      {selectedCohort && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            textAlign: 'center',
+            padding: '1.25rem',
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(167, 139, 250, 0.06) 100%)',
+            border: '1px solid rgba(124, 58, 237, 0.25)',
+          }}
+        >
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: 'rgba(255,255,255,0.9)',
+            marginBottom: '0.6rem',
+          }}>
+            Ready to lock in Cohort {selectedCohort}?
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+            <button
+              style={{
+                padding: '0.6rem 1.5rem',
+                borderRadius: 10,
+                border: 'none',
+                background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                color: 'white',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '-0.01em',
+                boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)',
+              }}
+            >
+              Book a Call to Reserve
+            </button>
+          </div>
+          <div style={{
+            fontSize: '0.7rem',
+            color: 'rgba(255,255,255,0.35)',
+            marginTop: '0.5rem',
+          }}>
+            No commitment — we&apos;ll walk through scope and timing together
+          </div>
+        </motion.div>
+      )}
+
+      {/* Compact investment strip */}
       <motion.div
         variants={fadeUpItem}
         style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: 'var(--space-8)',
-          padding: 'var(--space-5)',
-          background: 'linear-gradient(135deg, #F3F0FF 0%, #EDE9FE 100%)',
-          borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid rgba(108, 92, 231, 0.15)',
+          gap: '2rem',
+          padding: '1rem 1.5rem',
+          borderRadius: 12,
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
         }}
       >
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: '#6C5CE7' }}>
-            ${(roadmap.monthlyPrice / 1000).toFixed(0)}K
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>per month</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: '#1a1a2e' }}>
-            {roadmap.monthlyHours}
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>hours/month</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: '#1a1a2e' }}>
-            {projects.length}
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>projects</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: '#1a1a2e' }}>
-            {phase1.timing}
-          </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>timeline</div>
-        </div>
+        <Stat value={`$${(roadmap.monthlyPrice / 1000).toFixed(0)}K`} label="per month" accent />
+        <Stat value={roadmap.monthlyHours} label="hours/mo" />
+        <Stat value={projects.length} label="projects" />
+        <Stat value={phase1.timing} label="timeline" />
       </motion.div>
 
-      {/* Cohort Availability */}
-      {cohorts.length > 0 && (
-        <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-            Upcoming Cohort Availability
-          </h3>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            {cohorts.map(cohort => {
-              const s = STATUS_STYLES[cohort.status] || STATUS_STYLES.available;
-              const dateStr = new Date(cohort.date + 'T00:00:00').toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric',
-              });
-              return (
-                <div
-                  key={cohort.cohortNumber}
-                  style={{
-                    flex: '1 1 160px',
-                    padding: 'var(--space-3)',
-                    borderRadius: 'var(--radius-md, 8px)',
-                    background: s.bg,
-                    border: `1px solid ${s.border}`,
-                    textAlign: 'center',
-                  }}
-                >
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                    Cohort {cohort.cohortNumber}
-                  </div>
-                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: '#1a1a2e' }}>
-                    {dateStr}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 'var(--space-1)', marginTop: '4px' }}>
-                    <span style={{
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                      padding: '0.1rem 0.5rem',
-                      borderRadius: '9999px',
-                      background: 'white',
-                      color: s.text,
-                      border: `1px solid ${s.border}`,
-                    }}>
-                      {s.label}
-                    </span>
-                    {cohort.spotsLeft != null && (
-                      <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
-                        {cohort.spotsLeft}/{cohort.spotsTotal} spots
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
+      {/* Your Team */}
+      <YourTeam />
 
-      {/* Milestones */}
-      <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
-        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-          First 90 Days
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <Milestone
-            day="Day 1-30"
-            title="Discovery & Foundation"
-            items={[
-              'Kickoff and detailed requirements gathering',
-              'CRM audit and data model assessment',
-              'Quick wins: cleanup, automation fixes, basic reporting',
-            ]}
-          />
-          <Milestone
-            day="Day 31-60"
-            title="Build & Configure"
-            items={[
-              'Lifecycle and pipeline redesign implementation',
-              'Foundational automations deployed',
-              'Initial dashboard builds for key stakeholders',
-            ]}
-          />
-          <Milestone
-            day="Day 61-90"
-            title="Launch & Validate"
-            items={[
-              'Go-live with new processes',
-              'Team training and enablement',
-              'First reporting cycle with validated metrics',
-            ]}
-          />
-        </div>
-      </motion.div>
-
-      {/* Projects List */}
-      <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
-        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-          Phase 1 Projects
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          {projects.map(proj => (
-            <div
-              key={proj.serviceId}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md, 8px)',
-                background: 'var(--bg-subtle)',
-                border: '1px solid var(--border-color)',
-              }}
-            >
-              <span style={{ fontSize: 'var(--text-lg)' }}>{proj.icon || '📋'}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{proj.name}</div>
-                <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
-                  {proj.primaryFunction}{proj.outcome ? ` — ${proj.outcome}` : ''}
-                </div>
-              </div>
-              {editMode && proj.transcriptSignal && (
-                <span
-                  title={proj.transcriptSignal.evidence || ''}
-                  style={{
-                    fontSize: '0.55rem',
-                    padding: '0.1rem 0.35rem',
-                    borderRadius: '3px',
-                    background: '#EDE9FE',
-                    color: '#6C5CE7',
-                    fontWeight: 600,
-                    flexShrink: 0,
-                    cursor: proj.transcriptSignal.evidence ? 'help' : 'default',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Mentioned in call
-                </span>
-              )}
-              {proj.metric && (
-                <span style={{
-                  fontSize: '0.6rem',
-                  padding: '0.1rem 0.4rem',
-                  borderRadius: '4px',
-                  background: '#F3F0FF',
-                  color: '#6C5CE7',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {proj.metric}
-                </span>
-              )}
-              {proj.hasPlaybook && customerPath && (
-                <a
-                  href={customerPath(`/playbooks/${proj.serviceId}`)}
-                  onClick={(e) => e.stopPropagation()}
-                  title="View Playbook"
-                  style={{
-                    fontSize: '0.8rem',
-                    textDecoration: 'none',
-                    flexShrink: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  📖
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Managed Services */}
-      {managed.length > 0 && (
-        <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
-          <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
-            Systems We Manage
-          </h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-            {managed.map(ms => (
-              <span
-                key={ms.serviceId || ms.name}
-                style={{
-                  padding: '0.3rem 0.75rem',
-                  borderRadius: '9999px',
-                  background: 'var(--bg-subtle)',
-                  border: '1px solid var(--border-color)',
-                  fontSize: 'var(--text-sm)',
-                }}
-              >
-                {ms.name}
-                {ms.hoursPerMonth && (
-                  <span style={{ color: 'var(--text-muted)', marginLeft: '0.25rem' }}>
-                    ({ms.hoursPerMonth}hrs/mo)
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Power 10 Progress */}
-      {phase1.power10Progress && (
-        <motion.div variants={fadeUpItem} style={{
-          textAlign: 'center',
-          padding: 'var(--space-4)',
-          background: '#F0FDF4',
-          borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid #BBF7D0',
-        }}>
-          <div style={{ fontSize: 'var(--text-sm)', color: '#166534', fontWeight: 'var(--font-semibold)' }}>
-            After Phase 1: {phase1.power10Progress.label} Power 10 metrics reportable
-          </div>
-        </motion.div>
-      )}
-
-      {/* Build SOW CTA hidden — under development */}
+      {/* Pulse animation */}
+      <style jsx global>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </motion.div>
   );
 }
 
-function Milestone({ day, title, items }) {
+function Stat({ value, label, accent }) {
   return (
-    <div style={{
-      display: 'flex',
-      gap: 'var(--space-3)',
-      padding: 'var(--space-3)',
-      borderRadius: 'var(--radius-md, 8px)',
-      background: 'var(--bg-subtle)',
-    }}>
+    <div style={{ textAlign: 'center' }}>
       <div style={{
-        flexShrink: 0,
-        width: '80px',
-        fontSize: 'var(--text-xs)',
-        fontWeight: 'var(--font-semibold)',
-        color: '#6C5CE7',
+        fontSize: '1.25rem',
+        fontWeight: 700,
+        color: accent ? '#a78bfa' : 'rgba(255,255,255,0.9)',
+        letterSpacing: '-0.02em',
       }}>
-        {day}
+        {value}
       </div>
-      <div>
-        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-1)' }}>
-          {title}
-        </div>
-        <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-          {items.map((item, idx) => (
-            <li key={idx} style={{ marginBottom: '2px' }}>{item}</li>
-          ))}
-        </ul>
-      </div>
+      <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>{label}</div>
     </div>
+  );
+}
+
+function YourTeam() {
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('leanscale-selected-team');
+      if (stored) setSelectedIds(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  // Show selected team, or fall back to a preview of 3 members
+  const members = selectedIds.length > 0
+    ? allTeam.filter(m => selectedIds.includes(m.id))
+    : allTeam.slice(0, 3);
+
+  const isPreview = selectedIds.length === 0;
+
+  return (
+    <motion.div variants={fadeUpItem}>
+      <div style={{
+        fontSize: '0.65rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        color: 'rgba(255,255,255,0.2)',
+        marginBottom: '0.5rem',
+      }}>
+        {isPreview ? 'Meet the Team' : 'Your Team'}
+      </div>
+      <div style={{
+        display: 'flex',
+        gap: '0.6rem',
+        overflowX: 'auto',
+        paddingBottom: '0.25rem',
+      }}>
+        {members.map(member => (
+          <div
+            key={member.id}
+            style={{
+              flex: '0 0 auto',
+              width: 140,
+              padding: '1rem 0.75rem',
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              margin: '0 auto 0.5rem',
+              overflow: 'hidden',
+              border: '2px solid rgba(124, 58, 237, 0.3)',
+            }}>
+              <img
+                src={member.photo}
+                alt={member.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: 'rgba(255,255,255,0.9)',
+              marginBottom: '0.15rem',
+            }}>
+              {member.name.split(' ')[0]}
+            </div>
+            <div style={{
+              fontSize: '0.6rem',
+              color: '#a78bfa',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}>
+              {member.role}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }

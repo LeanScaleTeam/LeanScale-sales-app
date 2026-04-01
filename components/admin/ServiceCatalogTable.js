@@ -12,7 +12,7 @@
 import { useState, useMemo } from 'react';
 
 const CATEGORY_COLORS = {
-  'Power10': { bg: '#EDE9FE', color: '#6C5CE7' },
+  'Power10': { bg: '#EDE9FE', color: '#7c3aed' },
   'Strategic': { bg: '#DBEAFE', color: '#2563EB' },
   'Managed Services': { bg: '#FEF3C7', color: '#D97706' },
   'Custom Diagnostic': { bg: '#FCE7F3', color: '#DB2777' },

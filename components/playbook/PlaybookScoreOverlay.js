@@ -8,11 +8,11 @@
 import { V3_STATUS } from '../../lib/diagnostic-engine/v3/constants-v3';
 
 const STATUS_COLORS = {
-  1: '#E53E3E',
-  2: '#ED8936',
-  3: '#ECC94B',
-  4: '#48BB78',
-  5: '#38A169',
+  1: '#f87171',
+  2: '#fb923c',
+  3: '#fbbf24',
+  4: '#4ade80',
+  5: '#34d399',
 };
 
 export default function PlaybookScoreOverlay({ playbookSlug, scores, competencyIds }) {

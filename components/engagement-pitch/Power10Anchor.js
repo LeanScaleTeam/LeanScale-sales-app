@@ -59,26 +59,26 @@ export default function Power10Anchor({ power10Data, costOfInaction, editMode, o
         style={{
           textAlign: 'center',
           padding: 'var(--space-5) var(--space-6)',
-          background: 'linear-gradient(135deg, #F3F0FF 0%, #EDE9FE 100%)',
+          background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(167, 139, 250, 0.08) 100%)',
           borderRadius: 'var(--radius-xl, 16px)',
-          border: '1px solid rgba(108, 92, 231, 0.15)',
+          border: '1px solid rgba(167, 139, 250, 0.2)',
         }}
       >
-        <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: '#1a1a2e' }}>
+        <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'rgba(255, 255, 255, 0.95)' }}>
           {summary.punchline}
         </div>
         {costOfInaction && (
-          <div style={{ fontSize: 'var(--text-sm)', color: '#6C5CE7', marginTop: 'var(--space-2)' }}>
+          <div style={{ fontSize: 'var(--text-sm)', color: '#7c3aed', marginTop: 'var(--space-2)' }}>
             {costOfInaction.statement}
           </div>
         )}
       </motion.div>
 
       {/* Metrics Table */}
-      <motion.div variants={fadeUpItem} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <motion.div variants={fadeUpItem} style={{ padding: 0, overflow: 'hidden', borderRadius: 'var(--radius-lg, 12px)', border: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(255, 255, 255, 0.03)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
           <thead>
-            <tr style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-color)' }}>
+            <tr style={{ background: 'rgba(255, 255, 255, 0.04)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
               <th style={{ textAlign: 'left', padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--font-semibold)' }}>
                 Metric
               </th>
@@ -95,8 +95,8 @@ export default function Power10Anchor({ power10Data, costOfInaction, editMode, o
               <tr
                 key={metric.name}
                 style={{
-                  borderBottom: idx < effectiveData.length - 1 ? '1px solid var(--border-color)' : 'none',
-                  background: idx % 2 === 0 ? 'white' : 'var(--bg-subtle)',
+                  borderBottom: idx < effectiveData.length - 1 ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
+                  background: idx % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.02)',
                 }}
               >
                 <td style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--font-medium)' }}>
@@ -167,10 +167,10 @@ function EditablePill({ status, onClick }) {
 function StatusPill({ status }) {
   const labels = { healthy: 'Healthy', careful: 'Careful', warning: 'Warning', unable: 'Unable' };
   const colors = {
-    healthy: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
-    careful: { bg: '#FEFCE8', text: '#854D0E', border: '#FEF08A' },
-    warning: { bg: '#FEF2F2', text: '#991B1B', border: '#FECACA' },
-    unable: { bg: '#F3F4F6', text: '#4B5563', border: '#E5E7EB' },
+    healthy: { bg: 'rgba(34, 197, 94, 0.12)', text: '#86efac', border: 'rgba(34, 197, 94, 0.3)' },
+    careful: { bg: 'rgba(234, 179, 8, 0.12)', text: '#fde047', border: 'rgba(234, 179, 8, 0.3)' },
+    warning: { bg: 'rgba(239, 68, 68, 0.12)', text: '#fca5a5', border: 'rgba(239, 68, 68, 0.3)' },
+    unable: { bg: 'rgba(255, 255, 255, 0.06)', text: 'rgba(255, 255, 255, 0.4)', border: 'rgba(255, 255, 255, 0.1)' },
   };
   const c = colors[status] || colors.unable;
   return (

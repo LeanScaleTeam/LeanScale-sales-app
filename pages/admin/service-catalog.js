@@ -222,7 +222,7 @@ export default function AdminServiceCatalog() {
                 onClick={() => setEditing('new')}
                 style={{
                   padding: '0.5rem 1.25rem',
-                  background: '#6C5CE7',
+                  background: '#7c3aed',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.375rem',

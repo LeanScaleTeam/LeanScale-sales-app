@@ -2,18 +2,18 @@ import { motion } from 'framer-motion';
 import { fadeUpItem, staggerContainer } from '../../lib/animations';
 
 const PHASE_COLORS = {
-  stabilize: { bg: '#FEF2F2', border: '#FECACA', accent: '#DC2626', text: '#991B1B' },
-  activate: { bg: '#FFF7ED', border: '#FED7AA', accent: '#EA580C', text: '#9A3412' },
-  optimize: { bg: '#EFF6FF', border: '#BFDBFE', accent: '#2563EB', text: '#1E40AF' },
-  scale: { bg: '#F0FDF4', border: '#BBF7D0', accent: '#16A34A', text: '#166534' },
+  stabilize: { bg: 'rgba(239, 68, 68, 0.06)', border: 'rgba(239, 68, 68, 0.2)', accent: '#DC2626', text: '#fca5a5' },
+  activate: { bg: 'rgba(251, 146, 60, 0.06)', border: 'rgba(251, 146, 60, 0.2)', accent: '#EA580C', text: '#fdba74' },
+  optimize: { bg: 'rgba(96, 165, 250, 0.06)', border: 'rgba(96, 165, 250, 0.2)', accent: '#2563EB', text: '#60a5fa' },
+  scale: { bg: 'rgba(34, 197, 94, 0.06)', border: 'rgba(34, 197, 94, 0.2)', accent: '#16A34A', text: '#86efac' },
 };
 
 const PHASE_IDS = ['stabilize', 'activate', 'optimize', 'scale'];
 
 const PRIORITY_OPTIONS = [
-  { value: 'critical', label: 'Critical', color: '#DC2626', bg: '#FEF2F2' },
-  { value: 'recommended', label: 'Recommended', color: '#EA580C', bg: '#FFF7ED' },
-  { value: 'optional', label: 'Optional', color: '#6B7280', bg: '#F3F4F6' },
+  { value: 'critical', label: 'Critical', color: '#DC2626', bg: 'rgba(239, 68, 68, 0.12)' },
+  { value: 'recommended', label: 'Recommended', color: '#EA580C', bg: 'rgba(251, 146, 60, 0.12)' },
+  { value: 'optional', label: 'Optional', color: 'rgba(255, 255, 255, 0.4)', bg: 'rgba(255, 255, 255, 0.06)' },
 ];
 
 const FUNCTION_ORDER = ['Sales', 'Marketing', 'Customer Success', 'Partnerships', 'Cross Functional'];
@@ -68,14 +68,14 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
       variants={staggerContainer}
       initial="hidden"
       animate="show"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}
     >
       {/* Header */}
-      <motion.div variants={fadeUpItem} style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-2)' }}>
+      <motion.div variants={fadeUpItem} style={{ textAlign: 'center', marginBottom: '-0.25rem' }}>
+        <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', margin: 0 }}>
           Your Engagement Roadmap
         </h2>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0.25rem auto 0', maxWidth: '500px' }}>
           Here&apos;s what your embedded LeanScale team focuses on each quarter.
         </p>
       </motion.div>
@@ -87,7 +87,7 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 'var(--space-3)',
+            gap: 'var(--space-2)',
           }}>
             {managedServices.map(ms => (
               <ManagedServiceCard
@@ -116,6 +116,7 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
             style={{
               padding: 0,
               overflow: 'hidden',
+              background: 'transparent',
               border: `1px solid ${colors.border}`,
               opacity: hasContent ? 1 : 0.5,
             }}
@@ -125,7 +126,7 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: 'var(--space-4)',
+              padding: 'var(--space-3) var(--space-4)',
               background: colors.bg,
               borderBottom: `1px solid ${colors.border}`,
             }}>
@@ -169,12 +170,12 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
             </div>
 
             {/* Phase Content */}
-            <div style={{ padding: 'var(--space-4)' }}>
+            <div style={{ padding: 'var(--space-3) var(--space-4)' }}>
               {/* Strategic Projects grouped by function */}
               {strategicProjects.length > 0 && (
                 <div>
                   <SectionLabel>Strategic Projects</SectionLabel>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                     {functionGroups.map(([functionName, projects]) => (
                       <FunctionGroup
                         key={functionName}
@@ -193,7 +194,7 @@ export default function PhaseRoadmap({ roadmap, managedServices, editMode, onOve
               )}
 
               {!hasContent && (
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-2)' }}>
                   No additional projects needed in this phase based on your diagnostic results.
                 </p>
               )}
@@ -213,7 +214,7 @@ function SectionLabel({ children }) {
       letterSpacing: '0.05em',
       color: 'var(--text-muted)',
       textTransform: 'uppercase',
-      marginBottom: 'var(--space-2)',
+      marginBottom: 'var(--space-1)',
     }}>
       {children}
     </div>
@@ -277,7 +278,7 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
       borderRadius: '4px',
       transition: 'background 0.15s',
     }}
-    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-subtle)'}
+    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'}
     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
     >
       <span style={{ fontSize: 'var(--text-sm)' }}>{project.icon || '📋'}</span>
@@ -312,8 +313,8 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
             fontSize: '0.55rem',
             padding: '0.1rem 0.35rem',
             borderRadius: '3px',
-            background: '#EDE9FE',
-            color: '#6C5CE7',
+            background: 'rgba(167, 139, 250, 0.15)',
+            color: '#7c3aed',
             fontWeight: 600,
             flexShrink: 0,
             cursor: project.transcriptSignal.evidence ? 'help' : 'default',
@@ -391,8 +392,8 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
               fontSize: '0.65rem',
               padding: '0.15rem 0.3rem',
               borderRadius: '4px',
-              border: '1px dashed var(--border-color)',
-              background: 'white',
+              border: '1px dashed rgba(255, 255, 255, 0.15)',
+              background: 'rgba(255, 255, 255, 0.04)',
               cursor: 'pointer',
               flexShrink: 0,
             }}
@@ -413,7 +414,7 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
               cursor: 'pointer',
               padding: '2px',
               lineHeight: 1,
-              color: '#9CA3AF',
+              color: 'rgba(255, 255, 255, 0.3)',
               flexShrink: 0,
             }}
           >
@@ -427,7 +428,7 @@ function ProjectRow({ project, colors, currentPhaseId, editMode, onOverride, cus
 
 function ManagedServiceCard({ service, editMode, onOverride }) {
   return (
-    <div className="card" style={{ padding: 'var(--space-4)', position: 'relative' }}>
+    <div className="card" style={{ padding: 'var(--space-3)', position: 'relative', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
       {editMode && (
         <button
           onClick={() => onOverride?.('roadmap', service.serviceId || service.id, { excluded: true })}
@@ -458,7 +459,7 @@ function ManagedServiceCard({ service, editMode, onOverride }) {
         </p>
       )}
       {service.hoursPerMonth && (
-        <div style={{ fontSize: 'var(--text-xs)', color: '#6C5CE7', fontWeight: 500 }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: '#7c3aed', fontWeight: 500 }}>
           ~{service.hoursPerMonth} hrs/month
         </div>
       )}

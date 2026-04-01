@@ -72,7 +72,7 @@ const styles = {
     textAlign: 'left',
   },
   checkmark: {
-    color: '#38A169',
+    color: '#34d399',
     fontWeight: 700,
     fontSize: '1rem',
   },

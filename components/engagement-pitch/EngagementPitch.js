@@ -50,7 +50,7 @@ function derivePrimaryFunction(departments) {
  * Reconstruct competency objects from score_card + static V3_COMPETENCIES.
  * score_card is { [competencyId]: { [dept]: score|null } }
  */
-function reconstructCompetencies(scoreCard) {
+export function reconstructCompetencies(scoreCard) {
   if (!scoreCard) return [];
   return V3_COMPETENCIES.map(staticComp => {
     const deptScores = scoreCard[staticComp.id];
@@ -70,7 +70,7 @@ function reconstructCompetencies(scoreCard) {
  * Convert v3 competencies into pitch-compatible items.
  * Accepts either full competency objects or reconstructed ones from score_card.
  */
-function adaptV3ToPitchItems(competencies) {
+export function adaptV3ToPitchItems(competencies) {
   if (!competencies || competencies.length === 0) return [];
 
   return competencies.map(comp => {
@@ -109,8 +109,6 @@ function adaptV3ToPitchItems(competencies) {
 }
 
 const STEPS = [
-  { id: 'power10', label: 'Power 10', icon: '📊' },
-  { id: 'findings', label: 'Findings', icon: '🔍' },
   { id: 'roadmap', label: 'Roadmap', icon: '🗺️' },
   { id: 'tiers', label: 'Engagement', icon: '💼' },
   { id: 'start', label: 'Let\'s Start', icon: '🚀' },
@@ -268,15 +266,16 @@ export default function EngagementPitch({
   const step = STEPS[currentStep];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {/* Step Navigation */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
         gap: 'var(--space-1)',
         padding: 'var(--space-2)',
-        background: 'var(--bg-subtle)',
+        background: 'rgba(255, 255, 255, 0.04)',
         borderRadius: 'var(--radius-lg, 12px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
       }}>
         {STEPS.map((s, idx) => (
           <button
@@ -291,8 +290,8 @@ export default function EngagementPitch({
               fontWeight: currentStep === idx ? 'var(--font-semibold)' : 'var(--font-normal)',
               borderRadius: 'var(--radius-md, 8px)',
               border: 'none',
-              background: currentStep === idx ? 'white' : 'transparent',
-              color: currentStep === idx ? '#6C5CE7' : 'var(--text-muted)',
+              background: currentStep === idx ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+              color: currentStep === idx ? '#a78bfa' : 'rgba(255, 255, 255, 0.4)',
               cursor: 'pointer',
               boxShadow: currentStep === idx ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               transition: 'all 0.2s ease',
@@ -310,7 +309,7 @@ export default function EngagementPitch({
                   left: '10%',
                   right: '10%',
                   height: 2,
-                  background: '#6C5CE7',
+                  background: '#7c3aed',
                   borderRadius: 1,
                 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
@@ -394,9 +393,9 @@ export default function EngagementPitch({
             padding: 'var(--space-2) var(--space-4)',
             fontSize: 'var(--text-sm)',
             borderRadius: 'var(--radius-md, 8px)',
-            border: '1px solid var(--border-color)',
-            background: 'white',
-            color: currentStep === 0 ? 'var(--text-muted)' : '#1a1a2e',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            color: currentStep === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.8)',
             cursor: currentStep === 0 ? 'default' : 'pointer',
             opacity: currentStep === 0 ? 0.5 : 1,
           }}
@@ -416,8 +415,8 @@ export default function EngagementPitch({
             fontSize: 'var(--text-sm)',
             borderRadius: 'var(--radius-md, 8px)',
             border: 'none',
-            background: currentStep === STEPS.length - 1 ? 'var(--bg-subtle)' : '#6C5CE7',
-            color: currentStep === STEPS.length - 1 ? 'var(--text-muted)' : 'white',
+            background: currentStep === STEPS.length - 1 ? 'rgba(255, 255, 255, 0.04)' : '#7c3aed',
+            color: currentStep === STEPS.length - 1 ? 'rgba(255, 255, 255, 0.3)' : 'white',
             cursor: currentStep === STEPS.length - 1 ? 'default' : 'pointer',
             fontWeight: 'var(--font-semibold)',
           }}

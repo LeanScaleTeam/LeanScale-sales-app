@@ -436,7 +436,7 @@ export default function IntakeForm() {
                 </button>
                 <button
                   onClick={handleTranscriptNext}
-                  style={{ padding: '0.75rem 1.5rem', background: 'var(--ls-purple, #6C5CE7)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ padding: '0.75rem 1.5rem', background: 'var(--ls-purple, #7c3aed)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', fontWeight: 600, cursor: 'pointer' }}
                 >
                   {transcriptUploaded ? 'Continue' : 'Skip \u2014 No Transcript'}
                 </button>

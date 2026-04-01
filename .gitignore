@@ -7,6 +7,9 @@ node_modules/
 .next/
 out/
 
+# Generated build artifacts
+public/pdf.worker.min.mjs
+
 # Production
 build/
 

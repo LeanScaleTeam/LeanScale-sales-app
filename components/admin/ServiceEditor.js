@@ -389,7 +389,7 @@ export default function ServiceEditor({
             disabled={saving || !form.name.trim()}
             style={{
               padding: '0.5rem 1.25rem',
-              background: saving ? '#9CA3AF' : '#6C5CE7',
+              background: saving ? '#9CA3AF' : '#7c3aed',
               color: 'white',
               border: 'none',
               borderRadius: '0.375rem',

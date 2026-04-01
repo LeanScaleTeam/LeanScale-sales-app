@@ -47,7 +47,7 @@ export default function FindingsWalkthrough({ items, companyProfile, onServiceCl
             {actionableItems.filter(i => !i.excluded).length} areas that need attention
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-1)', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md, 8px)', padding: '2px' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-1)', background: 'rgba(255, 255, 255, 0.04)', borderRadius: 'var(--radius-md, 8px)', padding: '2px' }}>
           <GroupButton active={groupBy === 'priority'} onClick={() => setGroupBy('priority')}>Priority</GroupButton>
           <GroupButton active={groupBy === 'function'} onClick={() => setGroupBy('function')}>By Function</GroupButton>
         </div>
@@ -66,7 +66,7 @@ export default function FindingsWalkthrough({ items, companyProfile, onServiceCl
             style={{
               fontSize: 'var(--text-base)',
               fontWeight: 'var(--font-semibold)',
-              color: group.color || '#1a1a2e',
+              color: group.color || 'rgba(255, 255, 255, 0.9)',
               marginBottom: 'var(--space-3)',
               paddingBottom: 'var(--space-2)',
               borderBottom: `2px solid ${group.borderColor || 'var(--border-color)'}`,
@@ -107,24 +107,24 @@ function groupByPriority(items) {
     groups.push({
       label: 'Critical — Immediate Attention',
       items: warning,
-      color: '#991B1B',
-      borderColor: '#FECACA',
+      color: '#fca5a5',
+      borderColor: 'rgba(239, 68, 68, 0.3)',
     });
   }
   if (careful.length > 0) {
     groups.push({
       label: 'Needs Improvement',
       items: careful,
-      color: '#854D0E',
-      borderColor: '#FEF08A',
+      color: '#fde047',
+      borderColor: 'rgba(234, 179, 8, 0.3)',
     });
   }
   if (excluded.length > 0) {
     groups.push({
       label: 'Excluded',
       items: excluded,
-      color: '#9CA3AF',
-      borderColor: '#E5E7EB',
+      color: 'rgba(255, 255, 255, 0.3)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
     });
   }
   return groups;
@@ -133,11 +133,11 @@ function groupByPriority(items) {
 function groupByFunction(items) {
   const functionOrder = ['Sales', 'Marketing', 'Customer Success', 'Cross Functional', 'Partnerships'];
   const functionColors = {
-    'Sales': { color: '#166534', border: '#BBF7D0' },
-    'Marketing': { color: '#1E40AF', border: '#BFDBFE' },
-    'Customer Success': { color: '#9A3412', border: '#FED7AA' },
-    'Cross Functional': { color: '#475569', border: '#E2E8F0' },
-    'Partnerships': { color: '#6B21A8', border: '#E9D5FF' },
+    'Sales': { color: '#86efac', border: 'rgba(34, 197, 94, 0.3)' },
+    'Marketing': { color: '#60a5fa', border: 'rgba(96, 165, 250, 0.3)' },
+    'Customer Success': { color: '#fdba74', border: 'rgba(251, 146, 60, 0.3)' },
+    'Cross Functional': { color: 'rgba(255, 255, 255, 0.5)', border: 'rgba(255, 255, 255, 0.1)' },
+    'Partnerships': { color: '#a78bfa', border: 'rgba(167, 139, 250, 0.3)' },
   };
 
   const byFunc = {};
@@ -152,8 +152,8 @@ function groupByFunction(items) {
     .map(f => ({
       label: `${f} — What Your ${f === 'Cross Functional' ? 'Whole Org' : f + ' Team'} Needs`,
       items: byFunc[f],
-      color: functionColors[f]?.color || '#475569',
-      borderColor: functionColors[f]?.border || '#E2E8F0',
+      color: functionColors[f]?.color || 'rgba(255, 255, 255, 0.5)',
+      borderColor: functionColors[f]?.border || 'rgba(255, 255, 255, 0.1)',
     }));
 }
 
@@ -174,10 +174,10 @@ function GroupButton({ active, onClick, children }) {
         fontWeight: active ? 600 : 400,
         borderRadius: 'var(--radius-md, 6px)',
         border: 'none',
-        background: active ? 'white' : 'transparent',
-        color: active ? '#1a1a2e' : 'var(--text-muted)',
+        background: active ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+        color: active ? '#a78bfa' : 'rgba(255, 255, 255, 0.4)',
         cursor: 'pointer',
-        boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+        boxShadow: 'none',
       }}
     >
       {children}

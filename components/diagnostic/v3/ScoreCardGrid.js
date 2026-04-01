@@ -31,15 +31,30 @@ export default function ScoreCardGrid({
 }) {
   const [expandedCell, setExpandedCell] = useState(null); // { pillar, dept }
 
+  // Softer cell background colors for dark theme
+  const CELL_BG = {
+    1: 'rgba(248, 113, 113, 0.15)', // soft red
+    2: 'rgba(251, 146, 60, 0.15)',  // soft orange
+    3: 'rgba(251, 191, 36, 0.12)',  // soft yellow
+    4: 'rgba(74, 222, 128, 0.12)',  // soft green
+    5: 'rgba(52, 211, 153, 0.15)',  // soft emerald
+  };
+  const CELL_TEXT = {
+    1: '#fca5a5',
+    2: '#fdba74',
+    3: '#fde68a',
+    4: '#86efac',
+    5: '#6ee7b7',
+  };
+
   function getCellColor(score) {
-    if (score === null || score === undefined) return '#F7FAFC'; // gray-50
-    const rounded = Math.round(score);
-    return V3_STATUS_COLORS[rounded] || '#F7FAFC';
+    if (score === null || score === undefined) return 'rgba(255, 255, 255, 0.02)';
+    return CELL_BG[Math.round(score)] || 'rgba(255, 255, 255, 0.02)';
   }
 
   function getCellTextColor(score) {
-    if (score === null || score === undefined) return '#A0AEC0';
-    return score <= 2 ? '#FFFFFF' : score >= 4 ? '#FFFFFF' : '#1A202C';
+    if (score === null || score === undefined) return 'rgba(255, 255, 255, 0.25)';
+    return CELL_TEXT[Math.round(score)] || 'rgba(255, 255, 255, 0.9)';
   }
 
   function handleCellClick(pillar, dept) {
@@ -48,6 +63,21 @@ export default function ScoreCardGrid({
     } else {
       setExpandedCell({ pillar, dept });
     }
+  }
+
+  // Count evidence quotes for a pillar/dept cell
+  function getEvidenceCount(pillar, dept) {
+    if (!transcriptAssessments) return 0;
+    const comps = V3_COMPETENCIES.filter(
+      (c) => c.pillar === pillar && expandDepartments(c.departments).includes(dept)
+    );
+    let count = 0;
+    for (const c of comps) {
+      const key = `${c.id}_${dept}`;
+      const data = transcriptAssessments[key];
+      if (data?.evidence?.length > 0) count += data.evidence.length;
+    }
+    return count;
   }
 
   // Get competencies for expanded cell
@@ -101,6 +131,7 @@ export default function ScoreCardGrid({
                         color: getCellTextColor(score),
                         outline: isExpanded ? '2px solid var(--ls-purple)' : 'none',
                         cursor: 'pointer',
+                        position: 'relative',
                       }}
                       onClick={() => handleCellClick(pillar, dept)}
                     >
@@ -112,6 +143,15 @@ export default function ScoreCardGrid({
                       ) : (
                         <div style={styles.cellEmpty}>--</div>
                       )}
+                      {(() => {
+                        const evCount = getEvidenceCount(pillar, dept);
+                        if (evCount === 0) return null;
+                        return (
+                          <span style={styles.evidenceBadge} title={`${evCount} transcript quote${evCount !== 1 ? 's' : ''}`}>
+                            {evCount}
+                          </span>
+                        );
+                      })()}
                     </td>
                   );
                 })}
@@ -174,99 +214,125 @@ export default function ScoreCardGrid({
 const styles = {
   gridContainer: {
     overflowX: 'auto',
-    borderRadius: 'var(--radius-lg, 12px)',
-    border: '1px solid var(--border-color, #E2E8F0)',
+    borderRadius: 14,
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    background: 'rgba(255, 255, 255, 0.02)',
+    backdropFilter: 'blur(12px)',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    fontSize: 'var(--text-sm, 0.875rem)',
+    fontSize: '0.88rem',
   },
   cornerCell: {
-    padding: '0.75rem',
-    minWidth: '120px',
+    padding: '1rem 1.25rem',
+    minWidth: '130px',
   },
   headerCell: {
-    padding: '0.75rem 1rem',
+    padding: '1rem 1.25rem',
     textAlign: 'center',
-    borderBottom: '2px solid var(--border-color, #E2E8F0)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
     minWidth: '120px',
   },
   headerLabel: {
-    fontWeight: 'var(--font-semibold, 600)',
-    fontSize: 'var(--text-xs, 0.75rem)',
+    fontWeight: 600,
+    fontSize: '0.7rem',
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: 'var(--text-secondary, #4A5568)',
+    letterSpacing: '0.08em',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   headerScore: {
-    fontSize: 'var(--text-lg, 1.125rem)',
-    fontWeight: 'var(--font-bold, 700)',
-    marginTop: '0.25rem',
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    marginTop: '0.3rem',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   rowHeader: {
-    padding: '0.75rem 1rem',
-    borderRight: '2px solid var(--border-color, #E2E8F0)',
+    padding: '1rem 1.25rem',
+    borderRight: '1px solid rgba(255, 255, 255, 0.06)',
     minWidth: '140px',
   },
   pillarLabel: {
-    fontWeight: 'var(--font-semibold, 600)',
-    color: 'var(--text-primary, #1A202C)',
+    fontWeight: 600,
+    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: '0.88rem',
   },
   pillarScore: {
-    fontSize: 'var(--text-xs, 0.75rem)',
-    color: 'var(--text-muted, #718096)',
-    marginTop: '0.15rem',
+    fontSize: '0.72rem',
+    color: 'rgba(255, 255, 255, 0.35)',
+    marginTop: '0.2rem',
   },
   cell: {
-    padding: '0.75rem',
+    padding: '1rem 1.1rem',
     textAlign: 'center',
-    borderBottom: '1px solid var(--border-color, #E2E8F0)',
-    borderRight: '1px solid var(--border-color, #E2E8F0)',
-    transition: 'all 0.15s ease',
-    minWidth: '100px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+    borderRight: '1px solid rgba(255, 255, 255, 0.04)',
+    transition: 'all 0.2s ease',
+    minWidth: '110px',
   },
   cellScore: {
-    fontSize: 'var(--text-lg, 1.125rem)',
-    fontWeight: 'var(--font-bold, 700)',
+    fontSize: '1.15rem',
+    fontWeight: 700,
+    letterSpacing: '-0.01em',
   },
   cellLabel: {
-    fontSize: 'var(--text-2xs, 0.65rem)',
-    opacity: 0.9,
-    marginTop: '0.1rem',
+    fontSize: '0.62rem',
+    opacity: 0.75,
+    marginTop: '0.15rem',
+    textTransform: 'capitalize',
   },
   cellEmpty: {
-    color: '#CBD5E0',
-    fontSize: 'var(--text-sm, 0.875rem)',
+    color: 'rgba(255, 255, 255, 0.2)',
+    fontSize: '0.88rem',
+  },
+  evidenceBadge: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    minWidth: 16,
+    height: 16,
+    padding: '0 3px',
+    borderRadius: '8px',
+    background: 'rgba(163, 230, 53, 0.2)',
+    color: '#a3e635',
+    fontSize: '9px',
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1,
+    border: '1px solid rgba(163, 230, 53, 0.3)',
   },
   detailHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0.75rem 1rem',
-    background: 'var(--bg-secondary, #F7FAFC)',
+    background: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 'var(--radius-md, 8px) var(--radius-md, 8px) 0 0',
   },
   detailTitle: {
     fontSize: 'var(--text-base, 1rem)',
     fontWeight: 'var(--font-semibold, 600)',
     margin: 0,
+    color: '#ffffff',
   },
   closeBtn: {
-    background: 'none',
-    border: '1px solid var(--border-color)',
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: 'var(--radius-sm, 4px)',
     padding: '0.25rem 0.75rem',
     cursor: 'pointer',
     fontSize: 'var(--text-sm)',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   competencyList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '0.5rem',
     padding: '1rem',
-    background: 'white',
-    border: '1px solid var(--border-color)',
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
     borderTop: 'none',
     borderRadius: '0 0 var(--radius-md, 8px) var(--radius-md, 8px)',
   },

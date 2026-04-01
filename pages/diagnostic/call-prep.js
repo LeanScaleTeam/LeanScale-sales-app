@@ -189,7 +189,7 @@ const styles = {
   error: {
     textAlign: 'center',
     padding: '4rem 1rem',
-    color: '#E53E3E',
+    color: '#f87171',
     fontSize: '1rem',
   },
   printBar: {

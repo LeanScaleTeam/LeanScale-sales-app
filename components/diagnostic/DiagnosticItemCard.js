@@ -54,7 +54,7 @@ export default function DiagnosticItemCard({
       style={{
         ...(editMode && onOpenModal ? { cursor: 'pointer' } : {}),
         ...(highlighted ? {
-          boxShadow: '0 0 0 2px #6C5CE7, 0 0 12px rgba(108, 92, 231, 0.3)',
+          boxShadow: '0 0 0 2px #7c3aed, 0 0 12px rgba(124, 58, 237, 0.3)',
           transition: 'box-shadow 0.3s',
         } : {}),
       }}

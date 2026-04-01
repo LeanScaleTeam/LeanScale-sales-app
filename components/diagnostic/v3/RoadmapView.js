@@ -9,17 +9,16 @@
  */
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../../../context/CustomerContext';
 import { ROADMAP_PHASES, V3_STATUS_COLORS } from '../../../lib/diagnostic-engine/v3/constants-v3';
 import { lookupServiceV3 } from '../../../lib/diagnostic-engine/v3/service-mapping-v3';
 
 const PHASE_COLORS = {
-  FOUNDATION: { bg: '#FFF5F5', border: '#FEB2B2', icon: '#E53E3E' },
-  BUILD: { bg: '#FFFFF0', border: '#FEFCBF', icon: '#D69E2E' },
-  OPTIMIZE: { bg: '#F0FFF4', border: '#C6F6D5', icon: '#38A169' },
-  SCALE: { bg: '#EBF8FF', border: '#BEE3F8', icon: '#3182CE' },
+  FOUNDATION: { bg: 'rgba(248, 113, 113, 0.08)', border: 'rgba(248, 113, 113, 0.2)', icon: '#f87171' },
+  BUILD: { bg: 'rgba(251, 191, 36, 0.08)', border: 'rgba(251, 191, 36, 0.2)', icon: '#fbbf24' },
+  OPTIMIZE: { bg: 'rgba(74, 222, 128, 0.08)', border: 'rgba(74, 222, 128, 0.2)', icon: '#4ade80' },
+  SCALE: { bg: 'rgba(96, 165, 250, 0.08)', border: 'rgba(96, 165, 250, 0.2)', icon: '#60a5fa' },
 };
 
 const PHASE_KEYS = ['FOUNDATION', 'BUILD', 'OPTIMIZE', 'SCALE'];
@@ -292,17 +291,7 @@ function ProjectCard({
         <div style={styles.cardInfo} onClick={editMode ? onToggle : undefined}>
           <span style={styles.cardIcon}>{service?.icon || ''}</span>
           <div>
-            {isCustom ? (
-              <span style={styles.cardName}>{service?.name || project.serviceId}</span>
-            ) : (
-              <Link
-                href={customerPath(`/playbooks/${project.serviceId}`)}
-                style={styles.cardName}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {service?.name || project.serviceId}
-              </Link>
-            )}
+            <span style={styles.cardName}>{service?.name || project.serviceId}</span>
             <div style={styles.cardMeta}>
               {isCustom ? (
                 <span style={styles.customBadge}>Custom</span>
@@ -414,7 +403,7 @@ const styles = {
     gap: '0.75rem',
     padding: '0.75rem 1rem',
     borderLeft: '4px solid',
-    background: 'var(--bg-secondary, #F7FAFC)',
+    background: 'var(--bg-secondary, rgba(255, 255, 255, 0.04))',
     borderRadius: '0 var(--radius-md, 8px) var(--radius-md, 8px) 0',
     marginBottom: '0.75rem',
   },
@@ -438,12 +427,12 @@ const styles = {
   phaseDesc: {
     margin: 0,
     fontSize: '0.8rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   projectCount: {
     marginLeft: 'auto',
     fontSize: '0.8rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     whiteSpace: 'nowrap',
   },
   projectGrid: {
@@ -453,9 +442,9 @@ const styles = {
     paddingLeft: '1.5rem',
   },
   card: {
-    border: '1px solid var(--border-color, #E2E8F0)',
+    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
     borderRadius: 'var(--radius-md, 8px)',
-    background: 'white',
+    background: 'var(--glass-bg, rgba(255, 255, 255, 0.03))',
     cursor: 'pointer',
     transition: 'box-shadow 0.15s ease',
   },
@@ -477,27 +466,27 @@ const styles = {
   cardName: {
     fontWeight: 600,
     fontSize: '0.9rem',
-    color: '#6C5CE7',
+    color: '#a78bfa',
     textDecoration: 'none',
     display: 'block',
   },
   cardMeta: {
     fontSize: '0.75rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   customBadge: {
     fontSize: '0.65rem',
     padding: '0.1rem 0.4rem',
     borderRadius: '0.25rem',
-    background: '#E9D8FD',
-    color: '#6B46C1',
+    background: 'rgba(167, 139, 250, 0.15)',
+    color: '#a78bfa',
     fontWeight: 600,
   },
   priorityBadge: {
     padding: '0.25rem 0.5rem',
     borderRadius: 'var(--radius-sm, 4px)',
-    background: '#F3F0FF',
-    color: '#6C5CE7',
+    background: 'rgba(167, 139, 250, 0.12)',
+    color: '#a78bfa',
     fontSize: '0.75rem',
     fontWeight: 600,
   },
@@ -510,12 +499,12 @@ const styles = {
   },
   reorderBtn: {
     background: 'none',
-    border: '1px solid #E2E8F0',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: '3px',
     cursor: 'pointer',
     fontSize: '0.6rem',
     padding: '1px 4px',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     lineHeight: 1,
   },
   editControls: {
@@ -528,34 +517,35 @@ const styles = {
     fontSize: '0.75rem',
     padding: '0.2rem 0.4rem',
     borderRadius: '4px',
-    border: '1px solid #E2E8F0',
-    background: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(255, 255, 255, 0.8)',
     cursor: 'pointer',
   },
   removeBtn: {
     background: 'none',
-    border: '1px solid #FEB2B2',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '0.75rem',
     padding: '0.15rem 0.4rem',
-    color: '#E53E3E',
+    color: '#fca5a5',
   },
   addProjectBtn: {
     background: 'none',
-    border: '1px dashed #CBD5E0',
+    border: '1px dashed rgba(255, 255, 255, 0.15)',
     borderRadius: 'var(--radius-md, 8px)',
     padding: '0.5rem',
     cursor: 'pointer',
     fontSize: '0.8rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
   },
   addForm: {
-    border: '1px solid #E2E8F0',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: 'var(--radius-md, 8px)',
     padding: '0.75rem',
-    background: '#F7FAFC',
+    background: 'rgba(255, 255, 255, 0.04)',
     display: 'flex',
     flexDirection: 'column',
     gap: '0.5rem',
@@ -564,8 +554,10 @@ const styles = {
     fontSize: '0.8rem',
     padding: '0.4rem 0.6rem',
     borderRadius: '4px',
-    border: '1px solid #E2E8F0',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     outline: 'none',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   addActions: {
     display: 'flex',
@@ -576,7 +568,7 @@ const styles = {
     padding: '0.3rem 0.8rem',
     borderRadius: '4px',
     border: 'none',
-    background: '#6C5CE7',
+    background: '#7c3aed',
     color: 'white',
     cursor: 'pointer',
   },
@@ -584,23 +576,23 @@ const styles = {
     fontSize: '0.8rem',
     padding: '0.3rem 0.8rem',
     borderRadius: '4px',
-    border: '1px solid #E2E8F0',
-    background: 'white',
-    color: '#4A5568',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(255, 255, 255, 0.7)',
     cursor: 'pointer',
   },
   // Removed section
   removedSection: {
     padding: '0.75rem',
-    background: '#FFF5F5',
+    background: 'rgba(239, 68, 68, 0.06)',
     borderRadius: 'var(--radius-md, 8px)',
-    border: '1px solid #FEB2B2',
+    border: '1px solid rgba(239, 68, 68, 0.2)',
   },
   removedToggle: {
     background: 'none',
     border: 'none',
     fontSize: '0.8rem',
-    color: '#E53E3E',
+    color: '#fca5a5',
     cursor: 'pointer',
     textDecoration: 'underline',
     padding: 0,
@@ -616,31 +608,31 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0.35rem 0.5rem',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: '4px',
     fontSize: '0.8rem',
   },
   removedName: {
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     textDecoration: 'line-through',
   },
   restoreBtn: {
     fontSize: '0.7rem',
     padding: '0.15rem 0.5rem',
     borderRadius: '4px',
-    border: '1px solid #C6F6D5',
-    background: '#F0FFF4',
-    color: '#38A169',
+    border: '1px solid rgba(134, 239, 172, 0.3)',
+    background: 'rgba(134, 239, 172, 0.1)',
+    color: '#86efac',
     cursor: 'pointer',
   },
   // Existing styles
   cardBody: {
     padding: '0 1rem 1rem',
-    borderTop: '1px solid #EDF2F7',
+    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
   },
   cardDesc: {
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     margin: '0.75rem 0',
     lineHeight: 1.5,
   },
@@ -651,7 +643,7 @@ const styles = {
     fontSize: '0.7rem',
     fontWeight: 600,
     textTransform: 'uppercase',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     marginBottom: '0.25rem',
   },
   impactRow: {
@@ -663,11 +655,11 @@ const styles = {
   },
   impactComp: {
     flex: 1,
-    color: '#2D3748',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   impactDept: {
     fontSize: '0.7rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
     minWidth: '4rem',
   },
   impactScores: {
@@ -679,8 +671,8 @@ const styles = {
     fontSize: '0.7rem',
     padding: '0.15rem 0.5rem',
     borderRadius: '1rem',
-    background: '#EBF8FF',
-    color: '#3182CE',
+    background: 'rgba(96, 165, 250, 0.1)',
+    color: '#60a5fa',
     marginTop: '0.5rem',
   },
   summary: {
@@ -688,7 +680,7 @@ const styles = {
     gap: '2rem',
     justifyContent: 'center',
     padding: '1.5rem',
-    background: 'var(--bg-secondary, #F7FAFC)',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 'var(--radius-lg, 12px)',
   },
   summaryItem: {
@@ -703,7 +695,7 @@ const styles = {
   },
   summaryLabel: {
     fontSize: '0.75rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   toggleBtn: {
     alignSelf: 'center',
@@ -713,6 +705,6 @@ const styles = {
     padding: '0.5rem 1rem',
     cursor: 'pointer',
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
 };

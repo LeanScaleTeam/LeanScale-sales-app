@@ -300,7 +300,7 @@ export default function LifecycleView({
                         borderBottom: '1px solid var(--border-color)',
                         cursor: editMode && onOpenModal ? 'pointer' : 'default',
                         ...(highlightedItem === item.name ? {
-                          boxShadow: '0 0 0 2px #6C5CE7, 0 0 12px rgba(108, 92, 231, 0.3)',
+                          boxShadow: '0 0 0 2px #7c3aed, 0 0 12px rgba(124, 58, 237, 0.3)',
                           borderRadius: 'var(--radius-sm)',
                         } : {}),
                       }}

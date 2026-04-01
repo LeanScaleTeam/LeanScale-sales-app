@@ -34,10 +34,10 @@ const SCORE_LABELS = {
 };
 
 const SCORE_COLORS = {
-  1: '#E53E3E',
+  1: '#f87171',
   2: '#DD6B20',
-  3: '#ECC94B',
-  4: '#38A169',
+  3: '#fbbf24',
+  4: '#34d399',
   5: '#2B6CB0',
 };
 
@@ -195,7 +195,7 @@ export default function ConsultantAuditForm({
           <div style={{
             ...styles.progressFill,
             width: `${progressPercent}%`,
-            background: progressPercent === 100 ? '#48BB78' : progressPercent >= 50 ? '#ECC94B' : '#6C5CE7',
+            background: progressPercent === 100 ? '#4ade80' : progressPercent >= 50 ? '#fbbf24' : '#7c3aed',
           }} />
         </div>
         <span style={styles.progressLabel}>{progressPercent}%</span>
@@ -324,7 +324,7 @@ export default function ConsultantAuditForm({
                                 backgroundColor: currentAssessment?.score === s
                                   ? SCORE_COLORS[s]
                                   : suggestion?.score === s ? `${SCORE_COLORS[s]}33` : 'transparent',
-                                color: currentAssessment?.score === s ? '#FFF' : '#4A5568',
+                                color: currentAssessment?.score === s ? '#FFF' : 'rgba(255, 255, 255, 0.6)',
                                 border: `2px solid ${SCORE_COLORS[s]}`,
                                 fontWeight: suggestion?.score === s ? 700 : 500,
                               }}
@@ -375,7 +375,7 @@ const styles = {
   container: {
     border: '1px solid var(--border-color, #E2E8F0)',
     borderRadius: 'var(--radius-lg, 12px)',
-    background: 'white',
+    background: 'rgba(255, 255, 255, 0.03)',
     overflow: 'hidden',
   },
   header: {
@@ -393,7 +393,7 @@ const styles = {
   subtitle: {
     margin: '0.2rem 0 0',
     fontSize: '0.75rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   headerRight: {
     display: 'flex',
@@ -402,14 +402,14 @@ const styles = {
   },
   count: {
     fontSize: '0.8rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: 500,
   },
   saveBtn: {
     padding: '0.4rem 1rem',
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
-    background: 'var(--ls-purple, #6C5CE7)',
+    background: 'var(--ls-purple, #7c3aed)',
     color: 'white',
     fontSize: '0.8rem',
     fontWeight: 600,
@@ -425,7 +425,7 @@ const styles = {
     flex: 1,
     height: '6px',
     borderRadius: '3px',
-    background: '#EDF2F7',
+    background: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
   progressFill: {
@@ -435,7 +435,7 @@ const styles = {
   },
   progressLabel: {
     fontSize: '0.75rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: 600,
     minWidth: '2.5rem',
     textAlign: 'right',
@@ -445,26 +445,26 @@ const styles = {
   },
   pillarDivider: {
     padding: '0.6rem 1.25rem',
-    background: 'var(--bg-secondary, #F7FAFC)',
-    borderTop: '1px solid #EDF2F7',
-    borderBottom: '1px solid #EDF2F7',
+    background: 'rgba(255, 255, 255, 0.04)',
+    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
   },
   pillarLabel: {
     fontSize: '0.8rem',
     fontWeight: 700,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     textTransform: 'uppercase',
     letterSpacing: '0.03em',
   },
   checkItem: {
     padding: '0.75rem 1.25rem',
-    borderBottom: '1px solid #EDF2F7',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
     cursor: 'pointer',
     transition: 'background 0.15s',
   },
   checkItemActive: {
-    background: '#FAFBFF',
-    borderLeft: '3px solid var(--ls-purple, #6C5CE7)',
+    background: 'rgba(124, 58, 237, 0.08)',
+    borderLeft: '3px solid var(--ls-purple, #7c3aed)',
     paddingLeft: 'calc(1.25rem - 3px)',
   },
   checkItemScored: {
@@ -482,15 +482,15 @@ const styles = {
     width: '1.6rem',
     height: '1.6rem',
     borderRadius: '50%',
-    border: '2px solid #CBD5E0',
+    border: '2px solid rgba(255, 255, 255, 0.2)',
     fontSize: '0.7rem',
     fontWeight: 600,
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
     flexShrink: 0,
   },
   checkboxDone: {
-    backgroundColor: '#48BB78',
-    borderColor: '#48BB78',
+    backgroundColor: '#4ade80',
+    borderColor: '#4ade80',
     color: 'white',
   },
   checkTitleBlock: {
@@ -502,18 +502,18 @@ const styles = {
   checkId: {
     fontSize: '0.7rem',
     fontFamily: 'monospace',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   checkName: {
     fontSize: '0.9rem',
     fontWeight: 500,
-    color: '#2D3748',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   deptBadge: {
     fontSize: '0.65rem',
     fontWeight: 600,
-    color: '#6C5CE7',
-    background: '#EDE9FE',
+    color: '#a78bfa',
+    background: 'rgba(167, 139, 250, 0.15)',
     padding: '0.1rem 0.4rem',
     borderRadius: '4px',
     textTransform: 'uppercase',
@@ -521,8 +521,8 @@ const styles = {
   orgBadge: {
     fontSize: '0.65rem',
     fontWeight: 600,
-    color: '#38A169',
-    background: '#F0FFF4',
+    color: '#86efac',
+    background: 'rgba(134, 239, 172, 0.1)',
     padding: '0.1rem 0.4rem',
     borderRadius: '4px',
   },
@@ -543,8 +543,8 @@ const styles = {
     marginLeft: '2.1rem',
   },
   foundPanel: {
-    background: '#F0FFF4',
-    border: '1px solid #C6F6D5',
+    background: 'rgba(134, 239, 172, 0.06)',
+    border: '1px solid rgba(134, 239, 172, 0.2)',
     borderRadius: '8px',
     padding: '0.75rem 1rem',
     marginBottom: '0.75rem',
@@ -552,7 +552,7 @@ const styles = {
   foundHeader: {
     fontSize: '0.7rem',
     fontWeight: 700,
-    color: '#38A169',
+    color: '#86efac',
     textTransform: 'uppercase',
     letterSpacing: '0.03em',
     marginBottom: '0.4rem',
@@ -563,23 +563,23 @@ const styles = {
   },
   foundItem: {
     fontSize: '0.8rem',
-    color: '#2D3748',
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: '0.2rem',
     lineHeight: 1.4,
   },
   suggestedScore: {
     marginTop: '0.4rem',
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   confidence: {
     marginLeft: '0.5rem',
     fontSize: '0.7rem',
-    color: '#A0AEC0',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   crmChecksPanel: {
-    background: '#EBF8FF',
-    border: '1px solid #BEE3F8',
+    background: 'rgba(96, 165, 250, 0.06)',
+    border: '1px solid rgba(96, 165, 250, 0.2)',
     borderRadius: '8px',
     padding: '0.75rem 1rem',
     marginBottom: '0.75rem',
@@ -587,7 +587,7 @@ const styles = {
   crmChecksHeader: {
     fontSize: '0.7rem',
     fontWeight: 700,
-    color: '#3182CE',
+    color: '#60a5fa',
     textTransform: 'uppercase',
     letterSpacing: '0.03em',
     marginBottom: '0.4rem',
@@ -598,13 +598,13 @@ const styles = {
   },
   crmCheckItem: {
     fontSize: '0.8rem',
-    color: '#2D3748',
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: '0.3rem',
     lineHeight: 1.4,
   },
   scoringGuide: {
-    background: '#FFFAF0',
-    border: '1px solid #FEEBC8',
+    background: 'rgba(251, 191, 36, 0.06)',
+    border: '1px solid rgba(251, 191, 36, 0.2)',
     borderRadius: '8px',
     padding: '0.75rem 1rem',
     marginBottom: '0.75rem',
@@ -612,7 +612,7 @@ const styles = {
   scoringHeader: {
     fontSize: '0.7rem',
     fontWeight: 700,
-    color: '#DD6B20',
+    color: '#fbbf24',
     textTransform: 'uppercase',
     letterSpacing: '0.03em',
     marginBottom: '0.4rem',
@@ -634,7 +634,7 @@ const styles = {
   },
   rubricText: {
     fontSize: '0.78rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 1.3,
   },
   scoreSection: {
@@ -649,7 +649,7 @@ const styles = {
   scoreLabel: {
     fontSize: '0.8rem',
     fontWeight: 600,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   scoreButtons: {
     display: 'flex',
@@ -670,9 +670,9 @@ const styles = {
     marginLeft: '0.5rem',
     padding: '0.3rem 0.75rem',
     borderRadius: '6px',
-    border: '1px solid #48BB78',
-    background: '#F0FFF4',
-    color: '#38A169',
+    border: '1px solid rgba(134, 239, 172, 0.3)',
+    background: 'rgba(134, 239, 172, 0.1)',
+    color: '#86efac',
     fontSize: '0.75rem',
     fontWeight: 600,
     cursor: 'pointer',
@@ -680,9 +680,11 @@ const styles = {
   notesInput: {
     width: '100%',
     padding: '0.4rem 0.6rem',
-    border: '1px solid #E2E8F0',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '6px',
     fontSize: '0.8rem',
     boxSizing: 'border-box',
+    background: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
 };

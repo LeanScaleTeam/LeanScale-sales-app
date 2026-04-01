@@ -46,12 +46,12 @@ export default function TierSelector({ selectedTierId, recommendedTierId, onSele
                 padding: 'var(--space-5)',
                 borderRadius: 'var(--radius-xl, 16px)',
                 border: isSelected
-                  ? '2px solid #6C5CE7'
-                  : '1px solid var(--border-color)',
-                background: isSelected ? '#F8F7FF' : 'white',
+                  ? '2px solid #7c3aed'
+                  : '1px solid rgba(255, 255, 255, 0.08)',
+                background: isSelected ? 'rgba(124, 58, 237, 0.1)' : 'rgba(255, 255, 255, 0.03)',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: isSelected ? '0 4px 16px rgba(108, 92, 231, 0.15)' : 'none',
+                boxShadow: isSelected ? '0 4px 16px rgba(124, 58, 237, 0.15)' : 'none',
               }}
             >
               {isRecommended && (
@@ -64,7 +64,7 @@ export default function TierSelector({ selectedTierId, recommendedTierId, onSele
                   fontSize: '0.65rem',
                   fontWeight: 700,
                   borderRadius: '9999px',
-                  background: '#6C5CE7',
+                  background: '#7c3aed',
                   color: 'white',
                   whiteSpace: 'nowrap',
                 }}>
@@ -76,12 +76,12 @@ export default function TierSelector({ selectedTierId, recommendedTierId, onSele
                 <h3 style={{
                   fontSize: 'var(--text-lg)',
                   fontWeight: 'var(--font-bold)',
-                  color: isSelected ? '#6C5CE7' : '#1a1a2e',
+                  color: isSelected ? '#a78bfa' : 'rgba(255, 255, 255, 0.9)',
                   marginBottom: 'var(--space-1)',
                 }}>
                   {tier.name}
                 </h3>
-                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: '#1a1a2e' }}>
+                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'rgba(255, 255, 255, 0.95)' }}>
                   ${(tier.monthlyPrice / 1000).toFixed(0)}K
                   <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-normal)', color: 'var(--text-muted)' }}>/mo</span>
                 </div>
@@ -103,7 +103,7 @@ export default function TierSelector({ selectedTierId, recommendedTierId, onSele
                 padding: 'var(--space-2) 0',
                 borderTop: '1px solid var(--border-color)',
               }}>
-                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: '#6C5CE7' }}>
+                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: '#7c3aed' }}>
                   {tier.timeToGreen}
                 </div>
                 <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-muted)' }}>
@@ -139,10 +139,10 @@ function PacingRow({ label, timing }) {
       <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
       <span style={{
         fontWeight: 'var(--font-medium)',
-        color: '#1a1a2e',
+        color: 'rgba(255, 255, 255, 0.8)',
         padding: '0.1rem 0.4rem',
         borderRadius: '4px',
-        background: 'var(--bg-subtle)',
+        background: 'rgba(255, 255, 255, 0.06)',
       }}>
         {timing}
       </span>

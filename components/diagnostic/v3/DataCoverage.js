@@ -5,6 +5,9 @@
  * with tier-aware breakdown and CTAs to fill gaps.
  */
 
+import { motion } from 'framer-motion';
+import { fadeUpItem } from '../../../lib/animations';
+
 export default function DataCoverage({ dataCoverage, onUploadTranscript, onStartConsultant }) {
   if (!dataCoverage) return null;
 
@@ -18,7 +21,7 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
   const hasTiers = Boolean(tiers);
 
   return (
-    <div style={styles.container}>
+    <motion.div style={styles.container} variants={fadeUpItem} initial="hidden" animate="show">
       <h4 style={styles.title}>Data Coverage</h4>
 
       {/* Overall */}
@@ -32,7 +35,7 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
             style={{
               ...styles.barFill,
               width: `${coveragePercent}%`,
-              background: coveragePercent >= 70 ? '#48BB78' : coveragePercent >= 40 ? '#ECC94B' : '#E53E3E',
+              background: coveragePercent >= 70 ? '#4ade80' : coveragePercent >= 40 ? '#fbbf24' : '#f87171',
             }}
           />
         </div>
@@ -55,7 +58,7 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
               <div style={{
                 ...styles.tierFill,
                 width: `${tiers.required.percent}%`,
-                backgroundColor: tiers.required.percent === 100 ? '#48BB78' : '#E53E3E',
+                backgroundColor: tiers.required.percent === 100 ? '#4ade80' : '#f87171',
               }} />
             </div>
             <span style={styles.tierValue}>
@@ -68,7 +71,7 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
               <div style={{
                 ...styles.tierFill,
                 width: `${tiers.review.percent}%`,
-                backgroundColor: tiers.review.percent === 100 ? '#48BB78' : '#ECC94B',
+                backgroundColor: tiers.review.percent === 100 ? '#4ade80' : '#fbbf24',
               }} />
             </div>
             <span style={styles.tierValue}>
@@ -120,7 +123,7 @@ export default function DataCoverage({ dataCoverage, onUploadTranscript, onStart
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -138,15 +141,17 @@ function SourceBar({ label, percent, color }) {
 
 const styles = {
   container: {
-    padding: '1.25rem',
-    border: '1px solid var(--border-color, #E2E8F0)',
-    borderRadius: 'var(--radius-lg, 12px)',
-    background: 'white',
+    padding: '1.5rem',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    background: 'rgba(255, 255, 255, 0.03)',
+    backdropFilter: 'blur(12px)',
   },
   title: {
     margin: '0 0 1rem',
     fontSize: '0.95rem',
     fontWeight: 600,
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   barContainer: {
     marginBottom: '1rem',
@@ -155,7 +160,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '0.8rem',
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     marginBottom: '0.35rem',
   },
   barValue: {
@@ -164,7 +169,7 @@ const styles = {
   barTrack: {
     height: '8px',
     borderRadius: '4px',
-    background: '#EDF2F7',
+    background: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   barFill: {
@@ -185,14 +190,14 @@ const styles = {
   },
   sourceLabel: {
     fontSize: '0.75rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     minWidth: '5.5rem',
   },
   sourceTrack: {
     flex: 1,
     height: '6px',
     borderRadius: '3px',
-    background: '#EDF2F7',
+    background: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   sourceFill: {
@@ -203,21 +208,22 @@ const styles = {
   sourcePercent: {
     fontSize: '0.75rem',
     fontWeight: 600,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     minWidth: '2.5rem',
     textAlign: 'right',
   },
   tierBreakdown: {
     marginBottom: '1rem',
     padding: '0.75rem',
-    background: '#F7FAFC',
+    background: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 'var(--radius-md, 8px)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
   },
   subTitle: {
     margin: '0 0 0.5rem',
     fontSize: '0.8rem',
     fontWeight: 600,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   tierRow: {
     display: 'flex',
@@ -227,14 +233,14 @@ const styles = {
   },
   tierLabel: {
     fontSize: '0.7rem',
-    color: '#718096',
+    color: 'rgba(255, 255, 255, 0.5)',
     minWidth: '4rem',
   },
   tierTrack: {
     flex: 1,
     height: '6px',
     borderRadius: '3px',
-    background: '#EDF2F7',
+    background: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   tierFill: {
@@ -245,7 +251,7 @@ const styles = {
   tierValue: {
     fontSize: '0.7rem',
     fontWeight: 600,
-    color: '#4A5568',
+    color: 'rgba(255, 255, 255, 0.7)',
     minWidth: '3rem',
     textAlign: 'right',
   },
@@ -258,7 +264,7 @@ const styles = {
     padding: '0.5rem 1rem',
     borderRadius: 'var(--radius-md, 8px)',
     border: 'none',
-    background: 'var(--ls-purple, #6C5CE7)',
+    background: '#7c3aed',
     color: 'white',
     fontSize: '0.8rem',
     fontWeight: 600,
@@ -266,13 +272,13 @@ const styles = {
   },
   ctaBtnSecondary: {
     background: 'transparent',
-    border: '1px solid var(--ls-purple, #6C5CE7)',
-    color: 'var(--ls-purple, #6C5CE7)',
+    border: '1px solid rgba(124, 58, 237, 0.5)',
+    color: '#a78bfa',
   },
   ctaBtnTertiary: {
     background: 'transparent',
-    border: '1px solid #A0AEC0',
-    color: '#718096',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontSize: '0.75rem',
   },
 };

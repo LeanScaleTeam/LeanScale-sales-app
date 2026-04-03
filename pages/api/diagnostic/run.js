@@ -42,7 +42,7 @@ async function handleRun(req, res) {
       .from('diagnostic_intake')
       .select('id, answers')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (!intake) {
       return res.status(404).json({ error: 'No intake found. Complete the intake form first.' });
@@ -53,7 +53,7 @@ async function handleRun(req, res) {
       .from('customers')
       .select('crm_type')
       .eq('id', customerId)
-      .single();
+      .maybeSingle();
 
     const crmType = customer?.crm_type || 'unknown';
     let computedSignals = {};
@@ -124,7 +124,7 @@ async function handleRun(req, res) {
       .from('diagnostic_results')
       .upsert(upsertData, { onConflict: 'customer_id,diagnostic_type' })
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error storing diagnostic result:', error);
@@ -169,7 +169,7 @@ async function handleUpdate(req, res) {
           .select('id')
           .eq('customer_id', customerId)
           .eq('diagnostic_type', 'gtm')
-          .single();
+          .maybeSingle();
         id = existing?.id;
       }
 
@@ -202,7 +202,7 @@ async function handleUpdate(req, res) {
       .eq('customer_id', customerId)
       .eq('diagnostic_type', 'gtm')
       .eq('version', 2)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !existing) {
       return res.status(404).json({ error: 'No v2 diagnostic result found' });

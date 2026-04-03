@@ -75,7 +75,7 @@ async function handleUpload(req, res) {
         uploaded_at: new Date().toISOString(),
       })
       .select('id, uploaded_at')
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error storing transcript:', error);
@@ -110,7 +110,7 @@ async function handleAnalyze(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -178,7 +178,7 @@ async function handleExtractIntake(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -219,7 +219,7 @@ async function handlePrepareAnalyze(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -256,7 +256,7 @@ async function handlePrepareIntake(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -376,7 +376,7 @@ async function handlePrepareProjectSignals(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });

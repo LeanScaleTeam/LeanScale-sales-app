@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       .from('customers')
       .select('crm_type')
       .eq('id', customerId)
-      .single();
+      .maybeSingle();
 
     const crmType = customer?.crm_type || 'salesforce';
 

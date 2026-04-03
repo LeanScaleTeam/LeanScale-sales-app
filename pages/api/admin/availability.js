@@ -43,7 +43,7 @@ async function handleGet(req, res) {
         .from('availability_dates')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return res.status(200).json(data);
@@ -89,7 +89,7 @@ async function handlePost(req, res) {
       .from('availability_dates')
       .select('id')
       .eq('date', date)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return res.status(400).json({ error: 'An availability date already exists for this date' });
@@ -105,7 +105,7 @@ async function handlePost(req, res) {
         spots_left: parseInt(spots_left) || 4,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return res.status(201).json(data);
@@ -144,7 +144,7 @@ async function handlePut(req, res) {
         .select('id')
         .eq('date', date)
         .neq('id', id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         return res.status(400).json({ error: 'An availability date already exists for this date' });
@@ -162,7 +162,7 @@ async function handlePut(req, res) {
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return res.status(200).json(data);

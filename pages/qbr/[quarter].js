@@ -1496,7 +1496,10 @@ export async function getServerSideProps(context) {
     return { redirect: { destination: '/diagnostic/gtm', permanent: false } };
   }
 
-  const isAdmin = !!(context.req.cookies['admin-session'] || context.req.cookies['sb-access-token']);
+  const cookies = context.req.cookies || {};
+  const isAdmin = Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 
   if (!supabaseAdmin) {
     return { notFound: true };

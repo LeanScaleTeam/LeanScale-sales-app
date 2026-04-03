@@ -35,7 +35,7 @@ async function handleGet(req, res) {
       .from('diagnostic_results_v3')
       .select('roadmap, roadmap_overrides')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {

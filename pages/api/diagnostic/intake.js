@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         .from('diagnostic_intake')
         .select('answers, sections_completed')
         .eq('customer_id', customerId)
-        .single();
+        .maybeSingle();
       if (error && error.code !== 'PGRST116') {
         return res.status(500).json({ error: 'Failed to load intake' });
       }
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
       .from('diagnostic_intake')
       .select('id, answers, sections_completed')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     // Merge new answers with existing
     const mergedAnswers = existing ? { ...existing.answers, ...answers } : { ...answers };

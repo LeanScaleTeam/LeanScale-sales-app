@@ -513,7 +513,10 @@ export async function getServerSideProps(context) {
   }
 
   // Check admin session
-  const isAdmin = !!(context.req.cookies['admin-session'] || context.req.cookies['sb-access-token']);
+  const cookies = context.req.cookies || {};
+  const isAdmin = Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 
   // Load all QBRs
   let qbrs = [];

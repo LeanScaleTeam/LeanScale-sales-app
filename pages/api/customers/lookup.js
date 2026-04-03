@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       .from('customers')
       .select('id, name, slug')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return res.status(404).json({ error: 'Customer not found' });

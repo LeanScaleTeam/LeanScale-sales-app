@@ -23,14 +23,14 @@ export default async function handler(req, res) {
       .from('diagnostic_results_v3')
       .select('*')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'No v3 diagnostic result found' });
-      }
       console.error('Error fetching v3 result:', error);
       return res.status(500).json({ error: 'Failed to fetch result' });
+    }
+    if (!data) {
+      return res.status(404).json({ error: 'No v3 diagnostic result found' });
     }
 
     // Fetch transcript assessments (keyed by competency_id_department)

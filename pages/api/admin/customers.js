@@ -49,7 +49,7 @@ async function handleGet(req, res) {
         .from('customers')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return res.status(200).json(data);
@@ -123,7 +123,7 @@ async function handlePost(req, res) {
         customer_type: customer_type || 'active',
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return res.status(201).json(data);
@@ -176,7 +176,7 @@ async function handlePut(req, res) {
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return res.status(200).json(data);

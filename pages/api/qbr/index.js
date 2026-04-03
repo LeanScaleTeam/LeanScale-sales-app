@@ -62,7 +62,7 @@ async function handlePost(req, res) {
       status: 'draft',
     })
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json({ qbr: data });

@@ -1511,7 +1511,7 @@ export async function getServerSideProps(context) {
     .select('*')
     .eq('customer_id', customer.id)
     .eq('quarter', quarter)
-    .single();
+    .maybeSingle();
 
   if (error || !qbrData) return { notFound: true };
 

@@ -291,10 +291,3 @@ export default function AdminDashboard() {
   );
 }
 
-export function getServerSideProps({ req }) {
-  const hasSession = !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
-  if (!hasSession) {
-    return { redirect: { destination: '/admin/login', permanent: false } };
-  }
-  return { props: {} };
-}

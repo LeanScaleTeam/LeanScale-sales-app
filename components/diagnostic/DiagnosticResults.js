@@ -62,29 +62,29 @@ import { findNewSuggestedProjects } from './v3/SuggestedProjects';
  * Maps intake values to the { name, ableToReport } shape Power10Anchor expects.
  */
 const D5_TO_METRIC = [
-  ['D5_arr', 'ARR'],
-  ['D5_bookings', 'Bookings'],
-  ['D5_pipeline', 'Pipeline production'],
-  ['D5_mql', 'MQL production'],
-  ['D5_gross_churn', 'Gross churn'],
-  ['D5_grr', 'Gross retention'],
-  ['D5_nrr', 'Net retention'],
-  ['D5_mql_opp', 'MQL -> Opportunity conversion rate'],
-  ['D5_opp_cw', 'Opportunity/Deal -> CW conversion rate'],
-  ['D5_cycle', 'Opportunity/Deal - CW cycle time'],
+  ['D5_arr',       'ARR',                                    'ARR',          'Total contracted recurring revenue across all active subscriptions.',                                      'The north star — every GTM decision traces back to ARR trajectory.'],
+  ['D5_bookings',  'Bookings',                               'Bookings',     'New revenue committed in the period, regardless of start date.',                                           'Bookings predict future ARR — a leading indicator reps live and die by.'],
+  ['D5_pipeline',  'Pipeline production',                    'Pipeline',     'Total new pipeline value entered in the period.',                                                           'Pipeline is the leading indicator of bookings — you need 3-4x your quota in pipe.'],
+  ['D5_mql',       'MQL production',                         'MQL Volume',   'Total count of marketing-qualified leads generated in the period.',                                         'Volume is the fuel — without enough MQLs, pipeline math never closes.'],
+  ['D5_gross_churn','Gross churn',                           'Gross Churn',  'Revenue lost from cancellations, excluding downgrades or expansions.',                                     'High gross churn signals product-market fit or CS execution problems.'],
+  ['D5_grr',       'Gross retention',                        'GRR',          'Percentage of starting revenue retained, excluding expansions.',                                            'The floor of your revenue — a leaky bucket kills compounding growth.'],
+  ['D5_nrr',       'Net retention',                          'NRR',          'Revenue retained plus expansions minus contractions and churn.',                                            'NRR above 100% means existing customers are funding your growth.'],
+  ['D5_mql_opp',   'MQL -> Opportunity conversion rate',     'MQL → Opp %',  'Percentage of marketing-qualified leads that convert to pipeline opportunities.',                          'The marketing-to-sales handoff quality metric — where demand gen ROI is proven.'],
+  ['D5_opp_cw',    'Opportunity/Deal -> CW conversion rate', 'Win Rate',     'Percentage of opportunities that close as won.',                                                            'The ultimate measure of sales execution quality and competitive positioning.'],
+  ['D5_cycle',     'Opportunity/Deal - CW cycle time',       'Cycle Time',   'Average days from opportunity creation to close-won.',                                                      'Shorter cycles mean faster cash — every extra week is a week of runway burned.'],
 ];
 
 function derivePower10FromIntake(answers) {
   if (!answers) return null;
   const hasAny = D5_TO_METRIC.some(([key]) => answers[key]);
   if (!hasAny) return null;
-  return D5_TO_METRIC.map(([key, name]) => {
+  return D5_TO_METRIC.map(([key, name, shortName, description, why]) => {
     const val = answers[key];
     let ableToReport = 'unable';
     if (val === 'Automated') ableToReport = 'healthy';
     else if (val === 'Manual calc') ableToReport = 'careful';
     else if (val === "Can't report" || val === 'Not reported') ableToReport = 'warning';
-    return { name, ableToReport };
+    return { name, shortName, description, why, ableToReport };
   });
 }
 

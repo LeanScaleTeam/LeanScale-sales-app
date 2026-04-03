@@ -265,11 +265,11 @@ function ScoreCardView({
   );
 }
 
-export default function DiagnosticResults({ diagnosticType }) {
+export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
   const { isAuthenticated } = useAuth();
-  const isAdmin = isAuthenticated && !isDemo;
+  const isAdmin = (isAuthenticated || isAdminSession) && !isDemo;
   const config = diagnosticRegistry[diagnosticType];
 
   // --- State ---

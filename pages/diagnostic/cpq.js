@@ -3,6 +3,6 @@ import { getCustomerServerSideProps } from '../../lib/getCustomer';
 
 export const getServerSideProps = getCustomerServerSideProps;
 
-export default function CPQDiagnostic() {
-  return <DiagnosticResults diagnosticType="cpq" />;
+export default function CPQDiagnostic({ isAdminSession }) {
+  return <DiagnosticResults diagnosticType="cpq" isAdminSession={isAdminSession} />;
 }

@@ -25,7 +25,7 @@ async function handleGet(req, res, id) {
     .from('customer_qbrs')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) return res.status(404).json({ error: 'QBR not found' });
   return res.status(200).json({ qbr: data });
@@ -68,7 +68,7 @@ async function handlePut(req, res, id) {
     .update(updates)
     .eq('id', id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) return res.status(500).json({ error: error.message });
   return res.status(200).json({ qbr: data });

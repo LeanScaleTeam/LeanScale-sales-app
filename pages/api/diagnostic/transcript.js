@@ -27,7 +27,10 @@ export const config = {
 };
 
 function isAdminRequest(req) {
-  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+  const cookies = req.cookies || {};
+  return Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 }
 
 export default async function handler(req, res) {
@@ -72,7 +75,7 @@ async function handleUpload(req, res) {
         uploaded_at: new Date().toISOString(),
       })
       .select('id, uploaded_at')
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error storing transcript:', error);
@@ -107,7 +110,7 @@ async function handleAnalyze(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -175,7 +178,7 @@ async function handleExtractIntake(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -216,7 +219,7 @@ async function handlePrepareAnalyze(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -253,7 +256,7 @@ async function handlePrepareIntake(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });
@@ -373,7 +376,7 @@ async function handlePrepareProjectSignals(req, res) {
       .select('id, raw_text')
       .eq('id', transcriptId)
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error || !transcript) {
       return res.status(404).json({ error: 'Transcript not found' });

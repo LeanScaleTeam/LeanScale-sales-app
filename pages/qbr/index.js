@@ -6,6 +6,7 @@ import Layout from '../../components/Layout';
 import { getCustomerServer } from '../../lib/getCustomer';
 import { supabaseAdmin } from '../../lib/supabase';
 import { staggerContainer, fadeUpItem } from '../../lib/animations';
+import { power10Metrics as defaultPower10Metrics } from '../../data/power10-metrics';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip as ReTooltip,
   ResponsiveContainer, CartesianGrid, Legend,
@@ -60,18 +61,21 @@ function NewQBRModal({ customer, onClose, onCreated }) {
       let scoresSnapshot  = {};
 
       if (prefill) {
-        // Fetch current diagnostic snapshot
+        // Fetch current v3 diagnostic snapshot
         const r = await fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`);
         if (r.ok) {
           const json = await r.json();
-          const overrides = json.data?.engagement_overrides || {};
-          const rawMetrics = json.data?.power10_metrics || [];
-          power10Snapshot = rawMetrics.map(m => ({
+          const overrides = json.data?.engagement_overrides?.power10 || {};
+          // Build power10 snapshot from default metrics + any saved overrides
+          power10Snapshot = defaultPower10Metrics.map(m => ({
             ...m,
-            ableToReport:      overrides?.power10?.[m.name]?.ableToReport      ?? m.ableToReport,
-            statusAgainstPlan: overrides?.power10?.[m.name]?.statusAgainstPlan ?? m.statusAgainstPlan,
+            ableToReport:      overrides[m.name]?.ableToReport      ?? m.ableToReport,
+            statusAgainstPlan: overrides[m.name]?.statusAgainstPlan ?? m.statusAgainstPlan,
           }));
-          scoresSnapshot = json.data?.scores || {};
+          scoresSnapshot = {
+            overall:  json.data?.overall_score  ?? null,
+            byPillar: json.data?.pillar_scores  ?? {},
+          };
         }
       }
 
@@ -513,7 +517,10 @@ export async function getServerSideProps(context) {
   }
 
   // Check admin session
-  const isAdmin = !!(context.req.cookies['admin-session'] || context.req.cookies['sb-access-token']);
+  const cookies = context.req.cookies || {};
+  const isAdmin = Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 
   // Load all QBRs
   let qbrs = [];

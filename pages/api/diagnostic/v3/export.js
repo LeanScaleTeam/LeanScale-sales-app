@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       .from('diagnostic_results_v3')
       .select('*')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       .from('customers')
       .select('name, slug')
       .eq('id', customerId)
-      .single();
+      .maybeSingle();
 
     const companyName = customer?.name || customer?.slug || 'Unknown Company';
 

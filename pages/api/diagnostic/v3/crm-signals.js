@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       .from('customers')
       .select('crm_type')
       .eq('id', customerId)
-      .single();
+      .maybeSingle();
 
     const crmType = customer?.crm_type || 'unknown';
     let computedSignals = {};
@@ -34,9 +34,9 @@ export default async function handler(req, res) {
     if (crmType === 'dual') {
       const [{ data: sfMeta }, { data: hsMeta }] = await Promise.all([
         supabaseAdmin.from('salesforce_metadata').select('computed_signals, enhanced_signals')
-          .eq('customer_id', customerId).order('fetched_at', { ascending: false }).limit(1).single(),
+          .eq('customer_id', customerId).order('fetched_at', { ascending: false }).limit(1).maybeSingle(),
         supabaseAdmin.from('hubspot_metadata').select('computed_signals')
-          .eq('customer_id', customerId).order('downloaded_at', { ascending: false }).limit(1).single(),
+          .eq('customer_id', customerId).order('downloaded_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
 
       computedSignals = mergeSignals(sfMeta?.computed_signals || {}, hsMeta?.computed_signals || {});

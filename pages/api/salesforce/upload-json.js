@@ -107,7 +107,7 @@ export default async function handler(req, res) {
       .from('hubspot_connections')
       .select('id')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     const newCrmType = hsConn ? 'dual' : 'salesforce';
     await supabaseAdmin
@@ -120,7 +120,7 @@ export default async function handler(req, res) {
       .from('diagnostic_intake')
       .select('id, status, answers')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (intake?.status === 'awaiting_crm_data') {
       const { runDiagnostic } = await import('../../../lib/diagnostic-engine');

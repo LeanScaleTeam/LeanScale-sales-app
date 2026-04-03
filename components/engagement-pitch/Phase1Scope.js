@@ -294,6 +294,7 @@ export default function Phase1Scope({ roadmap, customerPath, editMode }) {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
             <button
+              onClick={() => window.open('https://meet.reclaimai.com/u/7f49bc93-ac0e-47eb-9e6a-0936f035cfa8', '_blank')}
               style={{
                 padding: '0.6rem 1.5rem',
                 borderRadius: 10,

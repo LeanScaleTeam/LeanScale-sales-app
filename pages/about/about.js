@@ -460,8 +460,8 @@ export default function AboutUs() {
           Let our team of experienced startup operators handle your revenue operations
           so you can focus on growth.
         </p>
-        <a
-          href="/contact"
+        <button
+          onClick={() => window.open('https://meet.reclaimai.com/u/7f49bc93-ac0e-47eb-9e6a-0936f035cfa8', '_blank')}
           style={{
             display: 'inline-block',
             padding: '0.9rem 2.5rem',
@@ -470,13 +470,14 @@ export default function AboutUs() {
             fontWeight: 700,
             fontSize: '1rem',
             borderRadius: '999px',
-            textDecoration: 'none',
+            border: 'none',
+            cursor: 'pointer',
             transition: 'transform 0.2s, box-shadow 0.2s',
             boxShadow: '0 4px 20px rgba(163,230,53,0.3)',
           }}
         >
           Get in Touch
-        </a>
+        </button>
       </section>
     </Layout>
   );

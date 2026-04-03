@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       .eq('customer_id', customerId)
       .order('fetched_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!row) {
       return res.status(404).json({ error: 'No CRM metadata found for this customer' });

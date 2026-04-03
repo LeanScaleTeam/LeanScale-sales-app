@@ -19,7 +19,7 @@ export default async function handler(req, res) {
       .eq('customer_id', customerId)
       .order('downloaded_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!row) {
       return res.status(404).json({ error: 'No metadata found for this customer' });

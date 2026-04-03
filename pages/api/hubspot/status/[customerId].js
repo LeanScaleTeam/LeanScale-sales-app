@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       .eq('customer_id', customerId)
       .order('connected_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!connection) {
       return res.status(200).json({

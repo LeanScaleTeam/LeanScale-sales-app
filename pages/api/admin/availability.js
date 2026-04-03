@@ -5,6 +5,10 @@
 
 import { supabaseAdmin } from '../../../lib/supabase';
 
+function isAdmin(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+}
+
 export default async function handler(req, res) {
   if (!supabaseAdmin) {
     return res.status(500).json({ error: 'Supabase not configured' });
@@ -14,11 +18,13 @@ export default async function handler(req, res) {
     case 'GET':
       return handleGet(req, res);
     case 'POST':
-      return handlePost(req, res);
     case 'PUT':
-      return handlePut(req, res);
     case 'DELETE':
-      return handleDelete(req, res);
+      if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (req.method === 'POST')   return handlePost(req, res);
+      if (req.method === 'PUT')    return handlePut(req, res);
+      if (req.method === 'DELETE') return handleDelete(req, res);
+      break;
     default:
       return res.status(405).json({ error: 'Method not allowed' });
   }

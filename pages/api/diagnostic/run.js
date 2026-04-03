@@ -11,11 +11,16 @@ import { supabaseAdmin } from '../../../lib/supabase';
 import { runDiagnostic } from '../../../lib/diagnostic-engine';
 import { mergeSignals } from '../../../lib/diagnostic-engine/signal-merger';
 
+function isAdmin(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+}
+
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     return handleRun(req, res);
   }
   if (req.method === 'PUT') {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
     return handleUpdate(req, res);
   }
   return res.status(405).json({ error: 'Method not allowed' });
@@ -59,7 +64,7 @@ async function handleRun(req, res) {
         .eq('customer_id', customerId)
         .order('fetched_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (sfMetadata) {
         sfMetadataId = sfMetadata.id;
@@ -74,7 +79,7 @@ async function handleRun(req, res) {
         .eq('customer_id', customerId)
         .order('downloaded_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (hsMetadata) {
         hsMetadataId = hsMetadata.id;

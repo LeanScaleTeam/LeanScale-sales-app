@@ -7,6 +7,10 @@
 
 import { getServiceById, updateService, deleteService } from '../../../lib/service-catalog';
 
+function isAdmin(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+}
+
 export default async function handler(req, res) {
   const { id } = req.query;
   if (!id) {
@@ -22,6 +26,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PUT') {
+    if (!isAdmin(req)) return res.status(401).json({ success: false, error: 'Unauthorized' });
     try {
       const service = await updateService(id, req.body);
       return res.status(200).json({ success: true, data: service });
@@ -31,6 +36,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    if (!isAdmin(req)) return res.status(401).json({ success: false, error: 'Unauthorized' });
     try {
       await deleteService(id);
       return res.status(200).json({ success: true });

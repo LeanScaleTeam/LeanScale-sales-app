@@ -12,11 +12,47 @@ import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
 import { managedServicesHealth } from '../../data/diagnostic-data';
 
-const MANAGED_SERVICE_DESCRIPTIONS = {
-  'crm-admin': 'Ongoing CRM configuration, user management, and system maintenance to keep your revenue engine running.',
-  'enrichment-tools-admin': 'Manage data enrichment tools and integrations to maintain high-quality contact and account data.',
-  'ongoing-reporting': 'Regular reporting updates, dashboard maintenance, and ad-hoc analysis for GTM leadership.',
-};
+/**
+ * Build a context-aware rationale for each managed service based on actual findings.
+ * Returns a short sentence referencing the specific issues found.
+ */
+function buildManagedServiceRationale(serviceId, items) {
+  const warnings = items.filter(i => i.status === 'warning');
+  const careful = items.filter(i => i.status === 'careful');
+
+  if (serviceId === 'crm-admin') {
+    const crmIssues = [...warnings, ...careful].filter(i =>
+      i.pillar === 'systems' || i.layer === 'foundation' ||
+      (i.name && /crm|salesforce|hubspot|data quality|hygiene/i.test(i.name))
+    );
+    if (crmIssues.length > 0) {
+      return `Included because ${crmIssues.length} system${crmIssues.length !== 1 ? 's' : ''} and process finding${crmIssues.length !== 1 ? 's' : ''} require ongoing CRM maintenance to stay fixed.`;
+    }
+    return 'Ongoing CRM configuration, user management, and system maintenance to keep your revenue engine running.';
+  }
+
+  if (serviceId === 'enrichment-tools-admin') {
+    const dataIssues = [...warnings, ...careful].filter(i =>
+      i.name && /enrich|data|contact|account|intent/i.test(i.name)
+    );
+    if (dataIssues.length > 0) {
+      return `Included because your diagnostic flagged data quality and enrichment gaps — these tools need active management to maintain signal quality.`;
+    }
+    return 'Manage data enrichment tools and integrations to maintain high-quality contact and account data.';
+  }
+
+  if (serviceId === 'ongoing-reporting') {
+    const reportingIssues = [...warnings, ...careful].filter(i =>
+      i.pillar === 'reporting' || (i.name && /report|dashb|forecast|metric|analyt/i.test(i.name))
+    );
+    if (reportingIssues.length > 0) {
+      return `Included because ${reportingIssues.length} reporting gap${reportingIssues.length !== 1 ? 's' : ''} ${reportingIssues.length !== 1 ? 'were' : 'was'} found — your team needs reliable, maintained dashboards as we build.`;
+    }
+    return 'Regular reporting updates, dashboard maintenance, and ad-hoc analysis for GTM leadership.';
+  }
+
+  return '';
+}
 
 /**
  * Map v3 pillar to v2-style layer for phase assignment and display.
@@ -109,9 +145,9 @@ export function adaptV3ToPitchItems(competencies) {
 }
 
 const STEPS = [
-  { id: 'roadmap', label: 'Roadmap', icon: '🗺️' },
-  { id: 'tiers', label: 'Engagement', icon: '💼' },
-  { id: 'start', label: 'Let\'s Start', icon: '🚀' },
+  { id: 'roadmap', label: 'Roadmap' },
+  { id: 'tiers', label: 'Investment' },
+  { id: 'start', label: 'Availability' },
 ];
 
 /**
@@ -142,6 +178,7 @@ export default function EngagementPitch({
   engagementOverrides,
   onOverridesChange,
   customerPath,
+  transcriptAssessments,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(null);
@@ -203,11 +240,11 @@ export default function EngagementPitch({
           serviceId: ms.serviceId,
           name: ms.name,
           hoursPerMonth: ms.hoursPerMonth,
-          description: MANAGED_SERVICE_DESCRIPTIONS[ms.serviceId] || '',
+          description: buildManagedServiceRationale(ms.serviceId, items),
         }));
     }
     return managedServices || [];
-  }, [managedServices]);
+  }, [managedServices, items]);
 
   // Build roadmap
   const roadmap = useMemo(() => {
@@ -270,53 +307,83 @@ export default function EngagementPitch({
       {/* Step Navigation */}
       <div style={{
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
-        gap: 'var(--space-1)',
-        padding: 'var(--space-2)',
-        background: 'rgba(255, 255, 255, 0.04)',
+        gap: '2px',
+        padding: 'var(--space-2) var(--space-3)',
+        background: 'rgba(255, 255, 255, 0.03)',
         borderRadius: 'var(--radius-lg, 12px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
       }}>
-        {STEPS.map((s, idx) => (
-          <button
-            key={s.id}
-            onClick={() => setCurrentStep(idx)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-1)',
-              padding: 'var(--space-2) var(--space-3)',
-              fontSize: 'var(--text-sm)',
-              fontWeight: currentStep === idx ? 'var(--font-semibold)' : 'var(--font-normal)',
-              borderRadius: 'var(--radius-md, 8px)',
-              border: 'none',
-              background: currentStep === idx ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
-              color: currentStep === idx ? '#a78bfa' : 'rgba(255, 255, 255, 0.4)',
-              cursor: 'pointer',
-              boxShadow: currentStep === idx ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease',
-              position: 'relative',
-            }}
-          >
-            <span>{s.icon}</span>
-            <span className="pitch-step-label">{s.label}</span>
-            {currentStep === idx && (
-              <motion.div
-                layoutId="pitch-step-indicator"
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: '10%',
-                  right: '10%',
-                  height: 2,
-                  background: '#7c3aed',
-                  borderRadius: 1,
-                }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-        ))}
+        {STEPS.map((s, idx) => {
+          const isActive = currentStep === idx;
+          const isCompleted = currentStep > idx;
+          const isFuture = currentStep < idx;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setCurrentStep(idx)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.35rem 0.75rem',
+                fontSize: 'var(--text-sm)',
+                fontWeight: isActive ? 600 : 400,
+                borderRadius: '6px',
+                border: 'none',
+                background: isActive ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+                color: isActive ? '#a78bfa' : isFuture ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.55)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                position: 'relative',
+              }}
+            >
+              <span style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.6rem',
+                fontWeight: 700,
+                flexShrink: 0,
+                background: isActive ? '#7c3aed' : isCompleted ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.08)',
+                color: isActive || isCompleted ? 'white' : 'rgba(255,255,255,0.3)',
+                transition: 'all 0.15s ease',
+              }}>
+                {isCompleted ? '✓' : idx + 1}
+              </span>
+              <span className="pitch-step-label">{s.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="pitch-step-indicator"
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '10%',
+                    right: '10%',
+                    height: 2,
+                    background: '#7c3aed',
+                    borderRadius: 1,
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
+        <span style={{
+          fontSize: 'var(--text-2xs)',
+          color: 'rgba(255,255,255,0.2)',
+          fontWeight: 500,
+          paddingLeft: 'var(--space-2)',
+          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          marginLeft: 'var(--space-1)',
+        }}>
+          {currentStep + 1} / {STEPS.length}
+        </span>
       </div>
 
       {/* Step Content */}
@@ -346,6 +413,7 @@ export default function EngagementPitch({
               overrides={overrides}
               onOverride={updateOverrides}
               customerPath={customerPath}
+              transcriptAssessments={transcriptAssessments}
             />
           )}
 
@@ -357,6 +425,8 @@ export default function EngagementPitch({
               onOverride={updateOverrides}
               customerPath={customerPath}
               overrides={overrides}
+              activeTier={activeTier}
+              onSelectTier={setSelectedTierId}
             />
           )}
 
@@ -386,6 +456,7 @@ export default function EngagementPitch({
         padding: 'var(--space-3) 0',
         borderTop: '1px solid var(--border-color)',
       }}>
+        {/* Ghost Previous */}
         <button
           onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
           disabled={currentStep === 0}
@@ -393,35 +464,40 @@ export default function EngagementPitch({
             padding: 'var(--space-2) var(--space-4)',
             fontSize: 'var(--text-sm)',
             borderRadius: 'var(--radius-md, 8px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(255, 255, 255, 0.04)',
-            color: currentStep === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'transparent',
+            color: currentStep === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)',
             cursor: currentStep === 0 ? 'default' : 'pointer',
-            opacity: currentStep === 0 ? 0.5 : 1,
+            transition: 'all 0.15s',
           }}
         >
-          Previous
+          ← Previous
         </button>
 
-        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-          {currentStep + 1} of {STEPS.length}
-        </div>
-
+        {/* Solid purple Next — becomes muted on last step */}
         <button
           onClick={() => setCurrentStep(Math.min(STEPS.length - 1, currentStep + 1))}
           disabled={currentStep === STEPS.length - 1}
           style={{
-            padding: 'var(--space-2) var(--space-4)',
+            padding: 'var(--space-2) var(--space-5)',
             fontSize: 'var(--text-sm)',
             borderRadius: 'var(--radius-md, 8px)',
             border: 'none',
-            background: currentStep === STEPS.length - 1 ? 'rgba(255, 255, 255, 0.04)' : '#7c3aed',
-            color: currentStep === STEPS.length - 1 ? 'rgba(255, 255, 255, 0.3)' : 'white',
+            background: currentStep === STEPS.length - 1
+              ? 'rgba(255,255,255,0.06)'
+              : '#7c3aed',
+            color: currentStep === STEPS.length - 1
+              ? 'rgba(255,255,255,0.25)'
+              : 'white',
             cursor: currentStep === STEPS.length - 1 ? 'default' : 'pointer',
-            fontWeight: 'var(--font-semibold)',
+            fontWeight: 600,
+            boxShadow: currentStep === STEPS.length - 1
+              ? 'none'
+              : '0 2px 12px rgba(124,58,237,0.35)',
+            transition: 'all 0.15s',
           }}
         >
-          Next
+          {currentStep === STEPS.length - 1 ? 'Done' : `Next: ${STEPS[currentStep + 1]?.label} →`}
         </button>
       </div>
     </div>

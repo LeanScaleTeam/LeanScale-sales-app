@@ -29,5 +29,5 @@ export default function handler(req, res) {
   );
 
   const url = getAuthorizationUrl(customerId, slug, isSandbox, codeChallenge);
-  res.redirect(url);
+  return res.redirect(url);
 }

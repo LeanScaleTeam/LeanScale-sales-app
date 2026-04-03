@@ -19,5 +19,5 @@ export default function handler(req, res) {
   }
 
   const url = getAuthorizationUrl(customerId, slug);
-  res.redirect(url);
+  return res.redirect(url);
 }

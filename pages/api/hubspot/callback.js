@@ -31,6 +31,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid state parameter' });
   }
 
+  // Validate slug to prevent open redirect injection
+  if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+    return res.status(400).json({ error: 'Invalid slug in state' });
+  }
+
   // Handle OAuth errors
   if (oauthError) {
     return res.redirect(`/c/${slug}/diagnostic/intake?hubspot=error&reason=${encodeURIComponent(oauthError)}`);
@@ -69,7 +74,7 @@ export default async function handler(req, res) {
       .from('salesforce_connections')
       .select('id')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     const newCrmType = sfConn ? 'dual' : 'hubspot';
 
@@ -90,7 +95,7 @@ export default async function handler(req, res) {
       .from('diagnostic_intake')
       .select('id, status, answers')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (intake?.status === 'awaiting_crm_data') {
       // Don't auto-run diagnostic for dual mode until both systems have metadata
@@ -100,7 +105,7 @@ export default async function handler(req, res) {
           .select('id')
           .eq('customer_id', customerId)
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (!sfMetadata) {
           // Salesforce metadata not ready yet — skip auto-run
@@ -113,7 +118,7 @@ export default async function handler(req, res) {
             .eq('customer_id', customerId)
             .order('fetched_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           const result = runDiagnostic(intake.answers, hsMetadata?.computed_signals || {}, 'dual');
 
@@ -146,7 +151,7 @@ export default async function handler(req, res) {
           .eq('customer_id', customerId)
           .order('fetched_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         const result = runDiagnostic(intake.answers, hsMetadata?.computed_signals || {}, 'hubspot');
 
@@ -174,12 +179,12 @@ export default async function handler(req, res) {
     }
 
     // Redirect back to intake form
-    res.redirect(
+    return res.redirect(
       `/c/${slug}/diagnostic/intake?hubspot=connected&portalName=${encodeURIComponent(portalName)}`
     );
   } catch (err) {
     console.error('HubSpot callback error:', err);
-    res.redirect(
+    return res.redirect(
       `/c/${slug}/diagnostic/intake?hubspot=error&reason=${encodeURIComponent(err.message)}`
     );
   }

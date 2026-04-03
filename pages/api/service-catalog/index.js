@@ -6,6 +6,10 @@
 
 import { listServices, createService } from '../../../lib/service-catalog';
 
+function isAdmin(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+}
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { category, active, search, slugs } = req.query;
@@ -27,6 +31,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    if (!isAdmin(req)) return res.status(401).json({ success: false, error: 'Unauthorized' });
     try {
       const service = await createService(req.body);
       return res.status(201).json({ success: true, data: service });

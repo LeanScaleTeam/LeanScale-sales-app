@@ -30,6 +30,7 @@ export default function AdminCustomers() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [qbrCounts, setQbrCounts] = useState({});
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -44,6 +45,7 @@ export default function AdminCustomers() {
   }, [isAuthenticated]);
 
   const loadCustomers = async () => {
+    if (!supabase) { setLoading(false); return; }
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -52,6 +54,19 @@ export default function AdminCustomers() {
 
       if (error) throw error;
       setCustomers(data || []);
+      // Load QBR counts for active customers
+      const activeIds = (data || []).filter(c => c.customer_type === 'active').map(c => c.id);
+      if (activeIds.length > 0) {
+        const { data: qbrData } = await supabase
+          .from('customer_qbrs')
+          .select('customer_id')
+          .in('customer_id', activeIds);
+        const counts = {};
+        (qbrData || []).forEach(row => {
+          counts[row.customer_id] = (counts[row.customer_id] || 0) + 1;
+        });
+        setQbrCounts(counts);
+      }
     } catch (err) {
       console.error('Error loading customers:', err);
     } finally {
@@ -307,19 +322,20 @@ export default function AdminCustomers() {
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Type</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Diagnostic</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Portal URL</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>QBRs</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.875rem' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       Loading...
                     </td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       No customers yet. Click "Add Customer" to create one.
                     </td>
                   </tr>
@@ -392,6 +408,47 @@ export default function AdminCustomers() {
                         >
                           /c/{customer.slug}
                         </a>
+                      </td>
+                      <td style={{ padding: '0.75rem 1rem' }}>
+                        {customer.customer_type === 'active' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {qbrCounts[customer.id] > 0 && (
+                              <a
+                                href={`https://clients.leanscale.team/c/${customer.slug}/qbr`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  padding: '0.125rem 0.5rem',
+                                  background: '#f3e8ff',
+                                  color: '#6b21a8',
+                                  borderRadius: '4px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  textDecoration: 'none',
+                                }}
+                              >
+                                {qbrCounts[customer.id]} QBR{qbrCounts[customer.id] !== 1 ? 's' : ''}
+                              </a>
+                            )}
+                            <a
+                              href={`https://clients.leanscale.team/c/${customer.slug}/qbr`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '0.125rem 0.5rem',
+                                background: '#dcfce7',
+                                color: '#166534',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 500,
+                                textDecoration: 'none',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              + New QBR
+                            </a>
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
                         <button
@@ -782,4 +839,12 @@ export default function AdminCustomers() {
       )}
     </>
   );
+}
+
+export function getServerSideProps({ req }) {
+  const hasSession = !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+  if (!hasSession) {
+    return { redirect: { destination: '/admin/login', permanent: false } };
+  }
+  return { props: {} };
 }

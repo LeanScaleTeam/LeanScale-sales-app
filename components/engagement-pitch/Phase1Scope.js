@@ -342,6 +342,9 @@ export default function Phase1Scope({ roadmap, customerPath, editMode }) {
       {/* Your Team */}
       <YourTeam />
 
+      {/* Admin: Availability Manager */}
+      {editMode && <AvailabilityManager />}
+
       {/* Pulse animation */}
       <style jsx global>{`
         @keyframes pulse {
@@ -349,6 +352,282 @@ export default function Phase1Scope({ roadmap, customerPath, editMode }) {
           50% { opacity: 0.4; }
         }
       `}</style>
+    </motion.div>
+  );
+}
+
+// ─── Availability Manager (admin only) ───────────────────────────────────────
+
+const STATUS_OPTIONS = ['available', 'limited', 'waitlist', 'sold_out'];
+
+const STATUS_LABELS = {
+  available: { label: 'Open', color: '#86efac' },
+  limited: { label: 'Almost Full', color: '#fde047' },
+  waitlist: { label: 'Waitlist', color: '#fdba74' },
+  sold_out: { label: 'Sold Out', color: 'rgba(255,255,255,0.3)' },
+};
+
+function AvailabilityManager() {
+  const [cohorts, setCohorts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
+  const [showAdd, setShowAdd] = useState(false);
+  const [newDraft, setNewDraft] = useState({ date: '', cohort_number: '', status: 'available', spots_total: 4, spots_left: 4 });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  function fetchAll() {
+    setLoading(true);
+    fetch('/api/admin/availability')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setCohorts(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+
+  useEffect(() => { fetchAll(); }, []);
+
+  async function saveEdit(id) {
+    setSaving(true);
+    setError(null);
+    const res = await fetch('/api/admin/availability', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...editDraft }),
+    });
+    setSaving(false);
+    if (res.ok) { setEditingId(null); fetchAll(); }
+    else { const err = await res.json(); setError(err.error || 'Save failed'); }
+  }
+
+  async function deleteRow(id) {
+    if (!confirm('Delete this cohort date?')) return;
+    const res = await fetch('/api/admin/availability', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) fetchAll();
+  }
+
+  async function addCohort() {
+    setSaving(true);
+    setError(null);
+    const res = await fetch('/api/admin/availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newDraft),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setShowAdd(false);
+      setNewDraft({ date: '', cohort_number: '', status: 'available', spots_total: 4, spots_left: 4 });
+      fetchAll();
+    } else {
+      const err = await res.json();
+      setError(err.error || 'Add failed');
+    }
+  }
+
+  const inputStyle = {
+    padding: '0.3rem 0.5rem',
+    borderRadius: 5,
+    border: '1px solid var(--border-color)',
+    background: 'rgba(255,255,255,0.05)',
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: '0.75rem',
+    fontFamily: 'inherit',
+    width: '100%',
+  };
+
+  return (
+    <motion.div variants={fadeUpItem} style={{ marginTop: '0.5rem' }}>
+      <div style={{
+        borderTop: '1px dashed rgba(255,255,255,0.1)',
+        paddingTop: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)' }}>
+              Admin — Manage Cohort Availability
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>
+              Changes reflect immediately on the public availability view.
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAdd(s => !s)}
+            style={{
+              padding: '0.4rem 0.9rem',
+              borderRadius: 7,
+              border: '1px solid rgba(124,58,237,0.35)',
+              background: 'rgba(124,58,237,0.1)',
+              color: '#a78bfa',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            + Add Cohort
+          </button>
+        </div>
+
+        {error && (
+          <div style={{ fontSize: '0.72rem', color: '#fca5a5', marginBottom: '0.75rem' }}>
+            {error}
+          </div>
+        )}
+
+        {/* Add form */}
+        {showAdd && (
+          <div style={{
+            padding: '1rem',
+            borderRadius: 10,
+            background: 'rgba(124,58,237,0.06)',
+            border: '1px solid rgba(124,58,237,0.2)',
+            marginBottom: '0.75rem',
+            display: 'grid',
+            gridTemplateColumns: '1fr 80px 120px 70px 70px auto',
+            gap: '0.5rem',
+            alignItems: 'end',
+          }}>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '0.25rem' }}>Date</div>
+              <input type="date" value={newDraft.date} onChange={e => setNewDraft(d => ({ ...d, date: e.target.value }))} style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '0.25rem' }}># Cohort</div>
+              <input type="number" value={newDraft.cohort_number} onChange={e => setNewDraft(d => ({ ...d, cohort_number: e.target.value }))} style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '0.25rem' }}>Status</div>
+              <select value={newDraft.status} onChange={e => setNewDraft(d => ({ ...d, status: e.target.value }))} style={{ ...inputStyle, background: 'rgba(255,255,255,0.07)' }}>
+                {STATUS_OPTIONS.map(s => <option key={s} value={s}>{STATUS_LABELS[s].label}</option>)}
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '0.25rem' }}>Total</div>
+              <input type="number" min={1} value={newDraft.spots_total} onChange={e => setNewDraft(d => ({ ...d, spots_total: parseInt(e.target.value) || 4 }))} style={inputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '0.25rem' }}>Left</div>
+              <input type="number" min={0} value={newDraft.spots_left} onChange={e => setNewDraft(d => ({ ...d, spots_left: parseInt(e.target.value) || 0 }))} style={inputStyle} />
+            </div>
+            <button
+              onClick={addCohort}
+              disabled={saving || !newDraft.date || !newDraft.cohort_number}
+              style={{
+                padding: '0.4rem 0.8rem',
+                borderRadius: 6,
+                border: 'none',
+                background: '#7c3aed',
+                color: 'white',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                cursor: saving ? 'wait' : 'pointer',
+                opacity: saving ? 0.7 : 1,
+              }}
+            >
+              Add
+            </button>
+          </div>
+        )}
+
+        {/* Cohort table */}
+        {loading ? (
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '1rem' }}>Loading…</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {/* Header */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '100px 80px 130px 65px 65px auto',
+              gap: '0.5rem',
+              padding: '0.3rem 0.5rem',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              {['Date', 'Cohort #', 'Status', 'Total', 'Left', ''].map(h => (
+                <div key={h} style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.2)' }}>{h}</div>
+              ))}
+            </div>
+
+            {cohorts.map(c => {
+              const isEditing = editingId === c.id;
+              const sc = STATUS_LABELS[c.status] || STATUS_LABELS.available;
+
+              return (
+                <div
+                  key={c.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 80px 130px 65px 65px auto',
+                    gap: '0.5rem',
+                    padding: '0.5rem',
+                    borderRadius: 7,
+                    background: isEditing ? 'rgba(124,58,237,0.06)' : 'rgba(255,255,255,0.02)',
+                    alignItems: 'center',
+                  }}
+                >
+                  {isEditing ? (
+                    <>
+                      <input type="date" value={editDraft.date || c.date} onChange={e => setEditDraft(d => ({ ...d, date: e.target.value }))} style={inputStyle} />
+                      <input type="number" value={editDraft.cohort_number ?? c.cohort_number} onChange={e => setEditDraft(d => ({ ...d, cohort_number: e.target.value }))} style={inputStyle} />
+                      <select value={editDraft.status ?? c.status} onChange={e => setEditDraft(d => ({ ...d, status: e.target.value }))} style={{ ...inputStyle, background: 'rgba(255,255,255,0.07)' }}>
+                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{STATUS_LABELS[s].label}</option>)}
+                      </select>
+                      <input type="number" min={1} value={editDraft.spots_total ?? c.spots_total} onChange={e => setEditDraft(d => ({ ...d, spots_total: parseInt(e.target.value) || 4 }))} style={inputStyle} />
+                      <input type="number" min={0} value={editDraft.spots_left ?? c.spots_left} onChange={e => setEditDraft(d => ({ ...d, spots_left: parseInt(e.target.value) || 0 }))} style={inputStyle} />
+                      <div style={{ display: 'flex', gap: '0.3rem' }}>
+                        <button onClick={() => saveEdit(c.id)} disabled={saving} style={{ padding: '0.3rem 0.65rem', borderRadius: 5, border: 'none', background: '#7c3aed', color: 'white', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer' }}>Save</button>
+                        <button onClick={() => setEditingId(null)} style={{ padding: '0.3rem 0.65rem', borderRadius: 5, border: '1px solid var(--border-color)', background: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', cursor: 'pointer' }}>Cancel</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{c.date}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>#{c.cohort_number}</div>
+                      <div>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 600,
+                          color: sc.color,
+                          background: `${sc.color}18`,
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: 4,
+                        }}>
+                          {sc.label}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>{c.spots_total}</div>
+                      <div style={{ fontSize: '0.72rem', color: c.spots_left <= 1 ? '#f87171' : 'rgba(255,255,255,0.5)' }}>{c.spots_left}</div>
+                      <div style={{ display: 'flex', gap: '0.3rem' }}>
+                        <button
+                          onClick={() => { setEditingId(c.id); setEditDraft({}); }}
+                          style={{ padding: '0.25rem 0.6rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.62rem', cursor: 'pointer' }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteRow(c.id)}
+                          style={{ padding: '0.25rem 0.6rem', borderRadius: 5, border: '1px solid rgba(239,68,68,0.2)', background: 'none', color: 'rgba(239,68,68,0.6)', fontSize: '0.62rem', cursor: 'pointer' }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+
+            {cohorts.length === 0 && !loading && (
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '1rem' }}>
+                No cohorts configured. Add one above.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }

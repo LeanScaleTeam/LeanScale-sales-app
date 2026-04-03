@@ -7,9 +7,16 @@
 import { supabaseAdmin } from '../../../../lib/supabase';
 import { applyRoadmapOverrides } from '../../../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 
+function isAdmin(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+}
+
 export default async function handler(req, res) {
   if (req.method === 'GET') return handleGet(req, res);
-  if (req.method === 'PUT') return handlePut(req, res);
+  if (req.method === 'PUT') {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    return handlePut(req, res);
+  }
   return res.status(405).json({ error: 'Method not allowed' });
 }
 

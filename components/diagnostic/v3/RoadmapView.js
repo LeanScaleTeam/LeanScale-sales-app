@@ -1,24 +1,45 @@
 /**
- * RoadmapView — 4-phase prioritized project timeline
+ * RoadmapView — Engagement roadmap: Foundation → Build → Optimize → Scale
  *
- * Displays Foundation → Build → Optimize → Scale phases
- * with project cards sorted by priority within each phase.
+ * Designed to communicate the customer journey visually — not just a list of work,
+ * but a narrative of transformation from current state to a scaled revenue machine.
  *
- * Edit mode supports: move between phases, reorder within phase,
- * remove projects, and add custom projects.
+ * Edit mode: reorder within phase, move between phases, remove, restore, add custom.
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCustomer } from '../../../context/CustomerContext';
-import { ROADMAP_PHASES, V3_STATUS_COLORS } from '../../../lib/diagnostic-engine/v3/constants-v3';
-import { lookupServiceV3 } from '../../../lib/diagnostic-engine/v3/service-mapping-v3';
+import { V3_STATUS_COLORS } from '../../../lib/diagnostic-engine/v3/constants-v3';
 
-const PHASE_COLORS = {
-  FOUNDATION: { bg: 'rgba(248, 113, 113, 0.08)', border: 'rgba(248, 113, 113, 0.2)', icon: '#f87171' },
-  BUILD: { bg: 'rgba(251, 191, 36, 0.08)', border: 'rgba(251, 191, 36, 0.2)', icon: '#fbbf24' },
-  OPTIMIZE: { bg: 'rgba(74, 222, 128, 0.08)', border: 'rgba(74, 222, 128, 0.2)', icon: '#4ade80' },
-  SCALE: { bg: 'rgba(96, 165, 250, 0.08)', border: 'rgba(96, 165, 250, 0.2)', icon: '#60a5fa' },
+const PHASE_CONFIG = {
+  FOUNDATION: {
+    color: '#f87171',
+    bg: 'rgba(248,113,113,0.07)',
+    border: 'rgba(248,113,113,0.22)',
+    label: 'Phase 1',
+    tagline: 'Fix the foundation before building on top',
+  },
+  BUILD: {
+    color: '#fbbf24',
+    bg: 'rgba(251,191,36,0.07)',
+    border: 'rgba(251,191,36,0.22)',
+    label: 'Phase 2',
+    tagline: 'Build the processes that drive repeatable revenue',
+  },
+  OPTIMIZE: {
+    color: '#4ade80',
+    bg: 'rgba(74,222,128,0.07)',
+    border: 'rgba(74,222,128,0.22)',
+    label: 'Phase 3',
+    tagline: 'Measure every lever — then improve it',
+  },
+  SCALE: {
+    color: '#60a5fa',
+    bg: 'rgba(96,165,250,0.07)',
+    border: 'rgba(96,165,250,0.22)',
+    label: 'Phase 4',
+    tagline: 'Systematize what works and expand with confidence',
+  },
 };
 
 const PHASE_KEYS = ['FOUNDATION', 'BUILD', 'OPTIMIZE', 'SCALE'];
@@ -31,148 +52,254 @@ export default function RoadmapView({
   onRoadmapChange,
   removedProjects = [],
 }) {
-  const { customerPath } = useCustomer();
   const [expandedProject, setExpandedProject] = useState(null);
   const [addingToPhase, setAddingToPhase] = useState(null);
   const [newProject, setNewProject] = useState({ name: '', description: '', hours: '' });
   const [showRemoved, setShowRemoved] = useState(false);
 
+  const maxPriority = useMemo(() => {
+    if (!roadmap?.phases) return 1;
+    const all = roadmap.phases.flatMap((p) => p.projects.map((proj) => proj.priority?.score || 0));
+    return Math.max(...all, 1);
+  }, [roadmap]);
+
+  const totalHours = useMemo(() => {
+    if (!roadmap?.phases) return 0;
+    return roadmap.phases.flatMap((p) => p.projects).reduce((s, p) => s + (p.hours || 0), 0);
+  }, [roadmap]);
+
   if (!roadmap?.phases) return null;
 
-  const handleMovePhase = (serviceId, newPhase) => {
-    if (onRoadmapChange) {
-      onRoadmapChange({ type: 'movePhase', serviceId, newPhase });
-    }
-  };
-
-  const handleReorder = (phaseKey, serviceId, direction) => {
-    if (onRoadmapChange) {
-      onRoadmapChange({ type: 'reorder', phase: phaseKey, serviceId, direction });
-    }
-  };
-
-  const handleRemove = (serviceId) => {
-    if (onRoadmapChange) {
-      onRoadmapChange({ type: 'remove', serviceId });
-    }
-  };
-
-  const handleRestore = (serviceId) => {
-    if (onRoadmapChange) {
-      onRoadmapChange({ type: 'restore', serviceId });
-    }
-  };
+  const emit = (action) => onRoadmapChange?.(action);
 
   const handleAddCustom = (phaseKey) => {
     if (!newProject.name.trim()) return;
-    if (onRoadmapChange) {
-      onRoadmapChange({
-        type: 'addCustom',
-        phase: phaseKey,
-        project: {
-          id: `custom-${Date.now()}`,
-          name: newProject.name.trim(),
-          description: newProject.description.trim(),
-          hours: newProject.hours ? Number(newProject.hours) : null,
-        },
-      });
-    }
+    emit({
+      type: 'addCustom',
+      phase: phaseKey,
+      project: {
+        id: `custom-${Date.now()}`,
+        name: newProject.name.trim(),
+        description: newProject.description.trim(),
+        hours: newProject.hours ? Number(newProject.hours) : null,
+      },
+    });
     setNewProject({ name: '', description: '', hours: '' });
     setAddingToPhase(null);
   };
 
-  const handleRemoveCustom = (projectId) => {
-    if (onRoadmapChange) {
-      onRoadmapChange({ type: 'removeCustom', projectId });
-    }
-  };
+  const coverage = roadmap.summary?.estimatedCoverage?.coveragePercent;
+  const activePhaseCount = roadmap.phases.filter((p) => p.projects.length > 0).length;
+  const visiblePhases = roadmap.phases.filter((p) => p.projects.length > 0 || editMode);
+
+  // Hero stats to display
+  const heroStats = [
+    { label: 'Total Projects', value: roadmap.totalProjects },
+    { label: 'Phases', value: activePhaseCount },
+    ...(totalHours > 0 ? [{ label: 'Est. Hours', value: `~${totalHours}h` }] : []),
+    ...(coverage != null ? [{ label: 'Gap Coverage', value: `${coverage}%` }] : []),
+  ];
 
   return (
-    <div style={styles.container}>
-      {/* Phase timeline */}
-      {roadmap.phases.map((phase) => {
-        if (phase.projects.length === 0 && !showHealthy && !editMode) return null;
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-        const colors = PHASE_COLORS[phase.key] || PHASE_COLORS.BUILD;
+      {/* ── Hero stat bar ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${heroStats.length}, 1fr)`,
+        gap: '1px',
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        marginBottom: '1.75rem',
+      }}>
+        {heroStats.map((stat, i) => (
+          <div key={i} style={{
+            padding: '1.25rem 1rem',
+            background: 'rgba(255,255,255,0.015)',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+              {stat.value}
+            </div>
+            <div style={{
+              fontSize: '0.62rem', color: 'rgba(255,255,255,0.38)',
+              marginTop: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.07em',
+            }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Phase mini-map ── */}
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.75rem' }}>
+        {PHASE_KEYS.map((key, i) => {
+          const cfg = PHASE_CONFIG[key];
+          const phase = roadmap.phases.find((p) => p.key === key);
+          const count = phase?.projectCount || 0;
+          const active = count > 0;
+          return (
+            <div key={key} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <div style={{
+                flex: 1,
+                padding: '0.6rem 0.6rem',
+                borderRadius: '10px',
+                border: `1px solid ${active ? cfg.border : 'rgba(255,255,255,0.05)'}`,
+                background: active ? cfg.bg : 'rgba(255,255,255,0.01)',
+                textAlign: 'center',
+                opacity: active ? 1 : 0.3,
+                transition: 'all 0.2s',
+              }}>
+                <div style={{
+                  fontSize: '0.56rem', fontWeight: 700,
+                  color: active ? cfg.color : 'rgba(255,255,255,0.3)',
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                }}>
+                  {cfg.label}
+                </div>
+                <div style={{
+                  fontSize: '0.78rem', fontWeight: 700,
+                  color: active ? '#fff' : 'rgba(255,255,255,0.2)',
+                  margin: '0.15rem 0 0.1rem',
+                }}>
+                  {key.charAt(0) + key.slice(1).toLowerCase()}
+                </div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>
+                  {active ? `${count} project${count !== 1 ? 's' : ''}` : '—'}
+                </div>
+              </div>
+              {i < PHASE_KEYS.length - 1 && (
+                <div style={{
+                  color: 'rgba(255,255,255,0.15)', fontSize: '0.7rem',
+                  padding: '0 0.3rem', flexShrink: 0, userSelect: 'none',
+                }}>›</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Phase sections ── */}
+      {visiblePhases.map((phase, phaseIdx) => {
+        const cfg = PHASE_CONFIG[phase.key] || PHASE_CONFIG.BUILD;
+        const isLast = phaseIdx === visiblePhases.length - 1;
 
         return (
-          <div key={phase.key} style={styles.phase}>
-            {/* Phase header */}
-            <div style={{ ...styles.phaseHeader, borderLeftColor: colors.icon }}>
-              <div style={{ ...styles.phaseNumber, backgroundColor: colors.icon }}>
-                {phase.order}
-              </div>
-              <div>
-                <h3 style={styles.phaseName}>{phase.name}</h3>
-                <p style={styles.phaseDesc}>{phase.description}</p>
-              </div>
-              <span style={styles.projectCount}>
-                {phase.projectCount} project{phase.projectCount !== 1 ? 's' : ''}
-              </span>
-            </div>
+          <div key={phase.key}>
+            <div style={{
+              border: `1px solid ${cfg.border}`,
+              borderRadius: '16px',
+              overflow: 'hidden',
+            }}>
+              {/* Phase header */}
+              <div style={{
+                background: cfg.bg,
+                borderBottom: `1px solid ${cfg.border}`,
+                padding: '1.1rem 1.4rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.1rem',
+              }}>
+                {/* Phase number circle */}
+                <div style={{
+                  width: '2.6rem', height: '2.6rem', borderRadius: '50%',
+                  border: `2px solid ${cfg.color}`,
+                  color: cfg.color, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: '1.05rem', fontWeight: 800,
+                  flexShrink: 0, background: 'rgba(0,0,0,0.2)',
+                }}>
+                  {phase.order}
+                </div>
 
-            {/* Project cards */}
-            <div style={styles.projectGrid}>
-              {phase.projects.map((project, idx) => (
-                <ProjectCard
-                  key={project.serviceId}
-                  project={project}
-                  phaseKey={phase.key}
-                  index={idx}
-                  totalInPhase={phase.projects.length}
-                  isExpanded={expandedProject === project.serviceId}
-                  onToggle={() =>
-                    setExpandedProject(
-                      expandedProject === project.serviceId ? null : project.serviceId
-                    )
-                  }
-                  customerPath={customerPath}
-                  editMode={editMode}
-                  onMovePhase={handleMovePhase}
-                  onReorder={handleReorder}
-                  onRemove={handleRemove}
-                  onRemoveCustom={handleRemoveCustom}
-                />
-              ))}
+                {/* Phase name + tagline */}
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '0.58rem', fontWeight: 700, color: cfg.color,
+                    textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.15rem',
+                  }}>
+                    {cfg.label}
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
+                    {phase.name}
+                  </h3>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.42)', lineHeight: 1.4 }}>
+                    {cfg.tagline}
+                  </p>
+                </div>
 
-              {/* Add project button */}
-              {editMode && (
-                <>
-                  {addingToPhase === phase.key ? (
-                    <div style={styles.addForm}>
+                {/* Project count */}
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: cfg.color, lineHeight: 1 }}>
+                    {phase.projectCount}
+                  </div>
+                  <div style={{
+                    fontSize: '0.58rem', color: 'rgba(255,255,255,0.3)',
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                  }}>
+                    project{phase.projectCount !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+
+              {/* Project cards */}
+              <div style={{ padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                {phase.projects.map((project, idx) => (
+                  <ProjectCard
+                    key={project.serviceId}
+                    project={project}
+                    phaseKey={phase.key}
+                    phaseColor={cfg.color}
+                    index={idx}
+                    totalInPhase={phase.projects.length}
+                    maxPriority={maxPriority}
+                    isExpanded={expandedProject === project.serviceId}
+                    onToggle={() =>
+                      setExpandedProject(expandedProject === project.serviceId ? null : project.serviceId)
+                    }
+                    editMode={editMode}
+                    onMovePhase={(sid, np) => emit({ type: 'movePhase', serviceId: sid, newPhase: np })}
+                    onReorder={(pk, sid, dir) => emit({ type: 'reorder', phase: pk, serviceId: sid, direction: dir })}
+                    onRemove={(sid) => emit({ type: 'remove', serviceId: sid })}
+                    onRemoveCustom={(pid) => emit({ type: 'removeCustom', projectId: pid })}
+                  />
+                ))}
+
+                {/* Add project (edit mode) */}
+                {editMode && (
+                  addingToPhase === phase.key ? (
+                    <div style={{
+                      border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+                      padding: '0.75rem', background: 'rgba(255,255,255,0.03)',
+                      display: 'flex', flexDirection: 'column', gap: '0.5rem',
+                    }}>
                       <input
-                        type="text"
-                        placeholder="Project name"
-                        value={newProject.name}
+                        type="text" placeholder="Project name" value={newProject.name}
                         onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                        style={styles.addInput}
-                        autoFocus
+                        style={inputStyle} autoFocus
                       />
                       <input
-                        type="text"
-                        placeholder="Description (optional)"
-                        value={newProject.description}
+                        type="text" placeholder="Description (optional)" value={newProject.description}
                         onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                        style={styles.addInput}
+                        style={inputStyle}
                       />
                       <input
-                        type="number"
-                        placeholder="Est. hours (optional)"
-                        value={newProject.hours}
+                        type="number" placeholder="Est. hours (optional)" value={newProject.hours}
                         onChange={(e) => setNewProject({ ...newProject, hours: e.target.value })}
-                        style={{ ...styles.addInput, width: '140px' }}
+                        style={{ ...inputStyle, width: '160px' }}
                       />
-                      <div style={styles.addActions}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button
                           onClick={() => handleAddCustom(phase.key)}
-                          style={styles.addConfirmBtn}
                           disabled={!newProject.name.trim()}
+                          style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', borderRadius: '6px', border: 'none', background: '#7c3aed', color: 'white', cursor: 'pointer' }}
                         >
                           Add
                         </button>
                         <button
                           onClick={() => { setAddingToPhase(null); setNewProject({ name: '', description: '', hours: '' }); }}
-                          style={styles.addCancelBtn}
+                          style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer' }}
                         >
                           Cancel
                         </button>
@@ -181,37 +308,57 @@ export default function RoadmapView({
                   ) : (
                     <button
                       onClick={() => setAddingToPhase(phase.key)}
-                      style={styles.addProjectBtn}
+                      style={{
+                        background: 'none', border: '1px dashed rgba(255,255,255,0.1)',
+                        borderRadius: '10px', padding: '0.5rem', cursor: 'pointer',
+                        fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center',
+                      }}
                     >
                       + Add Project
                     </button>
-                  )}
-                </>
-              )}
+                  )
+                )}
+              </div>
             </div>
+
+            {/* Phase connector */}
+            {!isLast && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: '0.3rem 0', gap: '2px',
+              }}>
+                <div style={{ width: '1px', height: '8px', background: 'rgba(255,255,255,0.08)' }} />
+                <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.55rem', userSelect: 'none' }}>▼</div>
+                <div style={{ width: '1px', height: '8px', background: 'rgba(255,255,255,0.08)' }} />
+              </div>
+            )}
           </div>
         );
       })}
 
-      {/* Removed projects section */}
+      {/* ── Removed projects ── */}
       {editMode && removedProjects.length > 0 && (
-        <div style={styles.removedSection}>
+        <div style={{
+          marginTop: '1rem', padding: '0.75rem',
+          background: 'rgba(239,68,68,0.06)', borderRadius: '10px',
+          border: '1px solid rgba(239,68,68,0.2)',
+        }}>
           <button
             onClick={() => setShowRemoved(!showRemoved)}
-            style={styles.removedToggle}
+            style={{ background: 'none', border: 'none', fontSize: '0.8rem', color: '#fca5a5', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
           >
             {showRemoved ? 'Hide' : 'Show'} removed projects ({removedProjects.length})
           </button>
           {showRemoved && (
-            <div style={styles.removedList}>
+            <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               {removedProjects.map((p) => (
-                <div key={p.serviceId} style={styles.removedItem}>
-                  <span style={styles.removedName}>
+                <div key={p.serviceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: '6px', fontSize: '0.8rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>
                     {p.service?.name || p.serviceId}
                   </span>
                   <button
-                    onClick={() => handleRestore(p.serviceId)}
-                    style={styles.restoreBtn}
+                    onClick={() => emit({ type: 'restore', serviceId: p.serviceId })}
+                    style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(134,239,172,0.3)', background: 'rgba(134,239,172,0.1)', color: '#86efac', cursor: 'pointer' }}
                   >
                     Restore
                   </button>
@@ -222,23 +369,17 @@ export default function RoadmapView({
         </div>
       )}
 
-      {/* Summary */}
-      {roadmap.summary && (
-        <div style={styles.summary}>
-          <div style={styles.summaryItem}>
-            <span style={styles.summaryValue}>{roadmap.totalProjects}</span>
-            <span style={styles.summaryLabel}>Total Projects</span>
-          </div>
-          <div style={styles.summaryItem}>
-            <span style={styles.summaryValue}>{roadmap.summary.estimatedCoverage?.coveragePercent}%</span>
-            <span style={styles.summaryLabel}>Gap Coverage</span>
-          </div>
-        </div>
-      )}
-
-      {/* Toggle healthy */}
+      {/* Toggle healthy items */}
       {onToggleHealthy && (
-        <button style={styles.toggleBtn} onClick={onToggleHealthy}>
+        <button
+          onClick={onToggleHealthy}
+          style={{
+            alignSelf: 'center', marginTop: '1.5rem', background: 'none',
+            border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+            padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.78rem',
+            color: 'rgba(255,255,255,0.45)',
+          }}
+        >
           {showHealthy ? 'Hide healthy items' : 'Show all items'}
         </button>
       )}
@@ -246,95 +387,189 @@ export default function RoadmapView({
   );
 }
 
+// ── Score dot visualization ──────────────────────────────────────
+
+function ScoreDots({ score, color }) {
+  return (
+    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <div
+          key={n}
+          style={{
+            width: '6px', height: '6px', borderRadius: '50%',
+            background: n <= score ? color : 'rgba(255,255,255,0.1)',
+            flexShrink: 0,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Project card ─────────────────────────────────────────────────
+
 function ProjectCard({
-  project,
-  phaseKey,
-  index,
-  totalInPhase,
-  isExpanded,
-  onToggle,
-  customerPath,
-  editMode,
-  onMovePhase,
-  onReorder,
-  onRemove,
-  onRemoveCustom,
+  project, phaseKey, phaseColor, index, totalInPhase, maxPriority,
+  isExpanded, onToggle, editMode, onMovePhase, onReorder, onRemove, onRemoveCustom,
 }) {
+  const [hovered, setHovered] = useState(false);
   const service = project.service;
   const isCustom = project.isCustom;
+  const priorityPct = maxPriority > 0 ? Math.min((project.priority?.score || 0) / maxPriority, 1) : 0;
+  const description = service?.description || (isCustom ? project.description : null);
 
   return (
-    <div style={styles.card} onClick={editMode ? undefined : onToggle}>
-      <div style={styles.cardHeader}>
-        {/* Reorder buttons (edit mode) */}
+    <div
+      style={{
+        borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderLeft: `3px solid ${phaseColor}`,
+        background: hovered && !editMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+        overflow: 'hidden',
+        transition: 'background 0.15s ease',
+        cursor: editMode ? 'default' : 'pointer',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={editMode ? undefined : onToggle}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', padding: '0.85rem 1rem' }}>
+
+        {/* Edit: reorder buttons */}
         {editMode && (
-          <div style={styles.reorderBtns}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
             <button
               onClick={(e) => { e.stopPropagation(); onReorder(phaseKey, project.serviceId, 'up'); }}
               disabled={index === 0}
-              style={{ ...styles.reorderBtn, opacity: index === 0 ? 0.3 : 1 }}
-              title="Move up"
-            >
-              &#9650;
-            </button>
+              style={{
+                background: 'none', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '3px',
+                cursor: index === 0 ? 'not-allowed' : 'pointer', fontSize: '0.5rem',
+                padding: '2px 4px', color: index === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.45)',
+                lineHeight: 1,
+              }}
+            >▲</button>
             <button
               onClick={(e) => { e.stopPropagation(); onReorder(phaseKey, project.serviceId, 'down'); }}
               disabled={index === totalInPhase - 1}
-              style={{ ...styles.reorderBtn, opacity: index === totalInPhase - 1 ? 0.3 : 1 }}
-              title="Move down"
-            >
-              &#9660;
-            </button>
+              style={{
+                background: 'none', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '3px',
+                cursor: index === totalInPhase - 1 ? 'not-allowed' : 'pointer', fontSize: '0.5rem',
+                padding: '2px 4px', color: index === totalInPhase - 1 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.45)',
+                lineHeight: 1,
+              }}
+            >▼</button>
           </div>
         )}
 
-        <div style={styles.cardInfo} onClick={editMode ? onToggle : undefined}>
-          <span style={styles.cardIcon}>{service?.icon || ''}</span>
-          <div>
-            <span style={styles.cardName}>{service?.name || project.serviceId}</span>
-            <div style={styles.cardMeta}>
-              {isCustom ? (
-                <span style={styles.customBadge}>Custom</span>
-              ) : (
-                `${project.competencyCount} competenc${project.competencyCount !== 1 ? 'ies' : 'y'} impacted`
-              )}
-              {project.hours && ` · ${project.hours}h`}
-            </div>
+        {/* Icon */}
+        <span style={{ fontSize: '1.35rem', lineHeight: 1, flexShrink: 0 }}>
+          {service?.icon || '📋'}
+        </span>
+
+        {/* Name + description + priority bar */}
+        <div
+          style={{ flex: 1, minWidth: 0, cursor: editMode ? 'pointer' : undefined }}
+          onClick={editMode ? onToggle : undefined}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#fff' }}>
+              {service?.name || project.serviceId}
+            </span>
+            {isCustom && (
+              <span style={{
+                fontSize: '0.56rem', padding: '0.1rem 0.4rem', borderRadius: '3px',
+                background: 'rgba(167,139,250,0.15)', color: '#a78bfa',
+                fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+              }}>
+                Custom
+              </span>
+            )}
           </div>
+
+          {description && (
+            <div style={{
+              fontSize: '0.7rem', color: 'rgba(255,255,255,0.42)', marginTop: '0.15rem',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {description}
+            </div>
+          )}
+
+          {/* Priority bar + competency count */}
+          {!isCustom && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.35rem' }}>
+              <div style={{
+                width: '72px', height: '3px',
+                background: 'rgba(255,255,255,0.08)', borderRadius: '2px', flexShrink: 0,
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.round(priorityPct * 100)}%`,
+                  background: phaseColor,
+                  borderRadius: '2px', opacity: 0.75,
+                }} />
+              </div>
+              <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)' }}>
+                {project.competencyCount} area{project.competencyCount !== 1 ? 's' : ''} impacted
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Phase selector (edit mode) or priority badge */}
-        {editMode ? (
-          <div style={styles.editControls}>
-            <select
-              value={phaseKey}
-              onChange={(e) => { e.stopPropagation(); onMovePhase(project.serviceId, e.target.value); }}
-              onClick={(e) => e.stopPropagation()}
-              style={styles.phaseSelect}
-            >
-              {PHASE_KEYS.map((pk) => (
-                <option key={pk} value={pk}>{pk.charAt(0) + pk.slice(1).toLowerCase()}</option>
-              ))}
-            </select>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isCustom) onRemoveCustom(project.serviceId);
-                else onRemove(project.serviceId);
-              }}
-              style={styles.removeBtn}
-              title="Remove project"
-            >
-              &#10005;
-            </button>
-          </div>
-        ) : (
-          <div style={styles.priorityBadge}>
-            {project.priority?.score?.toFixed(1)}
-          </div>
-        )}
+        {/* Right side: hours badge + edit controls or chevron */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          {project.hours && (
+            <span style={{
+              fontSize: '0.65rem', padding: '0.18rem 0.5rem', borderRadius: '20px',
+              border: `1px solid ${phaseColor}45`, color: phaseColor,
+              fontWeight: 600, whiteSpace: 'nowrap',
+            }}>
+              {project.hours}h
+            </span>
+          )}
+
+          {editMode ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <select
+                value={phaseKey}
+                onChange={(e) => { e.stopPropagation(); onMovePhase(project.serviceId, e.target.value); }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.8)',
+                  cursor: 'pointer',
+                }}
+              >
+                {PHASE_KEYS.map((pk) => (
+                  <option key={pk} value={pk}>
+                    {pk.charAt(0) + pk.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  isCustom ? onRemoveCustom(project.serviceId) : onRemove(project.serviceId);
+                }}
+                style={{
+                  background: 'none', border: '1px solid rgba(239,68,68,0.28)',
+                  borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem',
+                  padding: '0.15rem 0.45rem', color: '#fca5a5',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.58rem', userSelect: 'none' }}>
+              {isExpanded ? '▲' : '▼'}
+            </span>
+          )}
+        </div>
       </div>
 
+      {/* ── Expanded impact body ── */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -344,41 +579,63 @@ function ProjectCard({
             transition={{ duration: 0.2 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={styles.cardBody}>
-              {/* Description */}
-              {service?.description && (
-                <p style={styles.cardDesc}>{service.description}</p>
-              )}
+            <div style={{ padding: '0.75rem 1rem 1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
 
-              {/* Impact details */}
+              {/* Projected impact table */}
               {project.projectedImpact?.length > 0 && (
-                <div style={styles.impactSection}>
-                  <div style={styles.impactTitle}>Projected Impact</div>
-                  {project.projectedImpact.map((impact, i) => (
-                    <div key={i} style={styles.impactRow}>
-                      <span style={styles.impactComp}>
-                        {impact.competencyId}: {impact.competencyName}
-                      </span>
-                      <span style={styles.impactDept}>{impact.departmentLabel}</span>
-                      <span style={styles.impactScores}>
-                        <span style={{ color: V3_STATUS_COLORS[impact.currentScore] }}>
-                          {impact.currentScore}
-                        </span>
-                        {' → '}
-                        <span style={{ color: V3_STATUS_COLORS[impact.projectedScore] }}>
-                          {impact.projectedScore}
-                        </span>
-                      </span>
-                    </div>
-                  ))}
+                <div>
+                  <div style={{
+                    fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '0.6rem',
+                  }}>
+                    Projected Impact
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                    {project.projectedImpact.map((impact, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                          flex: 1, fontSize: '0.75rem', color: 'rgba(255,255,255,0.65)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {impact.competencyName}
+                        </div>
+                        <div style={{
+                          fontSize: '0.6rem', color: 'rgba(255,255,255,0.28)',
+                          flexShrink: 0, minWidth: '3.5rem', textAlign: 'right',
+                        }}>
+                          {impact.departmentLabel}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                          <ScoreDots
+                            score={impact.currentScore}
+                            color={V3_STATUS_COLORS[impact.currentScore] || '#f87171'}
+                          />
+                          <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.6rem' }}>→</span>
+                          <ScoreDots
+                            score={impact.projectedScore}
+                            color={V3_STATUS_COLORS[impact.projectedScore] || '#4ade80'}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Service type */}
+              {/* Service type badge */}
               {service?.type && (
-                <span style={styles.typeBadge}>
-                  {service.type === 'strategic' ? 'Strategic Project' : service.type === 'custom' ? 'Custom Project' : 'Managed Service'}
-                </span>
+                <div style={{ marginTop: project.projectedImpact?.length > 0 ? '0.75rem' : 0 }}>
+                  <span style={{
+                    fontSize: '0.62rem', padding: '0.15rem 0.5rem', borderRadius: '12px',
+                    background: 'rgba(96,165,250,0.1)', color: '#60a5fa',
+                  }}>
+                    {service.type === 'strategic'
+                      ? 'Strategic Project'
+                      : service.type === 'custom'
+                        ? 'Custom Project'
+                        : 'Managed Service'}
+                  </span>
+                </div>
               )}
             </div>
           </motion.div>
@@ -388,323 +645,14 @@ function ProjectCard({
   );
 }
 
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2rem',
-  },
-  phase: {
-    marginBottom: '0.5rem',
-  },
-  phaseHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem 1rem',
-    borderLeft: '4px solid',
-    background: 'var(--bg-secondary, rgba(255, 255, 255, 0.04))',
-    borderRadius: '0 var(--radius-md, 8px) var(--radius-md, 8px) 0',
-    marginBottom: '0.75rem',
-  },
-  phaseNumber: {
-    width: '2rem',
-    height: '2rem',
-    borderRadius: '50%',
-    color: 'white',
-    fontWeight: 700,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '0.875rem',
-    flexShrink: 0,
-  },
-  phaseName: {
-    margin: 0,
-    fontSize: '1rem',
-    fontWeight: 600,
-  },
-  phaseDesc: {
-    margin: 0,
-    fontSize: '0.8rem',
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  projectCount: {
-    marginLeft: 'auto',
-    fontSize: '0.8rem',
-    color: 'rgba(255, 255, 255, 0.5)',
-    whiteSpace: 'nowrap',
-  },
-  projectGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    paddingLeft: '1.5rem',
-  },
-  card: {
-    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-    borderRadius: 'var(--radius-md, 8px)',
-    background: 'var(--glass-bg, rgba(255, 255, 255, 0.03))',
-    cursor: 'pointer',
-    transition: 'box-shadow 0.15s ease',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-  },
-  cardInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    flex: 1,
-  },
-  cardIcon: {
-    fontSize: '1.25rem',
-  },
-  cardName: {
-    fontWeight: 600,
-    fontSize: '0.9rem',
-    color: '#a78bfa',
-    textDecoration: 'none',
-    display: 'block',
-  },
-  cardMeta: {
-    fontSize: '0.75rem',
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  customBadge: {
-    fontSize: '0.65rem',
-    padding: '0.1rem 0.4rem',
-    borderRadius: '0.25rem',
-    background: 'rgba(167, 139, 250, 0.15)',
-    color: '#a78bfa',
-    fontWeight: 600,
-  },
-  priorityBadge: {
-    padding: '0.25rem 0.5rem',
-    borderRadius: 'var(--radius-sm, 4px)',
-    background: 'rgba(167, 139, 250, 0.12)',
-    color: '#a78bfa',
-    fontSize: '0.75rem',
-    fontWeight: 600,
-  },
-  // Edit mode controls
-  reorderBtns: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    marginRight: '0.5rem',
-  },
-  reorderBtn: {
-    background: 'none',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '3px',
-    cursor: 'pointer',
-    fontSize: '0.6rem',
-    padding: '1px 4px',
-    color: 'rgba(255, 255, 255, 0.5)',
-    lineHeight: 1,
-  },
-  editControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    flexShrink: 0,
-  },
-  phaseSelect: {
-    fontSize: '0.75rem',
-    padding: '0.2rem 0.4rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    background: 'rgba(255, 255, 255, 0.04)',
-    color: 'rgba(255, 255, 255, 0.8)',
-    cursor: 'pointer',
-  },
-  removeBtn: {
-    background: 'none',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-    padding: '0.15rem 0.4rem',
-    color: '#fca5a5',
-  },
-  addProjectBtn: {
-    background: 'none',
-    border: '1px dashed rgba(255, 255, 255, 0.15)',
-    borderRadius: 'var(--radius-md, 8px)',
-    padding: '0.5rem',
-    cursor: 'pointer',
-    fontSize: '0.8rem',
-    color: 'rgba(255, 255, 255, 0.5)',
-    textAlign: 'center',
-  },
-  addForm: {
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: 'var(--radius-md, 8px)',
-    padding: '0.75rem',
-    background: 'rgba(255, 255, 255, 0.04)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  addInput: {
-    fontSize: '0.8rem',
-    padding: '0.4rem 0.6rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    outline: 'none',
-    background: 'rgba(255, 255, 255, 0.04)',
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  addActions: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  addConfirmBtn: {
-    fontSize: '0.8rem',
-    padding: '0.3rem 0.8rem',
-    borderRadius: '4px',
-    border: 'none',
-    background: '#7c3aed',
-    color: 'white',
-    cursor: 'pointer',
-  },
-  addCancelBtn: {
-    fontSize: '0.8rem',
-    padding: '0.3rem 0.8rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    background: 'rgba(255, 255, 255, 0.04)',
-    color: 'rgba(255, 255, 255, 0.7)',
-    cursor: 'pointer',
-  },
-  // Removed section
-  removedSection: {
-    padding: '0.75rem',
-    background: 'rgba(239, 68, 68, 0.06)',
-    borderRadius: 'var(--radius-md, 8px)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-  },
-  removedToggle: {
-    background: 'none',
-    border: 'none',
-    fontSize: '0.8rem',
-    color: '#fca5a5',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    padding: 0,
-  },
-  removedList: {
-    marginTop: '0.5rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.35rem',
-  },
-  removedItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.35rem 0.5rem',
-    background: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: '4px',
-    fontSize: '0.8rem',
-  },
-  removedName: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    textDecoration: 'line-through',
-  },
-  restoreBtn: {
-    fontSize: '0.7rem',
-    padding: '0.15rem 0.5rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(134, 239, 172, 0.3)',
-    background: 'rgba(134, 239, 172, 0.1)',
-    color: '#86efac',
-    cursor: 'pointer',
-  },
-  // Existing styles
-  cardBody: {
-    padding: '0 1rem 1rem',
-    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-  },
-  cardDesc: {
-    fontSize: '0.8rem',
-    color: 'rgba(255, 255, 255, 0.7)',
-    margin: '0.75rem 0',
-    lineHeight: 1.5,
-  },
-  impactSection: {
-    marginTop: '0.5rem',
-  },
-  impactTitle: {
-    fontSize: '0.7rem',
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    color: 'rgba(255, 255, 255, 0.5)',
-    marginBottom: '0.25rem',
-  },
-  impactRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.2rem 0',
-    fontSize: '0.8rem',
-  },
-  impactComp: {
-    flex: 1,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  impactDept: {
-    fontSize: '0.7rem',
-    color: 'rgba(255, 255, 255, 0.4)',
-    minWidth: '4rem',
-  },
-  impactScores: {
-    fontWeight: 600,
-    fontFamily: 'monospace',
-  },
-  typeBadge: {
-    display: 'inline-block',
-    fontSize: '0.7rem',
-    padding: '0.15rem 0.5rem',
-    borderRadius: '1rem',
-    background: 'rgba(96, 165, 250, 0.1)',
-    color: '#60a5fa',
-    marginTop: '0.5rem',
-  },
-  summary: {
-    display: 'flex',
-    gap: '2rem',
-    justifyContent: 'center',
-    padding: '1.5rem',
-    background: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 'var(--radius-lg, 12px)',
-  },
-  summaryItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  summaryValue: {
-    fontSize: '1.5rem',
-    fontWeight: 700,
-    color: 'var(--text-primary)',
-  },
-  summaryLabel: {
-    fontSize: '0.75rem',
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  toggleBtn: {
-    alignSelf: 'center',
-    background: 'none',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-md, 8px)',
-    padding: '0.5rem 1rem',
-    cursor: 'pointer',
-    fontSize: '0.8rem',
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
+// ── Shared input style ───────────────────────────────────────────
+
+const inputStyle = {
+  fontSize: '0.8rem',
+  padding: '0.4rem 0.6rem',
+  borderRadius: '6px',
+  border: '1px solid rgba(255,255,255,0.1)',
+  outline: 'none',
+  background: 'rgba(255,255,255,0.05)',
+  color: 'rgba(255,255,255,0.9)',
 };

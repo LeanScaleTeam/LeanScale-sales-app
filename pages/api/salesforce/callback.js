@@ -34,6 +34,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid state parameter' });
   }
 
+  // Validate slug to prevent open redirect injection
+  if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
+    return res.status(400).json({ error: 'Invalid slug in state' });
+  }
+
   // Handle OAuth errors
   if (oauthError) {
     return res.redirect(
@@ -81,7 +86,7 @@ export default async function handler(req, res) {
       .from('hubspot_connections')
       .select('id')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     const newCrmType = hsConn ? 'dual' : 'salesforce';
 
@@ -99,7 +104,7 @@ export default async function handler(req, res) {
       .from('diagnostic_intake')
       .select('id, status, answers')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (intake?.status === 'awaiting_crm_data') {
       // Don't auto-run diagnostic for dual mode until both systems have metadata
@@ -109,7 +114,7 @@ export default async function handler(req, res) {
           .select('id')
           .eq('customer_id', customerId)
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (!hsMetadata) {
           // HubSpot metadata not ready yet — skip auto-run
@@ -122,7 +127,7 @@ export default async function handler(req, res) {
             .eq('customer_id', customerId)
             .order('fetched_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           const result = runDiagnostic(intake.answers, metadata?.computed_signals || {}, 'dual');
 
@@ -155,7 +160,7 @@ export default async function handler(req, res) {
           .eq('customer_id', customerId)
           .order('fetched_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         const result = runDiagnostic(intake.answers, metadata?.computed_signals || {}, 'salesforce');
 
@@ -184,10 +189,10 @@ export default async function handler(req, res) {
 
     // Redirect back to intake form
     const orgName = encodeURIComponent(identity.displayName);
-    res.redirect(`/c/${slug}/diagnostic/intake?salesforce=connected&orgName=${orgName}`);
+    return res.redirect(`/c/${slug}/diagnostic/intake?salesforce=connected&orgName=${orgName}`);
   } catch (err) {
     console.error('Salesforce callback error:', err);
-    res.redirect(
+    return res.redirect(
       `/c/${slug}/diagnostic/intake?salesforce=error&reason=${encodeURIComponent(err.message)}`
     );
   }

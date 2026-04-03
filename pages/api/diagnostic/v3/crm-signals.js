@@ -48,7 +48,7 @@ export default async function handler(req, res) {
         .eq('customer_id', customerId)
         .order('fetched_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       computedSignals = sfMetadata?.computed_signals || {};
       enhancedSignals = sfMetadata?.enhanced_signals || {};
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
         .eq('customer_id', customerId)
         .order('downloaded_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       computedSignals = hsMetadata?.computed_signals || {};
     }

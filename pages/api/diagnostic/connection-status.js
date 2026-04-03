@@ -27,14 +27,14 @@ export default async function handler(req, res) {
         .eq('customer_id', customerId)
         .order('connected_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
       supabaseAdmin
         .from('hubspot_connections')
         .select('id, portal_id, portal_name')
         .eq('customer_id', customerId)
         .order('connected_at', { ascending: false })
         .limit(1)
-        .single(),
+        .maybeSingle(),
       supabaseAdmin
         .from('customers')
         .select('crm_type')

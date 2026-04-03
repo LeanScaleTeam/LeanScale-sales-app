@@ -17,12 +17,33 @@ const STATUS_BADGES = {
 
 const FINDING_STATUS_CYCLE = ['warning', 'careful', 'healthy'];
 
+const TRANSCRIPT_DEPTS = ['marketing', 'sales', 'cs', 'partners'];
+
 /**
  * FindingCard — Problem/Impact/Solution/Outcome card for a single diagnostic finding.
  */
-export default function FindingCard({ item, impact, services, onServiceClick, editMode, onOverride, customerPath }) {
+export default function FindingCard({ item, impact, services, onServiceClick, editMode, onOverride, customerPath, transcriptAssessments }) {
   const funcColor = FUNCTION_COLORS[item.primaryFunction] || FUNCTION_COLORS['Cross Functional'];
   const statusBadge = STATUS_BADGES[item.status] || STATUS_BADGES.careful;
+
+  // Score color based on avgScore (1-5 scale, lower is worse)
+  const scoreColor = item.avgScore === null || item.avgScore === undefined
+    ? 'rgba(255,255,255,0.25)'
+    : item.avgScore < 2.5 ? '#fca5a5'
+    : item.avgScore < 3.5 ? '#fde047'
+    : '#86efac';
+
+  // Collect up to 2 transcript evidence quotes for this finding
+  const transcriptQuotes = [];
+  if (transcriptAssessments && item.id) {
+    for (const dept of TRANSCRIPT_DEPTS) {
+      const ta = transcriptAssessments[`${item.id}_${dept}`];
+      if (ta?.evidence?.length > 0) {
+        transcriptQuotes.push({ text: ta.evidence[0], dept });
+        if (transcriptQuotes.length >= 2) break;
+      }
+    }
+  }
 
   function cycleStatus() {
     const idx = FINDING_STATUS_CYCLE.indexOf(item.status);
@@ -71,6 +92,21 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {/* Score indicator */}
+          {item.avgScore !== null && item.avgScore !== undefined && (
+            <span style={{
+              fontSize: '0.65rem',
+              fontWeight: 600,
+              color: scoreColor,
+              background: `${scoreColor}18`,
+              border: `1px solid ${scoreColor}40`,
+              borderRadius: '4px',
+              padding: '0.1rem 0.45rem',
+              letterSpacing: '0.02em',
+            }}>
+              {item.avgScore.toFixed(1)} / 5
+            </span>
+          )}
           {editMode ? (
             <button
               onClick={cycleStatus}
@@ -133,6 +169,19 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
         </div>
       </div>
 
+      {/* Score bar — thin progress indicator */}
+      {item.avgScore !== null && item.avgScore !== undefined && (
+        <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)' }}>
+          <div style={{
+            height: '100%',
+            width: `${Math.min(100, (item.avgScore / 5) * 100)}%`,
+            background: scoreColor,
+            transition: 'width 0.4s ease',
+            opacity: 0.7,
+          }} />
+        </div>
+      )}
+
       {/* Card Body */}
       <div style={{ padding: 'var(--space-4)' }}>
         {/* Item Name */}
@@ -165,7 +214,34 @@ export default function FindingCard({ item, impact, services, onServiceClick, ed
               rows={2}
             />
           ) : (
-            item.description
+            <>
+              {item.description}
+              {transcriptQuotes.length > 0 && (
+                <div style={{ marginTop: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  {transcriptQuotes.map((q, i) => (
+                    <div key={i} style={{
+                      borderLeft: '2px solid rgba(252, 165, 165, 0.3)',
+                      paddingLeft: 'var(--space-3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                    }}>
+                      <span style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontStyle: 'italic',
+                        lineHeight: 1.5,
+                      }}>
+                        "{q.text}"
+                      </span>
+                      <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        your words — {q.dept}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </Section>
 

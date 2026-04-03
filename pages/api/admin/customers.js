@@ -6,19 +6,9 @@
 import { supabaseAdmin } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 
-// Verify the request has a valid Supabase session
-async function verifyAuth(req) {
-  const authHeader = req.headers.authorization;
-  const cookieAuth = req.cookies['sb-access-token'];
-
-  // For server-side calls from admin pages, we check if the request
-  // comes from an authenticated session by verifying the user
-  // The admin client bypasses RLS, so we need to verify auth separately
-
-  // In a production app, you'd want to verify the JWT token
-  // For now, we'll rely on the client-side auth check and the fact
-  // that these endpoints are only called from authenticated admin pages
-  return true;
+// Verify the request has a valid admin session
+function verifyAuth(req) {
+  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
 }
 
 export default async function handler(req, res) {
@@ -105,7 +95,7 @@ async function handlePost(req, res) {
       .from('customers')
       .select('id')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return res.status(400).json({ error: 'A customer with this slug already exists' });

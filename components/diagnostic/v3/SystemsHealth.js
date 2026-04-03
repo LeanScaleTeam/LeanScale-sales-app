@@ -111,15 +111,6 @@ function IntegrityGauge({ score }) {
       }}>
         {score != null ? getIntegrityLabel(score) : 'NO DATA'}
       </div>
-      <button style={{
-        fontSize: '0.7rem', fontWeight: 600,
-        padding: '0.25rem 0.75rem', borderRadius: '6px',
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
-      }}>
-        Trend
-      </button>
     </div>
   );
 }
@@ -276,6 +267,7 @@ function EventStatus({ status }) {
 function IssuesList({ issues: propIssues }) {
   const issues = propIssues || DEFAULT_ISSUES;
   const [filter, setFilter] = useState('all');
+  const [hoveredIssue, setHoveredIssue] = useState(null);
 
   const failCount = issues.filter(i => i.severity === 'fail').length;
   const warnCount = issues.filter(i => i.severity === 'warning').length;
@@ -343,11 +335,21 @@ function IssuesList({ issues: propIssues }) {
             {category}
           </div>
           {items.map((issue, idx) => (
-            <div key={idx} style={{
-              display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
-              padding: '0.6rem 0',
-              borderBottom: idx < items.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-            }}>
+            <div
+              key={idx}
+              onMouseEnter={() => setHoveredIssue(`${category}-${idx}`)}
+              onMouseLeave={() => setHoveredIssue(null)}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                padding: '0.6rem 0.5rem',
+                margin: '0 -0.5rem',
+                borderBottom: idx < items.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                borderRadius: 6,
+                background: hoveredIssue === `${category}-${idx}` ? 'rgba(255,255,255,0.03)' : 'transparent',
+                cursor: 'default',
+                transition: 'background 0.15s ease',
+              }}
+            >
               {/* Severity dot */}
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
@@ -376,25 +378,15 @@ function IssuesList({ issues: propIssues }) {
                   )}
                 </div>
                 <div style={{
-                  fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)',
+                  fontSize: '0.75rem',
+                  color: hoveredIssue === `${category}-${idx}` ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.45)',
                   lineHeight: 1.4,
+                  transition: 'color 0.15s ease',
                 }}>
                   {issue.description}
                 </div>
               </div>
 
-              {/* Fix Events button */}
-              <button style={{
-                fontSize: '0.7rem', fontWeight: 600,
-                padding: '0.3rem 0.7rem', borderRadius: '6px',
-                background: 'rgba(124, 58, 237, 0.15)',
-                border: '1px solid rgba(124, 58, 237, 0.3)',
-                color: '#a78bfa', cursor: 'pointer',
-                whiteSpace: 'nowrap', flexShrink: 0,
-                marginTop: '0.1rem',
-              }}>
-                Fix Events
-              </button>
             </div>
           ))}
         </div>
@@ -417,6 +409,7 @@ function IssuesList({ issues: propIssues }) {
 function EmployeeIntegrity({ employees: propEmployees }) {
   const employees = propEmployees || DEFAULT_EMPLOYEES;
   const [page, setPage] = useState(0);
+  const [hoveredEmployee, setHoveredEmployee] = useState(null);
   const perPage = 5;
   const totalPages = Math.ceil(employees.length / perPage);
   const visible = employees.slice(page * perPage, (page + 1) * perPage);
@@ -480,9 +473,19 @@ function EmployeeIntegrity({ employees: propEmployees }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         {visible.map((emp, idx) => (
-          <div key={emp.name + idx} style={{
-            display: 'flex', alignItems: 'center', gap: '0.75rem',
-          }}>
+          <div
+            key={emp.name + idx}
+            onMouseEnter={() => setHoveredEmployee(idx)}
+            onMouseLeave={() => setHoveredEmployee(null)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '0.25rem 0.35rem',
+              margin: '0 -0.35rem',
+              borderRadius: 8,
+              background: hoveredEmployee === idx ? 'rgba(99,102,241,0.06)' : 'transparent',
+              transition: 'background 0.15s ease',
+            }}
+          >
             {/* Avatar with score badge */}
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <div style={{
@@ -531,10 +534,11 @@ function EmployeeIntegrity({ employees: propEmployees }) {
 
             {/* Event count */}
             <span style={{
-              fontSize: '0.75rem', fontWeight: 600,
-              color: 'rgba(255,255,255,0.5)',
+              fontSize: '0.75rem', fontWeight: hoveredEmployee === idx ? 700 : 600,
+              color: hoveredEmployee === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)',
               fontVariantNumeric: 'tabular-nums',
               minWidth: 40, textAlign: 'right',
+              transition: 'color 0.15s ease',
             }}>
               {emp.events?.toLocaleString()}
             </span>
@@ -568,7 +572,7 @@ export default function SystemsHealth({
         variants={fadeUpItem}
         style={{
           display: 'grid',
-          gridTemplateColumns: '160px 1fr 200px',
+          gridTemplateColumns: '200px 1fr 240px',
           gap: '1.5rem',
           padding: '1.25rem',
           ...glassCard,

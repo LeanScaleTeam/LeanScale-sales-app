@@ -1,51 +1,61 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { AnimatePresence, motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Layout from '../Layout';
 import { diagnosticRegistry, countStatuses } from '../../data/diagnostic-registry';
 import { useCustomer } from '../../context/CustomerContext';
 import { useAuth } from '../../context/AuthContext';
 import { slideUp } from '../../lib/animations';
 
-// Views
+// Always-needed views (on first paint for all diagnostic types)
 import DiagnosticNav from './DiagnosticNav';
-import PriorityView from './views/PriorityView';
-import CategoryView from './views/CategoryView';
-import OutcomeView from './views/OutcomeView';
-import TableView from './views/TableView';
-import MetricsView from './views/MetricsView';
-import MarkdownImport from './MarkdownImport';
-import PrioritySection from './PrioritySection';
 import DiagnosticSkeleton from './DiagnosticSkeleton';
 import DiagnosticItemModal from './DiagnosticItemModal';
-
-// v2 Views
-import LayerView from './LayerView';
-
-// v3 Views
-import ScoreCardGrid from './v3/ScoreCardGrid';
-import RoadmapView from './v3/RoadmapView';
 import V3Summary from './v3/V3Summary';
+
+// v3 core — loaded once v3 data is ready (not on first paint)
+import ScoreCardGrid from './v3/ScoreCardGrid';
 import DataCoverage from './v3/DataCoverage';
-import TranscriptUpload from './v3/TranscriptUpload';
-import PerformanceToPlan from './v3/PerformanceToPlan';
-import PresenterMode from './v3/PresenterMode';
-import buildPresenterSlides from '../../lib/diagnostic-engine/v3/build-presenter-slides';
-import ConsultantAuditForm from './v3/ConsultantAuditForm';
-import SuggestedProjects, { findNewSuggestedProjects } from './v3/SuggestedProjects';
-import DiagnosticVisualizations from './v3/DiagnosticVisualizations';
 import SystemsHealth from './v3/SystemsHealth';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 
-// CPQ-specific views
-import LifecycleView from './views/LifecycleView';
-import CpqMetricsView from './views/CpqMetricsView';
-
-// Engagement Pitch view
+// Engagement Pitch — loaded when user clicks the Engagement tab
 import EngagementPitch, { reconstructCompetencies, adaptV3ToPitchItems } from '../engagement-pitch/EngagementPitch';
+import GTMLandscape from './v3/GTMLandscape';
 import Power10Anchor from '../engagement-pitch/Power10Anchor';
 import FindingsWalkthrough from '../engagement-pitch/FindingsWalkthrough';
+
+// Lazy-loaded: heavy chart/viz components (Recharts) — behind collapsed sections
+const DiagnosticVisualizations = dynamic(() => import('./v3/DiagnosticVisualizations'), { ssr: false });
+const PerformanceToPlan = dynamic(() => import('./v3/PerformanceToPlan'), { ssr: false });
+
+// Lazy-loaded: secondary views only navigated to explicitly
+const RoadmapView = dynamic(() => import('./v3/RoadmapView'), { ssr: false });
+const SuggestedProjects = dynamic(() => import('./v3/SuggestedProjects'), { ssr: false });
+
+// Lazy-loaded: admin-only tools (never seen by demo prospects)
+const TranscriptUpload = dynamic(() => import('./v3/TranscriptUpload'), { ssr: false });
+const PresenterMode = dynamic(() => import('./v3/PresenterMode'), { ssr: false });
+const ConsultantAuditForm = dynamic(() => import('./v3/ConsultantAuditForm'), { ssr: false });
+const VascoImportPanel = dynamic(() => import('./v3/VascoImportPanel'), { ssr: false });
+const MarkdownImport = dynamic(() => import('./MarkdownImport'), { ssr: false });
+
+// Lazy-loaded: v1/v2/CPQ views
+const PriorityView = dynamic(() => import('./views/PriorityView'), { ssr: false });
+const CategoryView = dynamic(() => import('./views/CategoryView'), { ssr: false });
+const OutcomeView = dynamic(() => import('./views/OutcomeView'), { ssr: false });
+const TableView = dynamic(() => import('./views/TableView'), { ssr: false });
+const MetricsView = dynamic(() => import('./views/MetricsView'), { ssr: false });
+const LayerView = dynamic(() => import('./LayerView'), { ssr: false });
+const LifecycleView = dynamic(() => import('./views/LifecycleView'), { ssr: false });
+const CpqMetricsView = dynamic(() => import('./views/CpqMetricsView'), { ssr: false });
+const PrioritySection = dynamic(() => import('./PrioritySection'), { ssr: false });
+
+// Utility functions used inline — imported directly, not dynamic components
+import buildPresenterSlides from '../../lib/diagnostic-engine/v3/build-presenter-slides';
+import { findNewSuggestedProjects } from './v3/SuggestedProjects';
 
 /**
  * Derive Power 10 metrics array from intake D5_* answers.
@@ -120,6 +130,141 @@ const sectionDivider = {
   borderBottom: '1px solid rgba(255,255,255,0.04)',
 };
 
+/**
+ * Collapsible section header for the ScoreCard view.
+ */
+function CollapsibleSection({ label, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '0.4rem 0',
+          marginBottom: open ? '0.75rem' : 0,
+        }}
+      >
+        <span style={{
+          fontSize: '0.68rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          color: 'rgba(255,255,255,0.35)',
+          flex: 1,
+          textAlign: 'left',
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
+          paddingBottom: '0.4rem',
+        }}>
+          {label}
+        </span>
+        <span style={{
+          fontSize: '0.6rem',
+          color: 'rgba(255,255,255,0.25)',
+          transform: open ? 'rotate(180deg)' : 'none',
+          transition: 'transform 0.2s',
+          paddingBottom: open ? '0.4rem' : 0,
+        }}>
+          ▼
+        </span>
+      </button>
+      {open && children}
+    </div>
+  );
+}
+
+const SCORE_SECTION_DIVIDER = {
+  fontSize: '0.68rem',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'rgba(255,255,255,0.2)',
+  paddingBottom: '0.4rem',
+  marginBottom: '0.5rem',
+  borderBottom: '1px solid rgba(255,255,255,0.04)',
+};
+
+/**
+ * ScoreCard view — V3Summary as hero, secondary sections collapsed by default.
+ */
+function ScoreCardView({
+  v3Result, power10Data, transcriptAssessments, editMode,
+  customer, setV3Result, setActiveView,
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {power10Data && power10Data.length > 0 && (
+        <PerformanceToPlan metrics={power10Data} />
+      )}
+
+      {/* Hero — always visible */}
+      <div>
+        <div style={SCORE_SECTION_DIVIDER}>Overview</div>
+        <V3Summary
+          overallScore={v3Result.overall_score}
+          overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
+          pillarScores={v3Result.pillar_scores}
+          departmentScores={v3Result.department_scores}
+          companyProfile={v3Result.company_profile}
+          dataCoverage={v3Result.data_coverage}
+        />
+      </div>
+
+      {/* Analytics — collapsed by default */}
+      <CollapsibleSection label="Analytics">
+        <DiagnosticVisualizations
+          overallScore={v3Result.overall_score}
+          pillarScores={v3Result.pillar_scores}
+          departmentScores={v3Result.department_scores}
+          competencies={v3Result.competencies}
+        />
+      </CollapsibleSection>
+
+      {/* Detailed Scores — collapsed by default */}
+      <CollapsibleSection label="Detailed Scores">
+        <ScoreCardGrid
+          scoreCard={v3Result.score_card}
+          pillarScores={v3Result.pillar_scores}
+          departmentScores={v3Result.department_scores}
+          competencies={v3Result.competencies}
+          transcriptAssessments={transcriptAssessments}
+          editMode={editMode}
+          onCellClick={(compId, dept, score) => {
+            if (!editMode) return;
+            fetch('/api/diagnostic/v3/run', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customerId: customer.id,
+                overrides: [{ competencyId: compId, department: dept, score }],
+              }),
+            })
+              .then((r) => r.json())
+              .then((json) => {
+                if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
+              });
+          }}
+        />
+      </CollapsibleSection>
+
+      {/* Data Sources — collapsed by default */}
+      <CollapsibleSection label="Data Sources">
+        <DataCoverage
+          dataCoverage={v3Result.data_coverage}
+          onUploadTranscript={() => setActiveView('transcript')}
+          onStartConsultant={() => setActiveView('consultant')}
+        />
+      </CollapsibleSection>
+    </div>
+  );
+}
+
 export default function DiagnosticResults({ diagnosticType }) {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
@@ -158,7 +303,6 @@ export default function DiagnosticResults({ diagnosticType }) {
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
   const [consultantAssessments, setConsultantAssessments] = useState([]);
   const [crmSignals, setCrmSignals] = useState({ computedSignals: {}, enhancedSignals: {}, crmType: 'salesforce' });
-  const [roadmapEditMode, setRoadmapEditMode] = useState(false);
   const [roadmapOverrides, setRoadmapOverrides] = useState(null);
   const [roadmapDirty, setRoadmapDirty] = useState(false);
   const [roadmapSaving, setRoadmapSaving] = useState(false);
@@ -901,70 +1045,15 @@ export default function DiagnosticResults({ diagnosticType }) {
         <div style={{ marginTop: 'var(--space-4)' }}>
           {/* --- v3 views --- */}
           {isV3 && activeView === 'scorecard' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {power10Data && power10Data.length > 0 && (
-                <PerformanceToPlan metrics={power10Data} />
-              )}
-
-              <div>
-                <div style={sectionDivider}>Overview</div>
-                <V3Summary
-                  overallScore={v3Result.overall_score}
-                  overallLabel={V3_STATUS_LABELS[Math.round(v3Result.overall_score)] || 'No Data'}
-                  pillarScores={v3Result.pillar_scores}
-                  departmentScores={v3Result.department_scores}
-                  companyProfile={v3Result.company_profile}
-                  dataCoverage={v3Result.data_coverage}
-                />
-              </div>
-
-              <div>
-                <div style={sectionDivider}>Analytics</div>
-                <DiagnosticVisualizations
-                  overallScore={v3Result.overall_score}
-                  pillarScores={v3Result.pillar_scores}
-                  departmentScores={v3Result.department_scores}
-                  competencies={v3Result.competencies}
-                />
-              </div>
-
-              <div>
-                <div style={sectionDivider}>Detailed Scores</div>
-                <ScoreCardGrid
-                  scoreCard={v3Result.score_card}
-                  pillarScores={v3Result.pillar_scores}
-                  departmentScores={v3Result.department_scores}
-                  competencies={v3Result.competencies}
-                  transcriptAssessments={transcriptAssessments}
-                  editMode={editMode}
-                  onCellClick={(compId, dept, score) => {
-                    // Admin override
-                    if (!editMode) return;
-                    fetch('/api/diagnostic/v3/run', {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        customerId: customer.id,
-                        overrides: [{ competencyId: compId, department: dept, score }],
-                      }),
-                    })
-                      .then((r) => r.json())
-                      .then((json) => {
-                        if (json.success && json.data) setV3Result((prev) => ({ ...prev, ...json.data }));
-                      });
-                  }}
-                />
-              </div>
-
-              <div>
-                <div style={sectionDivider}>Data Sources</div>
-                <DataCoverage
-                  dataCoverage={v3Result.data_coverage}
-                  onUploadTranscript={() => setActiveView('transcript')}
-                  onStartConsultant={() => setActiveView('consultant')}
-                />
-              </div>
-            </div>
+            <ScoreCardView
+              v3Result={v3Result}
+              power10Data={power10Data}
+              transcriptAssessments={transcriptAssessments}
+              editMode={editMode}
+              customer={customer}
+              setV3Result={setV3Result}
+              setActiveView={setActiveView}
+            />
           )}
 
           {/* --- Power 10 standalone view --- */}
@@ -986,7 +1075,22 @@ export default function DiagnosticResults({ diagnosticType }) {
           {/* --- Systems Health view --- */}
           {isV3 && activeView === 'systems' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {/* CRM Section */}
+              {/* GTM Systems Landscape — hero visual */}
+              <GTMLandscape
+                companyProfile={v3Result?.company_profile || {}}
+                computedSignals={crmSignals.computedSignals || {}}
+                crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+                editMode={editMode}
+                overrides={engagementOverrides}
+                onOverride={(section, key, value) => {
+                  const next = {
+                    ...engagementOverrides,
+                    [section]: { ...engagementOverrides?.[section], [key]: { ...engagementOverrides?.[section]?.[key], ...value } },
+                  };
+                  handleEngagementOverridesChange(next);
+                }}
+              />
+              {/* CRM Data Integrity */}
               <div>
                 <h2 style={{
                   fontSize: 'clamp(1.25rem, 2vw, 1.5rem)',
@@ -995,7 +1099,7 @@ export default function DiagnosticResults({ diagnosticType }) {
                   color: 'rgba(255,255,255,0.95)',
                   letterSpacing: '-0.01em',
                 }}>
-                  CRM
+                  CRM Health
                 </h2>
                 <SystemsHealth editMode={editMode} />
               </div>
@@ -1020,31 +1124,13 @@ export default function DiagnosticResults({ diagnosticType }) {
                   handleEngagementOverridesChange(next);
                 }}
                 customerPath={customerPath}
+                transcriptAssessments={transcriptAssessments}
               />
             );
           })()}
 
           {isV3 && activeView === 'roadmap' && (
             <>
-              {/* Edit mode toolbar */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem', gap: '0.5rem' }}>
-                <button
-                  onClick={() => setRoadmapEditMode(!roadmapEditMode)}
-                  style={{
-                    padding: '0.4rem 1rem',
-                    fontSize: '0.8rem',
-                    borderRadius: 'var(--radius-md, 8px)',
-                    border: roadmapEditMode ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.12)',
-                    background: roadmapEditMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.06)',
-                    color: roadmapEditMode ? '#fca5a5' : 'rgba(255, 255, 255, 0.7)',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  {roadmapEditMode ? 'Exit Edit Mode' : 'Edit Roadmap'}
-                </button>
-              </div>
-
               {suggestedProjects.length > 0 && (
                 <SuggestedProjects
                   suggestions={suggestedProjects}
@@ -1056,7 +1142,7 @@ export default function DiagnosticResults({ diagnosticType }) {
 
               <RoadmapView
                 roadmap={mergedRoadmap}
-                editMode={roadmapEditMode}
+                editMode={editMode}
                 onRoadmapChange={handleRoadmapChange}
                 removedProjects={removedProjectsList}
               />
@@ -1116,7 +1202,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             </>
           )}
 
-          {isV3 && activeView === 'transcript' && (
+          {isV3 && isAdmin && activeView === 'transcript' && (
             <TranscriptUpload
               customerId={customer?.id}
               onUploadComplete={() => {
@@ -1149,7 +1235,7 @@ export default function DiagnosticResults({ diagnosticType }) {
             />
           )}
 
-          {isV3 && activeView === 'consultant' && (
+          {isV3 && isAdmin && activeView === 'consultant' && (
             <ConsultantAuditForm
               customerId={customer?.id}
               crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
@@ -1165,6 +1251,34 @@ export default function DiagnosticResults({ diagnosticType }) {
                   body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
                 })
                   .then((r) => r.json())
+                  .then(handleRerunResponse);
+              }}
+            />
+          )}
+
+          {isV3 && isAdmin && activeView === 'vasco' && (
+            <VascoImportPanel
+              customerId={customer?.id}
+              onApplyImport={(scoreOverrides) => {
+                // Merge Vasco scores as consultant overrides and re-run diagnostic
+                const existing = consultantAssessments || [];
+                const merged = { ...Object.fromEntries(existing.map(a => [a.competency_id, a])) };
+                for (const [competencyId, score] of Object.entries(scoreOverrides)) {
+                  merged[competencyId] = {
+                    ...(merged[competencyId] || {}),
+                    competency_id: competencyId,
+                    score,
+                    source: 'vasco',
+                    notes: 'Imported from Vasco',
+                  };
+                }
+                setConsultantAssessments(Object.values(merged));
+                fetch('/api/diagnostic/v3/run', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ customerId: customer.id, preserveRoadmap: true }),
+                })
+                  .then(r => r.json())
                   .then(handleRerunResponse);
               }}
             />
@@ -1212,6 +1326,7 @@ export default function DiagnosticResults({ diagnosticType }) {
               engagementOverrides={engagementOverrides}
               onOverridesChange={handleEngagementOverridesChange}
               customerPath={customerPath}
+              transcriptAssessments={transcriptAssessments}
             />
           )}
 

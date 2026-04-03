@@ -12,7 +12,10 @@ import { runDiagnostic } from '../../../lib/diagnostic-engine';
 import { mergeSignals } from '../../../lib/diagnostic-engine/signal-merger';
 
 function isAdmin(req) {
-  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+  const cookies = req.cookies || {};
+  return Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 }
 
 export default async function handler(req, res) {

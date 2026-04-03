@@ -8,7 +8,10 @@ import { createClient } from '@supabase/supabase-js';
 
 // Verify the request has a valid admin session
 function verifyAuth(req) {
-  return !!(req.cookies?.['admin-session'] || req.cookies?.['sb-access-token']);
+  const cookies = req.cookies || {};
+  return Object.keys(cookies).some(
+    key => key.startsWith('sb-') && key.endsWith('-auth-token')
+  ) || !!(cookies['admin-session']);
 }
 
 export default async function handler(req, res) {

@@ -492,16 +492,17 @@ export default function YourTeam() {
                 </div>
               ))}
             </div>
-            <a href="/getting-started" style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <button style={{
+            <button
+              onClick={() => window.open('https://meet.reclaimai.com/u/7f49bc93-ac0e-47eb-9e6a-0936f035cfa8', '_blank')}
+              style={{
                 background: 'linear-gradient(135deg, #a3e635, #84cc16)',
                 color: '#050310', fontWeight: 700,
                 padding: '0.45rem 1.1rem',
                 fontSize: '0.78rem', border: 'none', borderRadius: 8, cursor: 'pointer',
+                flexShrink: 0,
               }}>
-                Book a Kickoff →
-              </button>
-            </a>
+              Book a Kickoff →
+            </button>
           </div>
         )}
 
@@ -619,17 +620,17 @@ export default function YourTeam() {
                   : `Click any team member to add them to your pod, then book a kickoff call to get started.`
                 }
               </p>
-              <a href="/getting-started" style={{ textDecoration: 'none' }}>
-                <button style={{
+              <button
+                onClick={() => window.open('https://meet.reclaimai.com/u/7f49bc93-ac0e-47eb-9e6a-0936f035cfa8', '_blank')}
+                style={{
                   background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
                   color: '#050310', fontWeight: 800,
                   padding: '0.9rem 2.25rem',
                   fontSize: '1rem', border: 'none', borderRadius: 12, cursor: 'pointer',
                   letterSpacing: '-0.01em',
                 }}>
-                  Book a Kickoff Call
-                </button>
-              </a>
+                Book a Kickoff Call
+              </button>
             </div>
           </div>
 

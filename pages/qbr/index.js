@@ -366,64 +366,99 @@ export default function QBRHub({ customer, qbrs: initialQBRs, isAdmin }) {
   }
 
   return (
-    <Layout title={`${customer.customerName} — QBR Hub`}>
+    <Layout title={`${customer.customerName} — Business Reviews`}>
       <div style={{ background: '#070512', minHeight: '100vh' }}>
 
         {/* Hero */}
         <div style={{
           background: 'linear-gradient(160deg, #0a0118 0%, #170930 50%, #0a0118 100%)',
-          padding: 'clamp(2.5rem, 5vw, 4rem) 1.5rem',
+          padding: 'clamp(3rem, 6vw, 5rem) 1.5rem',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           position: 'relative', overflow: 'hidden',
         }}>
+          {/* Background glow */}
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%,-50%)',
-            width: 600, height: 400,
-            background: 'radial-gradient(ellipse, rgba(124,58,237,0.18) 0%, transparent 65%)',
+            width: 700, height: 500,
+            background: 'radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 65%)',
             pointerEvents: 'none',
           }} />
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            {/* Eyebrow */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              <span style={{
+                padding: '0.25rem 0.75rem', borderRadius: 20,
+                background: 'rgba(163,230,53,0.1)',
+                border: '1px solid rgba(163,230,53,0.25)',
+                fontSize: '0.65rem', fontWeight: 700, color: '#a3e635',
+                textTransform: 'uppercase', letterSpacing: '0.1em',
+              }}>
+                Active Engagement
+              </span>
+              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.04em' }}>
+                Quarterly Business Reviews
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1.5rem' }}>
               <div>
                 {customer.customerLogo && (
-                  <img src={customer.customerLogo} alt={customer.customerName} style={{ height: 40, marginBottom: '1rem', objectFit: 'contain' }} />
+                  <img src={customer.customerLogo} alt={customer.customerName} style={{ height: 36, marginBottom: '0.85rem', objectFit: 'contain' }} />
                 )}
-                <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: 'white', margin: 0, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+                <h1 style={{ fontSize: 'clamp(2rem, 4.5vw, 3.25rem)', fontWeight: 900, color: 'white', margin: 0, letterSpacing: '-0.03em', lineHeight: 1.05 }}>
                   {customer.customerName}
                 </h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                  <span style={{
-                    padding: '0.15rem 0.6rem', borderRadius: 20,
-                    background: 'rgba(163,230,53,0.12)',
-                    border: '1px solid rgba(163,230,53,0.25)',
-                    fontSize: '0.65rem', fontWeight: 700, color: '#a3e635',
-                    textTransform: 'uppercase', letterSpacing: '0.07em',
-                  }}>
-                    Active Customer
-                  </span>
-                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
-                    {qbrs.length} quarter{qbrs.length !== 1 ? 's' : ''} on record
-                  </span>
-                </div>
+                <p style={{ marginTop: '0.65rem', fontSize: 'clamp(0.875rem, 1.5vw, 1rem)', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, maxWidth: 520 }}>
+                  Your engagement history with LeanScale — wins, progress, and what's next each quarter.
+                </p>
               </div>
 
-              {isAdmin && (
+              {/* Stats strip */}
+              <div style={{ display: 'flex', gap: '1.5rem', flexShrink: 0 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.03em' }}>{qbrs.length}</div>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>Quarter{qbrs.length !== 1 ? 's' : ''}</div>
+                </div>
+                {qbrs.length > 0 && (() => {
+                  const totalWins = qbrs.reduce((s, q) => s + (q.wins?.length || 0), 0);
+                  const totalProjects = qbrs.reduce((s, q) => s + (q.projects_completed?.length || 0), 0);
+                  return (
+                    <>
+                      {totalWins > 0 && (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fbbf24', lineHeight: 1, letterSpacing: '-0.03em' }}>{totalWins}</div>
+                          <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>Total Wins</div>
+                        </div>
+                      )}
+                      {totalProjects > 0 && (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '2rem', fontWeight: 900, color: '#86efac', lineHeight: 1, letterSpacing: '-0.03em' }}>{totalProjects}</div>
+                          <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>Projects</div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {isAdmin && (
+              <div style={{ marginTop: '1.75rem' }}>
                 <button
                   onClick={() => setShowModal(true)}
                   style={{
                     background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
                     color: 'white', fontWeight: 700,
-                    padding: '0.65rem 1.4rem',
+                    padding: '0.6rem 1.4rem',
                     fontSize: '0.85rem', border: 'none', borderRadius: 10, cursor: 'pointer',
                     boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
-                    flexShrink: 0,
                   }}
                 >
                   + New QBR
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -432,22 +467,37 @@ export default function QBRHub({ customer, qbrs: initialQBRs, isAdmin }) {
           <motion.div variants={staggerContainer} initial="hidden" animate="show">
 
             {qbrs.length === 0 ? (
-              <motion.div variants={fadeUpItem} style={{
-                textAlign: 'center', padding: '4rem 2rem',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px dashed rgba(255,255,255,0.1)',
-                borderRadius: 16,
-              }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📋</div>
-                <h2 style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700, margin: '0 0 0.5rem' }}>No QBRs yet</h2>
-                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', margin: '0 0 1.5rem' }}>
-                  Create the first QBR to establish the baseline from the diagnostic.
-                </p>
-                {isAdmin && (
-                  <button onClick={() => setShowModal(true)} style={primaryBtnStyle}>
-                    Create Q0 Baseline
-                  </button>
-                )}
+              <motion.div variants={fadeUpItem}>
+                {/* Coming soon state — looks intentional, not broken */}
+                <div style={{
+                  textAlign: 'center', padding: 'clamp(3rem, 8vw, 5rem) 2rem',
+                  background: 'linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(109,40,217,0.03) 100%)',
+                  border: '1px solid rgba(124,58,237,0.15)',
+                  borderRadius: 20,
+                }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'rgba(124,58,237,0.12)',
+                    border: '1px solid rgba(124,58,237,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 1.5rem',
+                    fontSize: '1.5rem',
+                  }}>
+                    📊
+                  </div>
+                  <h2 style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 800, margin: '0 0 0.6rem', fontSize: 'clamp(1.25rem, 2.5vw, 1.6rem)', letterSpacing: '-0.01em' }}>
+                    Your first QBR is coming soon
+                  </h2>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.95rem', margin: '0 auto', maxWidth: 420, lineHeight: 1.7 }}>
+                    Your LeanScale team will prepare a baseline Business Review to kick off the engagement.
+                    Check back after your kickoff meeting.
+                  </p>
+                  {isAdmin && (
+                    <button onClick={() => setShowModal(true)} style={{ ...primaryBtnStyle, marginTop: '2rem' }}>
+                      Create Q0 Baseline
+                    </button>
+                  )}
+                </div>
               </motion.div>
             ) : (
               <>

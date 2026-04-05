@@ -195,12 +195,20 @@ const SCORE_SECTION_DIVIDER = {
  */
 function ScoreCardView({
   v3Result, power10Data, transcriptAssessments, editMode,
-  customer, setV3Result, setActiveView,
+  customer, setV3Result, setActiveView, engagementOverrides,
 }) {
+  // Apply engagement overrides to power10 data (same logic as Power10Anchor)
+  const p10Overrides = engagementOverrides?.power10 || {};
+  const effectivePower10 = (power10Data || []).map(metric => ({
+    ...metric,
+    ableToReport:      p10Overrides[metric.name]?.ableToReport      ?? metric.ableToReport,
+    statusAgainstPlan: p10Overrides[metric.name]?.statusAgainstPlan ?? metric.statusAgainstPlan,
+  }));
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {power10Data && power10Data.length > 0 && (
-        <PerformanceToPlan metrics={power10Data} />
+      {effectivePower10.length > 0 && (
+        <PerformanceToPlan metrics={effectivePower10} />
       )}
 
       {/* Hero — always visible */}
@@ -1053,6 +1061,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
               customer={customer}
               setV3Result={setV3Result}
               setActiveView={setActiveView}
+              engagementOverrides={engagementOverrides}
             />
           )}
 

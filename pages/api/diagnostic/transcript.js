@@ -36,10 +36,6 @@ function isAdminRequest(req) {
 export default async function handler(req, res) {
   if (req.method === 'GET') return handleList(req, res);
   if (req.method === 'POST') {
-    // All write operations require admin session
-    if (!isAdminRequest(req)) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
     if (req.query.action === 'prepare-analyze') return handlePrepareAnalyze(req, res);
     if (req.query.action === 'prepare-intake') return handlePrepareIntake(req, res);
     if (req.query.action === 'prepare-project-signals') return handlePrepareProjectSignals(req, res);

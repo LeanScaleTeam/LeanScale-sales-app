@@ -31,6 +31,10 @@ export default function AdminCustomers() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [qbrCounts, setQbrCounts] = useState({});
+  const [qbrModal, setQbrModal] = useState(null); // { customer } or null
+  const [qbrForm, setQbrForm] = useState({ qPart: 'Q1', year: new Date().getFullYear(), periodStart: '', periodEnd: '', hoursBudgeted: '' });
+  const [qbrSaving, setQbrSaving] = useState(false);
+  const [qbrError, setQbrError] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -71,6 +75,49 @@ export default function AdminCustomers() {
       console.error('Error loading customers:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openQBRModal = (customer) => {
+    setQbrForm({ qPart: 'Q1', year: new Date().getFullYear(), periodStart: '', periodEnd: '', hoursBudgeted: '' });
+    setQbrError(null);
+    setQbrModal({ customer });
+  };
+
+  const handleCreateQBR = async (e) => {
+    e.preventDefault();
+    setQbrSaving(true);
+    setQbrError(null);
+    const { customer } = qbrModal;
+    const { qPart, year, periodStart, periodEnd, hoursBudgeted } = qbrForm;
+    const quarter = `${qPart}-${year}`;
+    const isBaseline = qPart === 'Q0';
+    const quarterLabel = isBaseline ? `${year} Kickoff Baseline` : `${qPart} ${year} Business Review`;
+    try {
+      const res = await fetch('/api/qbr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: customer.id,
+          quarter,
+          quarterLabel,
+          isBaseline,
+          periodStart: periodStart || null,
+          periodEnd: periodEnd || null,
+          hoursBudgeted: hoursBudgeted ? Number(hoursBudgeted) : null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to create QBR');
+      setQbrModal(null);
+      // Update count
+      setQbrCounts(prev => ({ ...prev, [customer.id]: (prev[customer.id] || 0) + 1 }));
+      // Open QBR in new tab
+      window.open(`https://clients.leanscale.team/c/${customer.slug}/qbr/${encodeURIComponent(quarter)}`, '_blank');
+    } catch (err) {
+      setQbrError(err.message);
+    } finally {
+      setQbrSaving(false);
     }
   };
 
@@ -430,10 +477,8 @@ export default function AdminCustomers() {
                                 {qbrCounts[customer.id]} QBR{qbrCounts[customer.id] !== 1 ? 's' : ''}
                               </a>
                             )}
-                            <a
-                              href={`https://clients.leanscale.team/c/${customer.slug}/qbr`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => openQBRModal(customer)}
                               style={{
                                 padding: '0.125rem 0.5rem',
                                 background: '#dcfce7',
@@ -441,12 +486,13 @@ export default function AdminCustomers() {
                                 borderRadius: '4px',
                                 fontSize: '0.75rem',
                                 fontWeight: 500,
-                                textDecoration: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap',
                               }}
                             >
                               + New QBR
-                            </a>
+                            </button>
                           </div>
                         )}
                       </td>
@@ -831,6 +877,83 @@ export default function AdminCustomers() {
                   }}
                 >
                   {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QBR Creation Modal */}
+      {qbrModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '1rem', zIndex: 1100,
+        }}>
+          <div style={{
+            background: 'white', borderRadius: '12px', width: '100%',
+            maxWidth: '480px', padding: '2rem',
+          }}>
+            <h2 style={{ marginBottom: '0.25rem', fontSize: '1.1rem', fontWeight: 700 }}>
+              New QBR — {qbrModal.customer.name}
+            </h2>
+            <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '1.5rem' }}>
+              Creates a draft QBR. You can edit and publish it from the customer portal.
+            </p>
+
+            {qbrError && (
+              <div style={{ background: '#fee2e2', color: '#dc2626', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                {qbrError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateQBR}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>Quarter</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <select value={qbrForm.qPart} onChange={e => setQbrForm(f => ({ ...f, qPart: e.target.value }))}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem' }}>
+                    {['Q0','Q1','Q2','Q3','Q4'].map(q => <option key={q} value={q}>{q}</option>)}
+                  </select>
+                  <select value={qbrForm.year} onChange={e => setQbrForm(f => ({ ...f, year: Number(e.target.value) }))}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem' }}>
+                    {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#7c3aed', marginTop: '0.25rem' }}>
+                  Label: <strong>{qbrForm.qPart === 'Q0' ? `${qbrForm.year} Kickoff Baseline` : `${qbrForm.qPart} ${qbrForm.year} Business Review`}</strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>Period Start</label>
+                  <input type="date" value={qbrForm.periodStart} onChange={e => setQbrForm(f => ({ ...f, periodStart: e.target.value }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>Period End</label>
+                  <input type="date" value={qbrForm.periodEnd} onChange={e => setQbrForm(f => ({ ...f, periodEnd: e.target.value }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem' }} />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.875rem' }}>Hours Budgeted</label>
+                <input type="number" min="0" value={qbrForm.hoursBudgeted} onChange={e => setQbrForm(f => ({ ...f, hoursBudgeted: e.target.value }))}
+                  placeholder="e.g. 80"
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setQbrModal(null)}
+                  style={{ padding: '0.5rem 1rem', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={qbrSaving}
+                  style={{ padding: '0.5rem 1.25rem', background: qbrSaving ? '#ccc' : '#7c3aed', color: 'white', border: 'none', borderRadius: '6px', cursor: qbrSaving ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
+                  {qbrSaving ? 'Creating...' : 'Create QBR →'}
                 </button>
               </div>
             </form>

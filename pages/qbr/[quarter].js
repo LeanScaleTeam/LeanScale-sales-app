@@ -608,6 +608,186 @@ function RoadmapItem({ item, editMode, onChange, onRemove }) {
   );
 }
 
+// ─── Teamwork Import Modal ────────────────────────────────────────────────────
+
+function TeamworkImportModal({ qbr, onClose, onApply }) {
+  const [token, setToken]         = useState('');
+  const [siteUrl, setSiteUrl]     = useState('leanscale3.teamwork.com');
+  const [projectIds, setProjectIds] = useState('');
+  const [fromDate, setFromDate]   = useState(qbr.period_start || '');
+  const [toDate, setToDate]       = useState(qbr.period_end || '');
+  const [loading, setLoading]     = useState(false);
+  const [result, setResult]       = useState(null);
+  const [error, setError]         = useState(null);
+
+  async function handleFetch() {
+    if (!token || !projectIds || !fromDate || !toDate) {
+      setError('All fields are required.'); return;
+    }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await fetch('/api/qbr/teamwork-hours', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiToken:   token,
+          siteUrl,
+          projectIds,
+          fromDate:   fromDate.replace(/-/g, ''),
+          toDate:     toDate.replace(/-/g, ''),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setResult(json);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inp = {
+    width: '100%', background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8,
+    padding: '8px 12px', color: '#fff', fontSize: '0.85rem',
+    outline: 'none', fontFamily: 'inherit',
+  };
+
+  const maxHours = result ? Math.max(...result.hoursByMonth.map(m => m.hours), 1) : 1;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24,
+    }}>
+      <div style={{
+        background: '#0f0c1e', border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: 20, padding: '32px 36px', width: '100%', maxWidth: 520,
+        maxHeight: '90vh', overflowY: 'auto',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#fff' }}>Import Hours from Teamwork</h3>
+            <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>
+              Fetches time entries and calculates totals by month and project
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              API Token
+            </label>
+            <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="tok_xxxxxx" style={inp} />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Teamwork Site
+            </label>
+            <input value={siteUrl} onChange={e => setSiteUrl(e.target.value)} placeholder="yourcompany.teamwork.com" style={inp} />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Project IDs (comma-separated)
+            </label>
+            <input value={projectIds} onChange={e => setProjectIds(e.target.value)} placeholder="1453303,1527918" style={inp} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>From</label>
+              <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={inp} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>To</label>
+              <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={inp} />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#fca5a5', fontSize: '0.8rem' }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleFetch}
+          disabled={loading}
+          style={{
+            marginTop: 20, width: '100%', padding: '10px 0',
+            background: loading ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.25)',
+            border: '1px solid rgba(99,102,241,0.5)',
+            borderRadius: 10, color: '#a5b4fc', fontSize: '0.85rem',
+            fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit', opacity: loading ? 0.7 : 1,
+          }}
+        >
+          {loading ? 'Fetching…' : 'Fetch Hours'}
+        </button>
+
+        {result && (
+          <div style={{ marginTop: 24 }}>
+            <div style={{
+              padding: '16px 20px', background: 'rgba(99,102,241,0.06)',
+              border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, marginBottom: 16,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Total Hours</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff' }}>{result.totalHours}</span>
+            </div>
+
+            {result.hoursByMonth.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>By Month</div>
+                {result.hoursByMonth.map(m => (
+                  <div key={m.month} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.5)', width: 70, flexShrink: 0 }}>
+                      {new Date(m.month + '-02').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                    </span>
+                    <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.07)' }}>
+                      <div style={{ width: `${(m.hours / maxHours) * 100}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
+                    </div>
+                    <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.6)', width: 40, textAlign: 'right', flexShrink: 0 }}>{m.hours}h</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {result.hoursByProject.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 10 }}>By Project</div>
+                {result.hoursByProject.map(p => (
+                  <div key={p.project} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.78rem' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.project}</span>
+                    <span style={{ color: '#a5b4fc', fontWeight: 600, marginLeft: 12, flexShrink: 0 }}>{p.hours}h</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => onApply(result)}
+              style={{
+                width: '100%', padding: '10px 0',
+                background: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.4)',
+                borderRadius: 10, color: '#86efac', fontSize: '0.85rem',
+                fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Apply to QBR
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Glass Card wrapper ───────────────────────────────────────────────────────
 
 function Card({ children, style = {} }) {
@@ -640,6 +820,7 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
   const [publishing, setPublishing] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [twModalOpen, setTwModalOpen] = useState(false);
   const fileInputRef = useRef(null);
   const mountedRef = useRef(true);
 
@@ -693,6 +874,8 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
           accomplishmentsMarkdown: qbr.accomplishments_markdown,
           hoursUsed:               qbr.hours_used,
           hoursBudgeted:           qbr.hours_budgeted,
+          hoursByMonth:            qbr.hours_by_month,
+          hoursByProject:          qbr.hours_by_project,
         }),
       });
       if (!res.ok) throw new Error('Save failed');
@@ -811,6 +994,15 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
     };
     reader.readAsText(file);
     e.target.value = '';
+  }
+
+  // ── Apply Teamwork import ──
+
+  function handleTeamworkApply(result) {
+    update('hours_used', Math.round(result.totalHours));
+    update('hours_by_month', result.hoursByMonth);
+    update('hours_by_project', result.hoursByProject);
+    setTwModalOpen(false);
   }
 
   // ── Simple markdown → HTML (minimal, safe) ──
@@ -1346,75 +1538,146 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
           )}
 
           {/* ── Hours Summary ────────────────────────────────────────── */}
-          {(editMode || (hoursBudgeted > 0)) && (
-            <Card style={{ marginBottom: 28 }}>
-              <SectionHeader icon="⏱" title="Hours Summary" />
-              {editMode ? (
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          {(editMode || (hoursBudgeted > 0)) && (() => {
+            const hoursByMonth   = Array.isArray(qbr.hours_by_month)   ? qbr.hours_by_month   : [];
+            const hoursByProject = Array.isArray(qbr.hours_by_project) ? qbr.hours_by_project : [];
+            const maxMonthHours  = hoursByMonth.length ? Math.max(...hoursByMonth.map(m => m.hours)) : 1;
+            return (
+              <Card style={{ marginBottom: 28 }}>
+                <SectionHeader
+                  icon="⏱"
+                  title="Hours Summary"
+                  action={editMode && (
+                    <button
+                      onClick={() => setTwModalOpen(true)}
+                      style={{
+                        padding: '6px 14px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600,
+                        background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)',
+                        color: '#a5b4fc', cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                    >
+                      ↓ Import from Teamwork
+                    </button>
+                  )}
+                />
+                {editMode ? (
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div>
+                      <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
+                        Hours Used
+                      </label>
+                      <input
+                        type="number"
+                        value={qbr.hours_used ?? ''}
+                        onChange={e => update('hours_used', parseInt(e.target.value) || null)}
+                        placeholder="0"
+                        style={{
+                          width: 90, background: 'rgba(255,255,255,0.06)',
+                          border: '1px dashed rgba(99,102,241,0.4)',
+                          borderRadius: 6, padding: '6px 10px',
+                          color: '#fff', fontSize: '0.85rem', outline: 'none', fontFamily: 'inherit',
+                        }}
+                      />
+                    </div>
+                    <div style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.2)', alignSelf: 'flex-end', paddingBottom: 4 }}>/</div>
+                    <div>
+                      <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
+                        Hours Budgeted
+                      </label>
+                      <input
+                        type="number"
+                        value={qbr.hours_budgeted ?? ''}
+                        onChange={e => update('hours_budgeted', parseInt(e.target.value) || null)}
+                        placeholder="100"
+                        style={{
+                          width: 90, background: 'rgba(255,255,255,0.06)',
+                          border: '1px dashed rgba(99,102,241,0.4)',
+                          borderRadius: 6, padding: '6px 10px',
+                          color: '#fff', fontSize: '0.85rem', outline: 'none', fontFamily: 'inherit',
+                        }}
+                      />
+                    </div>
+                    {hoursByMonth.length > 0 && (
+                      <div style={{ marginLeft: 8, fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', alignSelf: 'flex-end', paddingBottom: 6 }}>
+                        Imported from Teamwork ✓
+                      </div>
+                    )}
+                  </div>
+                ) : (
                   <div>
-                    <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
-                      Hours Used
-                    </label>
-                    <input
-                      type="number"
-                      value={qbr.hours_used ?? ''}
-                      onChange={e => update('hours_used', parseInt(e.target.value) || null)}
-                      placeholder="0"
-                      style={{
-                        width: 90, background: 'rgba(255,255,255,0.06)',
-                        border: '1px dashed rgba(99,102,241,0.4)',
-                        borderRadius: 6, padding: '6px 10px',
-                        color: '#fff', fontSize: '0.85rem', outline: 'none', fontFamily: 'inherit',
-                      }}
-                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                      <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)' }}>Hours Used vs Budget</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
+                        {hoursUsed ?? 0} / {hoursBudgeted} hrs
+                        {hoursPct !== null && (
+                          <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: 400, marginLeft: 8 }}>
+                            ({hoursPct}%)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginBottom: 24 }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(hoursPct ?? 0, 100)}%` }}
+                        transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+                        style={{
+                          height: '100%', borderRadius: 4,
+                          background: (hoursPct ?? 0) > 100 ? '#ef4444' : (hoursPct ?? 0) > 80 ? '#eab308' : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Hours by month */}
+                    {hoursByMonth.length > 0 && (
+                      <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 12 }}>
+                          By Month
+                        </div>
+                        {hoursByMonth.map(m => (
+                          <div key={m.month} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                            <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', width: 64, flexShrink: 0 }}>
+                              {new Date(m.month + '-02').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                            </span>
+                            <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.07)' }}>
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(m.hours / maxMonthHours) * 100}%` }}
+                                transition={{ duration: 0.8, ease: 'easeOut' }}
+                                style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }}
+                              />
+                            </div>
+                            <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.6)', width: 44, textAlign: 'right', flexShrink: 0, fontWeight: 600 }}>
+                              {m.hours}h
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Hours by project */}
+                    {hoursByProject.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 12 }}>
+                          By Project
+                        </div>
+                        {hoursByProject.map(p => (
+                          <div key={p.project} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {p.project}
+                            </span>
+                            <span style={{ fontSize: '0.78rem', color: '#a5b4fc', fontWeight: 600, marginLeft: 16, flexShrink: 0 }}>
+                              {p.hours}h
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.2)', alignSelf: 'flex-end', paddingBottom: 4 }}>/</div>
-                  <div>
-                    <label style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
-                      Hours Budgeted
-                    </label>
-                    <input
-                      type="number"
-                      value={qbr.hours_budgeted ?? ''}
-                      onChange={e => update('hours_budgeted', parseInt(e.target.value) || null)}
-                      placeholder="100"
-                      style={{
-                        width: 90, background: 'rgba(255,255,255,0.06)',
-                        border: '1px dashed rgba(99,102,241,0.4)',
-                        borderRadius: 6, padding: '6px 10px',
-                        color: '#fff', fontSize: '0.85rem', outline: 'none', fontFamily: 'inherit',
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-                    <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)' }}>Hours Used vs Budget</span>
-                    <span style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
-                      {hoursUsed ?? 0} / {hoursBudgeted} hrs
-                      {hoursPct !== null && (
-                        <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: 400, marginLeft: 8 }}>
-                          ({hoursPct}%)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(hoursPct ?? 0, 100)}%` }}
-                      transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
-                      style={{
-                        height: '100%', borderRadius: 4,
-                        background: (hoursPct ?? 0) > 100 ? '#ef4444' : (hoursPct ?? 0) > 80 ? '#eab308' : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </Card>
-          )}
+                )}
+              </Card>
+            );
+          })()}
 
           {/* ── Architect Notes (admin only) ─────────────────────────── */}
           {isAdmin && (
@@ -1480,6 +1743,14 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
 
         </motion.div>
       </div>
+
+      {twModalOpen && (
+        <TeamworkImportModal
+          qbr={qbr}
+          onClose={() => setTwModalOpen(false)}
+          onApply={handleTeamworkApply}
+        />
+      )}
     </>
   );
 }

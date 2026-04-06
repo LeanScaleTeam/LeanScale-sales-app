@@ -53,6 +53,8 @@ async function handlePut(req, res, id) {
     accomplishmentsMarkdown:  'accomplishments_markdown',
     hoursUsed:                'hours_used',
     hoursBudgeted:            'hours_budgeted',
+    hoursByMonth:             'hours_by_month',
+    hoursByProject:           'hours_by_project',
   };
 
   for (const [camel, snake] of Object.entries(fieldMap)) {

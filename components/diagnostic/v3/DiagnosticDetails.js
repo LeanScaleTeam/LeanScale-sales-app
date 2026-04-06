@@ -55,7 +55,9 @@ function getWorstCompetencyForPillar(competencies, pillar) {
 
 function findMatchingCompetency(competencies, projectName) {
   if (!projectName || !competencies.length) return null;
-  const words = projectName.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
+  // Include words 3+ chars, also split on hyphens for service IDs like "crm-setup"
+  const words = projectName.toLowerCase().split(/[\s\-_]+/).filter((w) => w.length >= 3);
+  if (!words.length) return null;
   let best = null;
   let bestScore = 0;
   for (const comp of competencies) {
@@ -144,19 +146,27 @@ function HoursBadge({ hours }) {
 function WhatWeFound({ competency }) {
   if (!competency) return null;
   const { dot, color } = healthDot(competency.avg);
+  const avg = competency.avg;
+  const label = avg != null ? (V3_STATUS_LABELS[Math.round(avg)] || '') : '';
   return (
-    <div style={{ background: 'rgba(100,37,133,0.15)', borderLeft: '4px solid rgba(124,58,237,0.6)', padding: '0.85rem 1rem', borderRadius: '0 6px 6px 0', margin: '0.75rem 0 0.5rem' }}>
-      <div style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(167,139,250,0.9)', marginBottom: '0.5rem' }}>
+    <div style={{
+      background: 'rgba(124,58,237,0.1)',
+      border: '1px solid rgba(124,58,237,0.25)',
+      borderLeft: '3px solid rgba(124,58,237,0.7)',
+      padding: '0.8rem 1rem',
+      borderRadius: '0 8px 8px 0',
+      margin: '0.75rem 0 0.5rem',
+    }}>
+      <div style={{ fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(167,139,250,0.85)', marginBottom: '0.45rem' }}>
         What We Found
       </div>
-      <ul style={{ margin: 0, padding: '0 0 0 1.1rem', listStyle: 'disc' }}>
-        <li style={{ fontSize: '0.825rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
-          <strong style={{ color: 'rgba(255,255,255,0.8)' }}>{competency.name}</strong> scored{' '}
-          <span style={{ fontWeight: 700, color }}>{dot} {competency.avg?.toFixed(1)}/5</span>
-          {' '}({V3_STATUS_LABELS[Math.round(competency.avg)] || ''}){' '}
-          in the <strong>{PILLAR_LABELS[competency.pillar]}</strong> pillar.
-        </li>
-      </ul>
+      <div style={{ fontSize: '0.825rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
+        <strong style={{ color: 'rgba(255,255,255,0.85)' }}>{competency.name}</strong>
+        {' '}scored{' '}
+        <span style={{ fontWeight: 800, color }}>{dot} {avg != null ? avg.toFixed(1) : '—'}/5</span>
+        {label && <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}> ({label})</span>}
+        {' '}in the <strong style={{ color: 'rgba(167,139,250,0.7)' }}>{PILLAR_LABELS[competency.pillar]}</strong> pillar.
+      </div>
     </div>
   );
 }
@@ -164,12 +174,19 @@ function WhatWeFound({ competency }) {
 function WhyItMatters({ pillar }) {
   if (!pillar || !PILLAR_IMPACT[pillar]) return null;
   return (
-    <div style={{ background: 'rgba(232,255,207,0.08)', borderLeft: '4px solid rgba(232,255,207,0.4)', padding: '0.85rem 1rem', borderRadius: '0 6px 6px 0', margin: '0.5rem 0 0.75rem' }}>
-      <div style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(232,255,207,0.7)', marginBottom: '0.35rem' }}>
+    <div style={{
+      background: 'rgba(232,255,207,0.06)',
+      border: '1px solid rgba(232,255,207,0.15)',
+      borderLeft: '3px solid rgba(232,255,207,0.5)',
+      padding: '0.8rem 1rem',
+      borderRadius: '0 8px 8px 0',
+      margin: '0.5rem 0 0.75rem',
+    }}>
+      <div style={{ fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(232,255,207,0.65)', marginBottom: '0.35rem' }}>
         Why This Matters
       </div>
       <p style={{ margin: 0, fontSize: '0.825rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-        {PILLAR_IMPACT[pillar]}. Addressing this directly accelerates pipeline velocity and improves confidence in forecast accuracy across the revenue team.
+        {PILLAR_IMPACT[pillar]}. Addressing this directly improves pipeline velocity and forecast confidence across the revenue team.
       </p>
     </div>
   );
@@ -213,7 +230,10 @@ export default function DiagnosticDetails({
   }, [mergedRoadmap]);
 
   const totalHours = useMemo(() => {
-    return allProjects.reduce((sum, p) => sum + (Number(p.hours) || Number(p.estimatedHours) || 0), 0);
+    return allProjects.reduce((sum, p) => {
+      const h = Number(p.hours || p.estimatedHours || 0);
+      return sum + (isNaN(h) ? 0 : h);
+    }, 0);
   }, [allProjects]);
 
   const gapItems = useMemo(() => {
@@ -235,16 +255,17 @@ export default function DiagnosticDetails({
     engagementOverrides?.notes ||
     (consultantAssessments?.length > 0 ? consultantAssessments[0]?.finding || consultantAssessments[0]?.note : null);
 
-  // Narrative helpers
+  // Narrative helpers — only include pillars with real scores
   const sortedPillars = useMemo(() => {
     return PILLAR_ORDER
-      .map((p) => ({ pillar: p, score: pillarScores[p]?._avg ?? 0 }))
+      .map((p) => ({ pillar: p, score: pillarScores[p]?._avg ?? null }))
+      .filter((p) => p.score != null && p.score > 0)
       .sort((a, b) => a.score - b.score);
   }, [pillarScores]);
 
-  const bestPillar = sortedPillars[sortedPillars.length - 1];
-  const worstPillar = sortedPillars[0];
-  const secondWorstPillar = sortedPillars[1];
+  const bestPillar = sortedPillars.length > 0 ? sortedPillars[sortedPillars.length - 1] : null;
+  const worstPillar = sortedPillars.length > 0 ? sortedPillars[0] : null;
+  const secondWorstPillar = sortedPillars.length > 1 ? sortedPillars[1] : null;
 
   // Pending state
   if (!isReady) {
@@ -296,7 +317,7 @@ export default function DiagnosticDetails({
       {/* ── 1. Client Information ── */}
       <section>
         <DocHeading>Client Information</DocHeading>
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ ...tableWrap, overflowX: 'auto' }}>
           <table style={tableStyle}>
             <tbody>
               {[
@@ -353,7 +374,7 @@ export default function DiagnosticDetails({
               ? `At ${profile.arrRange} ARR`
               : 'At this stage'}, the operational debt in these areas directly limits the go-to-market team&apos;s ability to scale efficiently.
             {profile.repCount && profile.repCount !== 'unknown' && (
-              <> With ${profile.repCount} reps in the field, every systemic gap multiplies across headcount.</>
+              <> With a team of {profile.repCount} reps in the field, every systemic gap multiplies across headcount.</>
             )}{' '}
             LeanScale will address the highest-leverage gaps first to create compounding returns.
           </p>
@@ -361,7 +382,7 @@ export default function DiagnosticDetails({
 
         {/* Scorecard table */}
         <DocHeading level="h3">Health Scorecard</DocHeading>
-        <div style={{ overflowX: 'auto', marginBottom: '1.75rem' }}>
+        <div style={{ ...tableWrap, overflowX: 'auto', marginBottom: '1.75rem' }}>
           <table style={tableStyle}>
             <thead>
               <tr style={{ background: 'rgba(100,37,133,0.35)' }}>
@@ -540,7 +561,7 @@ export default function DiagnosticDetails({
         <DocHeading>Deliverables Summary</DocHeading>
         {allProjects.length > 0 ? (
           <>
-            <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+            <div style={{ ...tableWrap, overflowX: 'auto', marginBottom: '1rem' }}>
               <table style={tableStyle}>
                 <thead>
                   <tr style={{ background: 'rgba(100,37,133,0.3)' }}>
@@ -606,7 +627,7 @@ export default function DiagnosticDetails({
         <DocHeading>Timeline</DocHeading>
         {mergedRoadmap?.phases?.length > 0 ? (
           <>
-            <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+            <div style={{ ...tableWrap, overflowX: 'auto', marginBottom: '1rem' }}>
               <table style={tableStyle}>
                 <thead>
                   <tr style={{ background: 'rgba(100,37,133,0.3)' }}>
@@ -659,7 +680,7 @@ export default function DiagnosticDetails({
       {/* ── 6. Investment ── */}
       <section>
         <DocHeading>Investment</DocHeading>
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ ...tableWrap, overflowX: 'auto' }}>
           <table style={tableStyle}>
             <thead>
               <tr style={{ background: 'rgba(100,37,133,0.3)' }}>
@@ -711,7 +732,7 @@ export default function DiagnosticDetails({
       {/* ── 8. Working Relationship ── */}
       <section>
         <DocHeading>Working Relationship</DocHeading>
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ ...tableWrap, overflowX: 'auto' }}>
           <table style={tableStyle}>
             <thead>
               <tr style={{ background: 'rgba(100,37,133,0.3)' }}>
@@ -753,7 +774,7 @@ export default function DiagnosticDetails({
         <ol style={{ listStyle: 'none', padding: 0, margin: 0, counterReset: 'onboarding', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {[
             'Architect introduction call — meet your dedicated LeanScale Architect',
-            `Full system access verification${profile.crm && profile.crm !== 'unknown' ? ` — ${profile.crm}, connected tools, and data sources` : ''}`,
+            `Full system access verification${profile.crm && profile.crm !== 'unknown' ? ` — ${profile.crm.toUpperCase()}, connected tools, and data sources` : ' — all connected tools and data sources'}`,
             'Review of diagnostic findings and Statement of Work',
             'Sprint 1 planning session — prioritize Week 1 deliverables',
             'Shared Slack channel setup and Teamwork project kickoff',
@@ -778,14 +799,19 @@ export default function DiagnosticDetails({
 }
 
 // ── Shared table/cell styles ──
+// Note: border-radius on <table> is unreliable; wrap with tableWrap div instead.
 const tableStyle = {
   width: '100%',
   borderCollapse: 'collapse',
   background: 'rgba(255,255,255,0.02)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  fontSize: '0.875rem',
+};
+
+// Use this wrapper div around every table for consistent border-radius + overflow clipping
+const tableWrap = {
+  border: '1px solid rgba(255,255,255,0.07)',
   borderRadius: 'var(--radius-lg)',
   overflow: 'hidden',
-  fontSize: '0.875rem',
 };
 
 const tdStyle = {

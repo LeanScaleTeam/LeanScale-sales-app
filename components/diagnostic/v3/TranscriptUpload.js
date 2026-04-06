@@ -5,7 +5,7 @@
  * status and results preview after analysis.
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { parseDocument } from '../../../lib/client/parse-document';
 
 export default function TranscriptUpload({ customerId, onUploadComplete, onIntakeExtracted, onProjectSignalsExtracted }) {
@@ -17,7 +17,16 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   const [dragOver, setDragOver] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [lastFileType, setLastFileType] = useState(null);
+  const [existingTranscripts, setExistingTranscripts] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!customerId) return;
+    fetch(`/api/diagnostic/transcript?customerId=${customerId}`)
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setExistingTranscripts(j.data); })
+      .catch(() => {});
+  }, [customerId]);
 
   // Safely parse JSON from a fetch response, throwing a clear error if HTML/non-JSON
   async function safeJson(res, label) {
@@ -228,6 +237,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       setResult(combinedResult);
       onUploadComplete?.(analyzeJson.data);
 
+      // Refresh the transcript list
+      fetch(`/api/diagnostic/transcript?customerId=${customerId}`)
+        .then((r) => r.json())
+        .then((j) => { if (j.success) setExistingTranscripts(j.data); })
+        .catch(() => {});
+
       if (intakeData?.preFill && Object.keys(intakeData.preFill).length > 0) {
         onIntakeExtracted?.(intakeData.preFill);
       }
@@ -278,9 +293,58 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
     }
   }
 
+  function fmtDate(iso) {
+    if (!iso) return null;
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  const SOURCE_LABELS = { docx: 'DOCX', md: 'MD', txt: 'TXT', pdf: 'PDF', paste: 'PASTE' };
+
   return (
     <div style={styles.container}>
       <h4 style={styles.title}>Upload Document or Transcript</h4>
+
+      {/* ── Previously Uploaded Transcripts ── */}
+      {existingTranscripts !== null && (
+        <div style={{ marginBottom: '1.25rem' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(255,255,255,0.35)', marginBottom: '0.5rem' }}>
+            {existingTranscripts.length === 0 ? 'No transcripts uploaded yet' : `${existingTranscripts.length} transcript${existingTranscripts.length !== 1 ? 's' : ''} uploaded`}
+          </div>
+          {existingTranscripts.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {existingTranscripts.map((t, i) => (
+                <div key={t.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.6rem',
+                  padding: '0.5rem 0.75rem',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                }}>
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 700, padding: '0.15rem 0.4rem',
+                    borderRadius: '4px', background: 'rgba(124,58,237,0.25)',
+                    color: '#a78bfa', border: '1px solid rgba(124,58,237,0.35)',
+                    flexShrink: 0,
+                  }}>
+                    {SOURCE_LABELS[t.source] || t.source?.toUpperCase() || 'FILE'}
+                  </span>
+                  <span style={{ color: 'rgba(255,255,255,0.55)', flex: 1 }}>
+                    Transcript {existingTranscripts.length - i}
+                    {t.uploaded_at ? ` — ${fmtDate(t.uploaded_at)}` : ''}
+                  </span>
+                  <span style={{
+                    fontSize: '0.7rem', color: t.analyzed ? '#86efac' : 'rgba(255,255,255,0.3)',
+                    flexShrink: 0,
+                  }}>
+                    {t.analyzed ? `✓ ${t.assessmentCount} competencies` : 'Not analyzed'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {!result && (
         <>

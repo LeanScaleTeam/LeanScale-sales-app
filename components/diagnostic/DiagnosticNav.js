@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
  * Order here defines step numbers.
  */
 const WIZARD_VIEWS = [
+  { id: 'executive-summary', label: 'Exec Summary' },
+  { id: 'details', label: 'Full Details' },
   { id: 'scorecard', label: 'Score Card' },
   { id: 'power10', label: 'Power 10' },
   { id: 'systems', label: 'Systems' },

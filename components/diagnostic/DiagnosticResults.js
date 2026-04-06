@@ -35,6 +35,10 @@ const PerformanceToPlan = dynamic(() => import('./v3/PerformanceToPlan'), { ssr:
 const RoadmapView = dynamic(() => import('./v3/RoadmapView'), { ssr: false });
 const SuggestedProjects = dynamic(() => import('./v3/SuggestedProjects'), { ssr: false });
 
+// Presentation views (created last, shown first)
+const ExecutiveSummary = dynamic(() => import('./v3/ExecutiveSummary'), { ssr: false });
+const DiagnosticDetails = dynamic(() => import('./v3/DiagnosticDetails'), { ssr: false });
+
 // Lazy-loaded: admin-only tools (never seen by demo prospects)
 const TranscriptUpload = dynamic(() => import('./v3/TranscriptUpload'), { ssr: false });
 const PresenterMode = dynamic(() => import('./v3/PresenterMode'), { ssr: false });
@@ -349,7 +353,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           setDiagnosticVersion(3);
           setV3Result(result);
           setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
-          setActiveView('scorecard');
+          setActiveView('executive-summary');
         });
       }
       return;
@@ -386,7 +390,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   if (p10) setEditablePower10(p10);
                 }
               }
-              setActiveView('scorecard');
+              setActiveView('executive-summary');
               foundResults = true;
             }
           }
@@ -434,7 +438,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           setDiagnosticVersion(3);
           setV3Result(result);
           setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
-          setActiveView('scorecard');
+          setActiveView('executive-summary');
         }
       }
     }
@@ -825,8 +829,8 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
 
   const availableViews = isV3
     ? (isDemo
-      ? ['scorecard', 'power10', 'systems', 'findings', 'pitch']
-      : ['scorecard', 'power10', 'systems', 'findings', 'pitch', 'transcript', 'consultant'])
+      ? ['executive-summary', 'details', 'scorecard', 'power10', 'systems', 'findings', 'pitch']
+      : ['executive-summary', 'details', 'scorecard', 'power10', 'systems', 'findings', 'pitch', 'transcript', 'consultant'])
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {
@@ -1051,6 +1055,27 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
 
         {/* Active View */}
         <div style={{ marginTop: 'var(--space-4)' }}>
+          {/* --- v3 presentation views (created last, shown first) --- */}
+          {isV3 && activeView === 'executive-summary' && (
+            <ExecutiveSummary
+              v3Result={v3Result}
+              mergedRoadmap={mergedRoadmap}
+              engagementOverrides={engagementOverrides}
+              customer={customer}
+              consultantAssessments={consultantAssessments}
+            />
+          )}
+
+          {isV3 && activeView === 'details' && (
+            <DiagnosticDetails
+              v3Result={v3Result}
+              mergedRoadmap={mergedRoadmap}
+              engagementOverrides={engagementOverrides}
+              customer={customer}
+              consultantAssessments={consultantAssessments}
+            />
+          )}
+
           {/* --- v3 views --- */}
           {isV3 && activeView === 'scorecard' && (
             <ScoreCardView

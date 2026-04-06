@@ -354,12 +354,12 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           setV3Result(result);
           setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
           setEngagementOverrides({
-            engagement_type: 'Ultimate GTM',
-            monthly_investment: 37500,
-            monthly_hours: 40,
-            start_date: '2026-05-01',
-            minimum_commitment: '2 months',
-            notes: 'This company is at an inflection point — pipeline volume is there but conversion is breaking down in the middle stages. The GTM team has the right people but lacks the infrastructure to scale consistently. LeanScale will build the operational foundation across CRM hygiene, pipeline management, and enablement in an 8-week sprint.',
+            engagement_type: 'Scale',
+            monthly_investment: 25000,
+            monthly_hours: 100,
+            start_date: '2026-04-13',
+            minimum_commitment: '6 months',
+            notes: 'This company is at an inflection point — pipeline volume is there but conversion is breaking down in the middle stages. The GTM team has the right people but lacks the infrastructure to scale consistently. LeanScale will build the operational foundation across CRM hygiene, pipeline management, and enablement.',
           });
           setActiveView('executive-summary');
         });

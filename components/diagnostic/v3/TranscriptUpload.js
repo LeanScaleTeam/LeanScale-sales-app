@@ -24,8 +24,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
     if (!customerId) return;
     fetch(`/api/diagnostic/transcript?customerId=${customerId}`)
       .then((r) => r.json())
-      .then((j) => { if (j.success) setExistingTranscripts(j.data); })
-      .catch(() => {});
+      .then((j) => { setExistingTranscripts(j.success ? j.data : []); })
+      .catch(() => { setExistingTranscripts([]); });
   }, [customerId]);
 
   // Safely parse JSON from a fetch response, throwing a clear error if HTML/non-JSON

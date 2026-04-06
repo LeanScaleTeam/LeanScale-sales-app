@@ -161,11 +161,23 @@ function LifecycleBowtie({ stages }) {
                 borderRight: '1px solid rgba(255,255,255,0.08)',
                 borderTop: '1px solid rgba(255,255,255,0.08)',
                 borderBottom: '1px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.2s',
                 cursor: 'default',
                 position: 'relative',
+                gap: '2px',
               }}>
+                {stage.count != null && (
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 700,
+                    color: '#f97316',
+                    background: 'rgba(249, 115, 22, 0.15)',
+                    borderRadius: 3, padding: '1px 3px',
+                    lineHeight: 1,
+                  }}>
+                    {stage.count.toLocaleString()}
+                  </span>
+                )}
                 <span style={{
                   fontSize: '0.65rem', fontWeight: 600,
                   color: 'rgba(255,255,255,0.7)',

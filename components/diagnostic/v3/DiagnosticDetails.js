@@ -53,9 +53,17 @@ function getWorstCompetencyForPillar(competencies, pillar) {
   return matches[0] || null;
 }
 
-function findMatchingCompetency(competencies, projectName) {
-  if (!projectName || !competencies.length) return null;
-  // Include words 3+ chars, also split on hyphens for service IDs like "crm-setup"
+function findMatchingCompetency(competencies, projectName, serviceId) {
+  if (!competencies.length) return null;
+  // First: direct serviceId match via competency's serviceIds array
+  if (serviceId) {
+    const direct = competencies.find(
+      (c) => Array.isArray(c.serviceIds) && c.serviceIds.includes(serviceId)
+    );
+    if (direct) return { ...direct, avg: getCompetencyAvg(direct) };
+  }
+  // Fallback: word matching on project name
+  if (!projectName) return null;
   const words = projectName.toLowerCase().split(/[\s\-_]+/).filter((w) => w.length >= 3);
   if (!words.length) return null;
   let best = null;
@@ -82,6 +90,20 @@ function formatDate(raw) {
   const d = new Date(raw + (raw.length === 10 ? 'T00:00:00' : ''));
   if (isNaN(d)) return raw;
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function phaseTimeRange(startDate, phaseIndex) {
+  const weekStart = phaseIndex * 4 + 1;
+  const weekEnd = weekStart + 3;
+  if (!startDate) return `Weeks ${weekStart}–${weekEnd}`;
+  const base = new Date(startDate + (startDate.length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(base)) return `Weeks ${weekStart}–${weekEnd}`;
+  const s = new Date(base);
+  s.setDate(s.getDate() + phaseIndex * 28);
+  const e = new Date(s);
+  e.setDate(e.getDate() + 27);
+  const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${fmt(s)} – ${fmt(e)}`;
 }
 
 function resolveEngagement(overrides) {
@@ -214,20 +236,28 @@ export default function DiagnosticDetails({
 
   const allProjects = useMemo(() => {
     if (!mergedRoadmap?.phases) return [];
+    const crm = (v3Result?.company_profile?.crm || v3Result?.crmType || '').toLowerCase();
+    const CRM_EXCLUDE = {
+      salesforce: new Set(['hubspot-impl', 'salesforce-to-hubspot-crm-migration']),
+      hubspot: new Set(['salesforce-impl', 'hubspot-to-salesforce-crm-migration']),
+    };
+    const excluded = CRM_EXCLUDE[crm] || new Set();
     return mergedRoadmap.phases.flatMap((phase, pi) =>
-      (phase.projects || []).map((proj, idx) => ({
-        ...proj,
-        // Engine stores name under service.name; custom/overridden projects use .name directly
-        name: proj.name || proj.service?.name || proj.serviceId,
-        description: proj.description || proj.service?.description,
-        phaseName: phase.name,
-        phaseColor: PHASE_COLORS[(phase.key || phase.name)?.toUpperCase()] || phase.color || '#718096',
-        phaseIndex: pi,
-        globalIndex: pi * 100 + idx + 1,
-        priority: getProjectPriority(proj, pi),
-      }))
+      (phase.projects || [])
+        .filter((proj) => !excluded.has(proj.serviceId))
+        .map((proj, idx) => ({
+          ...proj,
+          // Engine stores name under service.name; custom/overridden projects use .name directly
+          name: proj.name || proj.service?.name || proj.serviceId,
+          description: proj.description || proj.service?.description,
+          phaseName: phase.name,
+          phaseColor: PHASE_COLORS[(phase.key || phase.name)?.toUpperCase()] || phase.color || '#718096',
+          phaseIndex: pi,
+          globalIndex: pi * 100 + idx + 1,
+          priority: getProjectPriority(proj, pi),
+        }))
     );
-  }, [mergedRoadmap]);
+  }, [mergedRoadmap, v3Result]);
 
   const totalHours = useMemo(() => {
     return allProjects.reduce((sum, p) => {
@@ -492,7 +522,7 @@ export default function DiagnosticDetails({
                     globalNum += 1;
                     const priority = getProjectPriority(project, phaseIndex);
                     const hours = project.hours || project.estimatedHours;
-                    const matchedComp = findMatchingCompetency(competencies, project.name);
+                    const matchedComp = findMatchingCompetency(competencies, project.name, project.serviceId);
                     const pillarForProject = project.pillar || matchedComp?.pillar;
 
                     return (
@@ -641,8 +671,6 @@ export default function DiagnosticDetails({
                 <tbody>
                   {mergedRoadmap.phases.map((phase, i) => {
                     const phaseColor = PHASE_COLORS[(phase.key || phase.name)?.toUpperCase()] || phase.color || '#718096';
-                    const weekStart = i * 4 + 1;
-                    const weekEnd = weekStart + 3;
                     const projects = (phase.projects || []).map((p) => ({
                       ...p,
                       name: p.name || p.service?.name || p.serviceId,
@@ -650,7 +678,7 @@ export default function DiagnosticDetails({
                     return (
                       <tr key={phase.id || phase.key || i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                         <td style={{ ...tdStyle, whiteSpace: 'nowrap', color: phaseColor, fontWeight: 600 }}>
-                          Weeks {weekStart}–{weekEnd}
+                          {phaseTimeRange(engagementOverrides?.start_date, i)}
                         </td>
                         <td style={{ ...tdStyle, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>
                           {phase.name}

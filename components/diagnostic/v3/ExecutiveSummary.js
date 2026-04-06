@@ -151,7 +151,7 @@ export default function ExecutiveSummary({
           phaseName: p.name,
           phaseColor: PHASE_COLORS[(p.key || p.name)?.toUpperCase()] || p.color || '#718096',
         }))
-    );
+    ).sort((a, b) => (b.priority?.score ?? 0) - (a.priority?.score ?? 0));
   }, [mergedRoadmap, v3Result]);
 
   const engagement = useMemo(() => resolveEngagement(engagementOverrides), [engagementOverrides]);

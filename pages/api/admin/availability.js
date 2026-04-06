@@ -5,11 +5,12 @@
 
 import { supabaseAdmin } from '../../../lib/supabase';
 
-function isAdmin(req) {
-  const cookies = req.cookies || {};
-  return Object.keys(cookies).some(
-    key => key.startsWith('sb-') && key.endsWith('-auth-token')
-  ) || !!(cookies['admin-session']);
+async function isAdmin(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token || !supabaseAdmin) return false;
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  return !error && !!user;
 }
 
 export default async function handler(req, res) {
@@ -23,7 +24,7 @@ export default async function handler(req, res) {
     case 'POST':
     case 'PUT':
     case 'DELETE':
-      if (!isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+      if (!await isAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
       if (req.method === 'POST')   return handlePost(req, res);
       if (req.method === 'PUT')    return handlePut(req, res);
       if (req.method === 'DELETE') return handleDelete(req, res);

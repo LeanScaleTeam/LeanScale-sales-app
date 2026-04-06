@@ -84,9 +84,13 @@ export default function AdminAvailability() {
     setError(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/admin/availability', {
         method: editingDate ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+        },
         body: JSON.stringify(editingDate ? { id: editingDate.id, ...formData } : formData),
       });
 
@@ -109,9 +113,13 @@ export default function AdminAvailability() {
     if (!confirm(`Are you sure you want to delete Cohort ${date.cohort_number} (${date.date})?`)) return;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/admin/availability', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+        },
         body: JSON.stringify({ id: date.id }),
       });
 

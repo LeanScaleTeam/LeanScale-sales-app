@@ -3,9 +3,33 @@
  * GET /api/diagnostic/v3/results?customerId=...
  *
  * Returns the full v3 diagnostic result for display.
+ * If the record was scored via the consultant audit (score_card only, no competencies/roadmap),
+ * this endpoint reconstructs both on the fly from the stored score_card.
  */
 
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { V3_COMPETENCIES } from '../../../../lib/diagnostic-engine/v3/constants-v3';
+import { generateRoadmap } from '../../../../lib/diagnostic-engine/v3/generate-roadmap';
+
+/**
+ * Reconstruct the full competency array from a stored score_card.
+ * score_card shape: { [competencyId]: { [dept]: score|null } }
+ */
+function reconstructCompetencies(scoreCard) {
+  if (!scoreCard) return [];
+  return V3_COMPETENCIES.map((staticComp) => {
+    const deptScores = scoreCard[staticComp.id];
+    if (!deptScores) return null;
+    return {
+      id: staticComp.id,
+      name: staticComp.name,
+      pillar: staticComp.pillar,
+      source: staticComp.source,
+      serviceIds: staticComp.serviceIds || [],
+      departments: deptScores,
+    };
+  }).filter(Boolean);
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -55,6 +79,18 @@ export default async function handler(req, res) {
       }
     }
 
+    // Reconstruct competencies and roadmap if not stored (older records scored via consultant audit)
+    let competencies = data.competencies || null;
+    let roadmap = data.roadmap || null;
+
+    if (!competencies && data.score_card) {
+      competencies = reconstructCompetencies(data.score_card);
+    }
+
+    if (!roadmap && competencies && competencies.length > 0) {
+      roadmap = generateRoadmap(competencies);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -65,7 +101,8 @@ export default async function handler(req, res) {
         pillar_scores: data.pillar_scores,
         department_scores: data.department_scores,
         overall_score: data.overall_score,
-        roadmap: data.roadmap,
+        competencies,
+        roadmap,
         roadmap_overrides: data.roadmap_overrides || null,
         company_profile: data.company_profile,
         data_coverage: data.data_coverage,

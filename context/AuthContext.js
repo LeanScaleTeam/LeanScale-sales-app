@@ -40,6 +40,8 @@ export function AuthProvider({ children }) {
       password,
     });
     if (error) throw error;
+    // Set cookie so server-side admin checks (getServerSideProps) can detect auth
+    document.cookie = `admin-session=1; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
     return data;
   };
 
@@ -65,6 +67,7 @@ export function AuthProvider({ children }) {
     if (!supabase) throw new Error('Authentication not configured');
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    document.cookie = 'admin-session=; path=/; max-age=0';
   };
 
   const resetPassword = async (email) => {

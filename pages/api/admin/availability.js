@@ -8,8 +8,10 @@ import { supabaseAdmin } from '../../../lib/supabase';
 async function isAdmin(req) {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  console.log('[isAdmin] token present:', !!token, '| supabaseAdmin present:', !!supabaseAdmin);
   if (!token || !supabaseAdmin) return false;
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  console.log('[isAdmin] user:', user?.email, '| error:', error?.message);
   return !error && !!user;
 }
 

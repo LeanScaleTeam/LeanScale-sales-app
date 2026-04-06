@@ -358,7 +358,6 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
             monthly_investment: 25000,
             monthly_hours: 100,
             start_date: '2026-04-13',
-            minimum_commitment: '6 months',
             notes: 'This company is at an inflection point — pipeline volume is there but conversion is breaking down in the middle stages. The GTM team has the right people but lacks the infrastructure to scale consistently. LeanScale will build the operational foundation across CRM hygiene, pipeline management, and enablement.',
           });
           setActiveView('executive-summary');

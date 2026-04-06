@@ -91,8 +91,7 @@ function resolveEngagement(overrides) {
     hours: overrides?.monthly_hours ? `${overrides.monthly_hours} hrs/mo` : 'To be confirmed',
     startDate: formatDate(overrides?.start_date),
     billingCycle: 'Monthly',
-    minimum: overrides?.minimum_commitment || '3 months',
-    cancellation: '30 days written notice',
+    cancellation: '90 days written notice',
   };
 }
 
@@ -664,7 +663,7 @@ export default function DiagnosticDetails({
           <table style={tableStyle}>
             <thead>
               <tr style={{ background: 'rgba(100,37,133,0.3)' }}>
-                {['Monthly Investment', 'Monthly Hours', 'Billing Cycle', 'Minimum Commitment', 'Cancellation'].map((h) => (
+                {['Monthly Investment', 'Monthly Hours', 'Billing Cycle', 'Cancellation'].map((h) => (
                   <th key={h} style={{ padding: '0.65rem 0.85rem', textAlign: 'left', color: 'rgba(255,255,255,0.8)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
                     {h}
                   </th>
@@ -673,7 +672,7 @@ export default function DiagnosticDetails({
             </thead>
             <tbody>
               <tr>
-                {[engagement.investment, engagement.hours, engagement.billingCycle, engagement.minimum, engagement.cancellation].map((val, i) => (
+                {[engagement.investment, engagement.hours, engagement.billingCycle, engagement.cancellation].map((val, i) => (
                   <td key={i} style={{ padding: '0.85rem', fontSize: '0.875rem', color: val === 'To be confirmed' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.8)', fontWeight: val === 'To be confirmed' ? 400 : 600, fontStyle: val === 'To be confirmed' ? 'italic' : 'normal' }}>
                     {val}
                   </td>

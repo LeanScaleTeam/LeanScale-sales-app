@@ -837,7 +837,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   const availableViews = isV3
     ? (isDemo
       ? ['executive-summary', 'details', 'scorecard', 'power10', 'systems', 'findings', 'pitch']
-      : ['executive-summary', 'details', 'scorecard', 'power10', 'systems', 'findings', 'pitch', 'transcript', 'consultant'])
+      : ['executive-summary', 'details', 'scorecard', 'power10', 'systems', 'findings', 'pitch', 'transcript', 'consultant', ...(isAdmin ? ['vasco'] : [])])
     : isV2
     ? ['layers', 'pitch', 'table']
     : (() => {

@@ -76,15 +76,107 @@ function parseVascoJson(raw) {
   }
 }
 
+// ─── CRM Health defaults ──────────────────────────────────────────────────────
+
+const DEFAULT_STAGES = [
+  { label: 'Awareness',   count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Education',   count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Selection',   count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Closing',     count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Onboarding',  count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Retention',   count: null, errorsBefore: null, errorsAfter: null },
+  { label: 'Expansion',   count: null, errorsBefore: null, errorsAfter: null },
+];
+
+function numField(val, onChange, placeholder) {
+  return (
+    <input
+      type="number"
+      min={0}
+      value={val ?? ''}
+      onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
+      placeholder={placeholder}
+      style={{
+        width: '64px', padding: '0.25rem 0.4rem', borderRadius: 5,
+        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'rgba(255,255,255,0.04)',
+        color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', fontFamily: 'inherit',
+        textAlign: 'right',
+      }}
+    />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function VascoImportPanel({ customerId, onApplyImport }) {
+export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrmHealth }) {
   const [orgId, setOrgId] = useState('');
   const [jsonPaste, setJsonPaste] = useState('');
   const [parseError, setParseError] = useState(null);
   const [parsedData, setParsedData] = useState(null); // { [key]: { actual, target, status } }
   const [scoreOverrides, setScoreOverrides] = useState({}); // { [key]: number }
   const [applyStatus, setApplyStatus] = useState(null); // null | 'success' | 'error'
+
+  // ── CRM Health state ──────────────────────────────────────────
+  const [integrityScore, setIntegrityScore] = useState('');
+  const [stages, setStages] = useState(DEFAULT_STAGES.map(s => ({ ...s })));
+  const [eventStatus, setEventStatus] = useState({ succeeded: '', warning: '', failed: '', ignored: '' });
+  const [issues, setIssues] = useState([
+    { severity: 'fail', category: 'Mapping', name: '', eventCount: '', description: '' },
+  ]);
+  const [employees, setEmployees] = useState([
+    { name: '', score: '', events: '' },
+  ]);
+  const [crmSaveStatus, setCrmSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
+
+  function updateStage(i, field, value) {
+    setStages(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: value } : s));
+  }
+
+  function buildCrmHealth() {
+    const bowtie_stages = stages.map(s => {
+      const entry = { label: s.label };
+      if (s.count !== null && s.count !== '') entry.count = Number(s.count);
+      if (s.errorsBefore !== null && s.errorsBefore !== '') entry.errorsBefore = Number(s.errorsBefore);
+      if (s.errorsAfter !== null && s.errorsAfter !== '') entry.errorsAfter = Number(s.errorsAfter);
+      return entry;
+    });
+    return {
+      integrity_score: integrityScore !== '' ? Number(integrityScore) : null,
+      bowtie_stages,
+      event_status: {
+        succeeded: eventStatus.succeeded !== '' ? Number(eventStatus.succeeded) : null,
+        warning:   eventStatus.warning   !== '' ? Number(eventStatus.warning)   : null,
+        failed:    eventStatus.failed    !== '' ? Number(eventStatus.failed)     : null,
+        ignored:   eventStatus.ignored   !== '' ? Number(eventStatus.ignored)    : null,
+      },
+      issues: issues.filter(i => i.name).map(i => ({
+        severity: i.severity,
+        category: i.category,
+        name: i.name,
+        eventCount: i.eventCount !== '' ? Number(i.eventCount) : null,
+        description: i.description,
+      })),
+      employees: employees.filter(e => e.name).map(e => ({
+        name: e.name,
+        score: e.score !== '' ? Number(e.score) : null,
+        events: e.events !== '' ? Number(e.events) : null,
+        barPct: e.score !== '' ? Number(e.score) : null,
+      })),
+    };
+  }
+
+  async function handleSaveCrmHealth() {
+    setCrmSaveStatus('saving');
+    try {
+      const crm_health = buildCrmHealth();
+      await onApplyCrmHealth?.(crm_health);
+      setCrmSaveStatus('saved');
+      setTimeout(() => setCrmSaveStatus(null), 3000);
+    } catch {
+      setCrmSaveStatus('error');
+    }
+  }
 
   function handleParse() {
     setParseError(null);
@@ -487,6 +579,130 @@ export default function VascoImportPanel({ customerId, onApplyImport }) {
           Supported metrics: {VASCO_METRICS.map(m => m.label).join(', ')}.
         </motion.div>
       )}
+
+      {/* ── CRM Health / Systems View ── */}
+      <motion.div variants={fadeUpItem} className="card" style={{ padding: 'var(--space-4)' }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>
+          CRM Health — Systems View Data
+        </div>
+        <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '0 0 var(--space-4)' }}>
+          Enter data from the Vasco Radar screen. This populates the Systems tab bowtie and integrity display.
+        </p>
+
+        {/* Integrity score */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: 'var(--space-4)' }}>
+          <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', minWidth: 130 }}>Integrity Score (0–100)</label>
+          <input
+            type="number" min={0} max={100}
+            value={integrityScore}
+            onChange={e => setIntegrityScore(e.target.value)}
+            placeholder="e.g. 90"
+            style={{ width: 80, padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontFamily: 'inherit' }}
+          />
+        </div>
+
+        {/* Bowtie stages */}
+        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: '0.5rem' }}>Lifecycle Bowtie Stages</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 72px 90px 90px', gap: '0.4rem', marginBottom: '0.3rem' }}>
+          {['Stage', 'Count', 'Errors Before', 'Errors After'].map(h => (
+            <div key={h} style={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase' }}>{h}</div>
+          ))}
+        </div>
+        {stages.map((s, i) => (
+          <div key={s.label} style={{ display: 'grid', gridTemplateColumns: '110px 72px 90px 90px', gap: '0.4rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{s.label}</div>
+            {numField(s.count,        (v) => updateStage(i, 'count', v),        '—')}
+            {numField(s.errorsBefore, (v) => updateStage(i, 'errorsBefore', v), '—')}
+            {numField(s.errorsAfter,  (v) => updateStage(i, 'errorsAfter', v),  '—')}
+          </div>
+        ))}
+
+        {/* Event status */}
+        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: 'var(--space-4) 0 0.5rem' }}>Event Status</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: 'var(--space-4)' }}>
+          {[['succeeded', '#86efac'], ['warning', '#fde047'], ['failed', '#fca5a5'], ['ignored', 'rgba(255,255,255,0.3)']].map(([key, color]) => (
+            <div key={key}>
+              <label style={{ fontSize: '0.62rem', color, textTransform: 'capitalize', display: 'block', marginBottom: '0.2rem' }}>{key}</label>
+              <input
+                type="number" min={0}
+                value={eventStatus[key]}
+                onChange={e => setEventStatus(prev => ({ ...prev, [key]: e.target.value }))}
+                placeholder="0"
+                style={{ width: '100%', padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', fontFamily: 'inherit', textAlign: 'right' }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Issues */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 'var(--space-3) 0 0.5rem' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>Issues</div>
+          <button onClick={() => setIssues(prev => [...prev, { severity: 'fail', category: 'Mapping', name: '', eventCount: '', description: '' }])}
+            style={{ fontSize: '0.65rem', color: '#a78bfa', background: 'none', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 4, padding: '0.1rem 0.5rem', cursor: 'pointer' }}>
+            + Add
+          </button>
+        </div>
+        {issues.map((iss, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 90px 1fr 70px', gap: '0.4rem', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <select value={iss.severity} onChange={e => setIssues(prev => prev.map((x, j) => j === i ? { ...x, severity: e.target.value } : x))}
+              style={{ padding: '0.25rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: iss.severity === 'fail' ? '#fca5a5' : '#fde047', fontSize: '0.72rem', fontFamily: 'inherit' }}>
+              <option value="fail">Fail</option>
+              <option value="warning">Warning</option>
+            </select>
+            <input value={iss.category} onChange={e => setIssues(prev => prev.map((x, j) => j === i ? { ...x, category: e.target.value } : x))}
+              placeholder="Mapping"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit' }} />
+            <input value={iss.name} onChange={e => setIssues(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+              placeholder="Issue name"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit' }} />
+            <input type="number" value={iss.eventCount} onChange={e => setIssues(prev => prev.map((x, j) => j === i ? { ...x, eventCount: e.target.value } : x))}
+              placeholder="Events"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit', textAlign: 'right' }} />
+          </div>
+        ))}
+
+        {/* Employees */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 'var(--space-3) 0 0.5rem' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>Employee Integrity</div>
+          <button onClick={() => setEmployees(prev => [...prev, { name: '', score: '', events: '' }])}
+            style={{ fontSize: '0.65rem', color: '#a78bfa', background: 'none', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 4, padding: '0.1rem 0.5rem', cursor: 'pointer' }}>
+            + Add
+          </button>
+        </div>
+        {employees.map((emp, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 70px', gap: '0.4rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+            <input value={emp.name} onChange={e => setEmployees(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+              placeholder="Full name"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit' }} />
+            <input type="number" min={0} max={100} value={emp.score} onChange={e => setEmployees(prev => prev.map((x, j) => j === i ? { ...x, score: e.target.value } : x))}
+              placeholder="Score"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit', textAlign: 'right' }} />
+            <input type="number" min={0} value={emp.events} onChange={e => setEmployees(prev => prev.map((x, j) => j === i ? { ...x, events: e.target.value } : x))}
+              placeholder="Events"
+              style={{ padding: '0.25rem 0.4rem', borderRadius: 5, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontFamily: 'inherit', textAlign: 'right' }} />
+          </div>
+        ))}
+
+        {/* Save button */}
+        <div style={{ marginTop: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <button
+            onClick={handleSaveCrmHealth}
+            disabled={crmSaveStatus === 'saving'}
+            style={{
+              padding: '0.55rem 1.4rem', borderRadius: 9, border: 'none',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: 'white', fontSize: 'var(--text-sm)', fontWeight: 700,
+              cursor: crmSaveStatus === 'saving' ? 'wait' : 'pointer',
+              boxShadow: '0 4px 16px rgba(37,99,235,0.3)',
+              opacity: crmSaveStatus === 'saving' ? 0.7 : 1,
+            }}
+          >
+            {crmSaveStatus === 'saving' ? 'Saving…' : 'Save to Systems View'}
+          </button>
+          {crmSaveStatus === 'saved' && <span style={{ fontSize: 'var(--text-xs)', color: '#86efac' }}>Saved — refresh the Systems tab to see it.</span>}
+          {crmSaveStatus === 'error' && <span style={{ fontSize: 'var(--text-xs)', color: '#fca5a5' }}>Save failed. Check console.</span>}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

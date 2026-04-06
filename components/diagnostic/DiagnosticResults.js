@@ -1329,6 +1329,12 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   .then(r => r.json())
                   .then(handleRerunResponse);
               }}
+              onApplyCrmHealth={(crmHealth) => {
+                handleEngagementOverridesChange({
+                  ...engagementOverrides,
+                  crm_health: crmHealth,
+                });
+              }}
             />
           )}
 

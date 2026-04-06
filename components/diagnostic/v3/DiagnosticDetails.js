@@ -75,6 +75,13 @@ function getProjectPriority(project, phaseIndex) {
   return 'STANDARD';
 }
 
+function formatDate(raw) {
+  if (!raw) return 'To be confirmed';
+  const d = new Date(raw + (raw.length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(d)) return raw;
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 function resolveEngagement(overrides) {
   return {
     type: overrides?.engagement_type || 'To be confirmed',
@@ -82,7 +89,7 @@ function resolveEngagement(overrides) {
       ? `$${Number(overrides.monthly_investment).toLocaleString()}/mo`
       : 'To be confirmed',
     hours: overrides?.monthly_hours ? `${overrides.monthly_hours} hrs/mo` : 'To be confirmed',
-    startDate: overrides?.start_date || 'To be confirmed',
+    startDate: formatDate(overrides?.start_date),
     billingCycle: 'Monthly',
     minimum: overrides?.minimum_commitment || '3 months',
     cancellation: '30 days written notice',

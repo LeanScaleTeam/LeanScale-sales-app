@@ -61,6 +61,13 @@ function getWorstCompetencyForPillar(competencies, pillar) {
   return matches[0] || null;
 }
 
+function formatDate(raw) {
+  if (!raw) return 'TBD';
+  const d = new Date(raw + (raw.length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(d)) return raw;
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 function resolveEngagement(overrides) {
   return {
     type: overrides?.engagement_type || 'TBD',
@@ -68,7 +75,7 @@ function resolveEngagement(overrides) {
       ? `$${Number(overrides.monthly_investment).toLocaleString()}/mo`
       : 'TBD',
     hours: overrides?.monthly_hours ? `${overrides.monthly_hours} hrs/mo` : 'TBD',
-    startDate: overrides?.start_date || 'TBD',
+    startDate: formatDate(overrides?.start_date),
   };
 }
 

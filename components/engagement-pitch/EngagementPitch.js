@@ -6,7 +6,7 @@ import PhaseRoadmap from './PhaseRoadmap';
 import TierSelector from './TierSelector';
 import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
-import { recommendTier } from '../../data/engagement-tiers';
+import { recommendTier, getTierById } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
 import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/v3/constants-v3';
 import { enrichFromPlaybooks } from '../../lib/playbook-enrichment';
@@ -231,6 +231,21 @@ export default function EngagementPitch({
 
   const activeTier = selectedTierId || autoTier;
 
+  // Persist tier selection to engagementOverrides so Exec Summary / Details stay in sync
+  function handleSelectTier(tierId) {
+    setSelectedTierId(tierId);
+    const tier = getTierById(tierId);
+    if (!tier) return;
+    const next = {
+      ...overrides,
+      engagement_type: tier.name,
+      monthly_investment: tier.monthlyPrice,
+      monthly_hours: tier.monthlyHours,
+    };
+    setOverrides(next);
+    onOverridesChange?.(next);
+  }
+
   // Resolve managed services: the 3 core ops every LeanScale customer gets
   const resolvedManagedServices = useMemo(() => {
     if (managedServices === 'health') {
@@ -426,7 +441,7 @@ export default function EngagementPitch({
               customerPath={customerPath}
               overrides={overrides}
               activeTier={activeTier}
-              onSelectTier={setSelectedTierId}
+              onSelectTier={handleSelectTier}
             />
           )}
 
@@ -434,7 +449,7 @@ export default function EngagementPitch({
             <TierSelector
               selectedTierId={activeTier}
               recommendedTierId={autoTier}
-              onSelectTier={setSelectedTierId}
+              onSelectTier={handleSelectTier}
             />
           )}
 

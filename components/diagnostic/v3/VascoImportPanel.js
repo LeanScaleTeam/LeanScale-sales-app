@@ -109,7 +109,7 @@ function numField(val, onChange, placeholder) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrmHealth }) {
+export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrmHealth, existingCrmHealth }) {
   const [orgId, setOrgId] = useState('');
   const [jsonPaste, setJsonPaste] = useState('');
   const [parseError, setParseError] = useState(null);
@@ -117,16 +117,50 @@ export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrm
   const [scoreOverrides, setScoreOverrides] = useState({}); // { [key]: number }
   const [applyStatus, setApplyStatus] = useState(null); // null | 'success' | 'error'
 
-  // ── CRM Health state ──────────────────────────────────────────
-  const [integrityScore, setIntegrityScore] = useState('');
-  const [stages, setStages] = useState(DEFAULT_STAGES.map(s => ({ ...s })));
-  const [eventStatus, setEventStatus] = useState({ succeeded: '', warning: '', failed: '', ignored: '' });
-  const [issues, setIssues] = useState([
-    { severity: 'fail', category: 'Mapping', name: '', eventCount: '', description: '' },
-  ]);
-  const [employees, setEmployees] = useState([
-    { name: '', score: '', events: '' },
-  ]);
+  // ── CRM Health state — seeded from existingCrmHealth if present ───────────
+  const [integrityScore, setIntegrityScore] = useState(
+    () => existingCrmHealth?.integrity_score ?? ''
+  );
+  const [stages, setStages] = useState(() => {
+    if (existingCrmHealth?.bowtie_stages?.length) {
+      return DEFAULT_STAGES.map(def => {
+        const saved = existingCrmHealth.bowtie_stages.find(s => s.label === def.label);
+        return saved ? { ...def, ...saved } : { ...def };
+      });
+    }
+    return DEFAULT_STAGES.map(s => ({ ...s }));
+  });
+  const [eventStatus, setEventStatus] = useState(() => {
+    const es = existingCrmHealth?.event_status;
+    return {
+      succeeded: es?.succeeded ?? '',
+      warning:   es?.warning   ?? '',
+      failed:    es?.failed    ?? '',
+      ignored:   es?.ignored   ?? '',
+    };
+  });
+  const [issues, setIssues] = useState(() => {
+    if (existingCrmHealth?.issues?.length) {
+      return existingCrmHealth.issues.map(i => ({
+        severity: i.severity || 'fail',
+        category: i.category || 'Mapping',
+        name: i.name || '',
+        eventCount: i.eventCount ?? '',
+        description: i.description || '',
+      }));
+    }
+    return [{ severity: 'fail', category: 'Mapping', name: '', eventCount: '', description: '' }];
+  });
+  const [employees, setEmployees] = useState(() => {
+    if (existingCrmHealth?.employees?.length) {
+      return existingCrmHealth.employees.map(e => ({
+        name: e.name || '',
+        score: e.score ?? '',
+        events: e.events ?? '',
+      }));
+    }
+    return [{ name: '', score: '', events: '' }];
+  });
   const [crmSaveStatus, setCrmSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
 
   function updateStage(i, field, value) {

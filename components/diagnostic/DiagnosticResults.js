@@ -1307,6 +1307,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           {isV3 && isAdmin && activeView === 'vasco' && (
             <VascoImportPanel
               customerId={customer?.id}
+              existingCrmHealth={engagementOverrides?.crm_health || null}
               onApplyImport={(scoreOverrides) => {
                 // Merge Vasco scores as consultant overrides and re-run diagnostic
                 const existing = consultantAssessments || [];

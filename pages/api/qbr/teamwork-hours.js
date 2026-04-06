@@ -25,13 +25,20 @@ export default async function handler(req, res) {
 
   let twRes;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     twRes = await fetch(url, {
+      signal: controller.signal,
       headers: {
         Authorization: `Basic ${Buffer.from(`${apiToken}:x`).toString('base64')}`,
         Accept: 'application/json',
       },
     });
+    clearTimeout(timeout);
   } catch (e) {
+    if (e.name === 'AbortError') {
+      return res.status(504).json({ error: 'Teamwork request timed out after 15 seconds' });
+    }
     return res.status(502).json({ error: `Could not reach Teamwork: ${e.message}` });
   }
 

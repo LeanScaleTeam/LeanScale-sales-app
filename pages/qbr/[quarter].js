@@ -625,10 +625,13 @@ function TeamworkImportModal({ qbr, onClose, onApply }) {
       setError('All fields are required.'); return;
     }
     setLoading(true); setError(null); setResult(null);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const res = await fetch('/api/qbr/teamwork-hours', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           apiToken:   token,
           siteUrl,
@@ -641,8 +644,13 @@ function TeamworkImportModal({ qbr, onClose, onApply }) {
       if (!res.ok) throw new Error(json.error || 'Failed');
       setResult(json);
     } catch (e) {
-      setError(e.message);
+      if (e.name === 'AbortError') {
+        setError('Request timed out — Teamwork took too long to respond.');
+      } else {
+        setError(e.message);
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   }
@@ -896,6 +904,7 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
   // ── Publish / Unpublish ──
 
   async function handlePublish() {
+    if (isDirty && !confirm('You have unsaved changes. Publish without saving them?')) return;
     setPublishing(true);
     const newStatus = qbr.status === 'published' ? 'draft' : 'published';
     try {
@@ -919,10 +928,17 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
   function handleShare() {
     if (typeof window === 'undefined') return;
     const url = `${window.location.origin}/c/${slug}/qbr/${qbr.quarter}`;
-    navigator.clipboard.writeText(url).then(() => {
-      if (mountedRef.current) setSaveMsg('Link copied!');
-      setTimeout(() => { if (mountedRef.current) setSaveMsg(null); }, 2500);
-    });
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        if (mountedRef.current) setSaveMsg('Link copied!');
+        setTimeout(() => { if (mountedRef.current) setSaveMsg(null); }, 2500);
+      }).catch(() => {
+        if (mountedRef.current) setSaveMsg(url);
+      });
+    } else {
+      // Fallback for environments without clipboard API
+      if (mountedRef.current) setSaveMsg(url);
+    }
   }
 
   // ── Delete ──
@@ -999,6 +1015,8 @@ export default function QBRQuarterPage({ customer, qbr: initialQBR, baselineQBR,
   // ── Apply Teamwork import ──
 
   function handleTeamworkApply(result) {
+    const hasExisting = qbr.hours_used || (Array.isArray(qbr.hours_by_month) && qbr.hours_by_month.length > 0);
+    if (hasExisting && !confirm(`This will replace the existing hours data (${qbr.hours_used} hrs). Continue?`)) return;
     update('hours_used', Math.round(result.totalHours));
     update('hours_by_month', result.hoursByMonth);
     update('hours_by_project', result.hoursByProject);

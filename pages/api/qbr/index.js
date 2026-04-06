@@ -64,6 +64,11 @@ async function handlePost(req, res) {
     .select()
     .maybeSingle();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    if (error.code === '23505') {
+      return res.status(409).json({ error: `A QBR for ${quarter} already exists for this customer.` });
+    }
+    return res.status(500).json({ error: error.message });
+  }
   return res.status(201).json({ qbr: data });
 }

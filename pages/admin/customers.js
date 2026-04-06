@@ -113,7 +113,11 @@ export default function AdminCustomers() {
       // Update count
       setQbrCounts(prev => ({ ...prev, [customer.id]: (prev[customer.id] || 0) + 1 }));
       // Open QBR in new tab
-      window.open(`https://clients.leanscale.team/c/${customer.slug}/qbr/${encodeURIComponent(quarter)}`, '_blank');
+      const qbrUrl = `https://clients.leanscale.team/c/${customer.slug}/qbr/${encodeURIComponent(quarter)}`;
+      const newTab = window.open(qbrUrl, '_blank');
+      if (!newTab) {
+        setQbrError(`QBR created! Open it here: ${qbrUrl}`);
+      }
     } catch (err) {
       setQbrError(err.message);
     } finally {

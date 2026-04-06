@@ -65,6 +65,20 @@ async function handlePut(req, res, id) {
     return res.status(400).json({ error: 'No fields to update' });
   }
 
+  // Sanity checks
+  if (updates.hours_budgeted !== undefined && updates.hours_budgeted !== null && updates.hours_budgeted < 0) {
+    return res.status(400).json({ error: 'hours_budgeted cannot be negative' });
+  }
+  if (updates.hours_used !== undefined && updates.hours_used !== null && updates.hours_used < 0) {
+    return res.status(400).json({ error: 'hours_used cannot be negative' });
+  }
+  if (updates.period_start && updates.period_end && updates.period_start > updates.period_end) {
+    return res.status(400).json({ error: 'period_start must be before period_end' });
+  }
+  if (updates.status && !['draft', 'published'].includes(updates.status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
   const { data, error } = await supabaseAdmin
     .from('customer_qbrs')
     .update(updates)

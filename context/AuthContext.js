@@ -14,10 +14,20 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // Sync admin-session cookie so SSP isAdmin checks work without re-login
+    const syncAdminCookie = (session) => {
+      if (session?.user) {
+        document.cookie = `admin-session=1; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+      } else {
+        document.cookie = 'admin-session=; path=/; max-age=0';
+      }
+    };
+
     // Check active session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      syncAdminCookie(session);
       setLoading(false);
     };
 
@@ -27,6 +37,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
+        syncAdminCookie(session);
       }
     );
 

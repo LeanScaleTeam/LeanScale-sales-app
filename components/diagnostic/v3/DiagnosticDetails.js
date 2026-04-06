@@ -307,9 +307,8 @@ export default function DiagnosticDetails({
         <div className="diagnostic-pending-state__icon">📋</div>
         <div className="diagnostic-pending-state__title">Full Details</div>
         <p className="diagnostic-pending-state__body">
-          This view renders the full Statement of Work once the diagnostic is complete — covering
-          all deliverables, WHAT WE FOUND evidence, timeline, investment summary, and working
-          relationship terms.
+          This view renders the full diagnostic details once scoring is complete — covering
+          all deliverables, findings, timeline, investment summary, and working relationship terms.
         </p>
       </div>
     );
@@ -321,7 +320,7 @@ export default function DiagnosticDetails({
       {/* ── Cover ── */}
       <div style={{ background: 'linear-gradient(135deg, rgba(100,37,133,0.3) 0%, rgba(48,25,52,0.5) 100%)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 'var(--radius-xl)', padding: '2.5rem', marginBottom: '2rem', textAlign: 'center' }}>
         <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(232,255,207,0.6)', marginBottom: '0.5rem' }}>
-          Statement of Work
+          GTM Diagnostic Details
         </div>
         <h1 style={{ margin: '0 0 0.25rem', fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', fontWeight: 800, color: 'rgba(255,255,255,0.95)' }}>
           {customer?.customerName || 'Client'} — GTM Operations
@@ -810,7 +809,7 @@ export default function DiagnosticDetails({
           {[
             'Architect introduction call — meet your dedicated LeanScale Architect',
             `Full system access verification${profile.crm && profile.crm !== 'unknown' ? ` — ${profile.crm.toUpperCase()}, connected tools, and data sources` : ' — all connected tools and data sources'}`,
-            'Review of diagnostic findings and Statement of Work',
+            'Review of diagnostic findings and project scope',
             'Sprint 1 planning session — prioritize Week 1 deliverables',
             'Shared Slack channel setup and Teamwork project kickoff',
             'Baseline data export for benchmark tracking',

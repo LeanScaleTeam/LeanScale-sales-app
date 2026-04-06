@@ -234,17 +234,20 @@ export default function DiagnosticDetails({
   const pillarScores = v3Result?.pillar_scores || {};
   const overallScore = v3Result?.overall_score;
 
-  const allProjects = useMemo(() => {
-    if (!mergedRoadmap?.phases) return [];
+  const crmExcluded = useMemo(() => {
     const crm = (v3Result?.company_profile?.crm || v3Result?.crmType || '').toLowerCase();
     const CRM_EXCLUDE = {
       salesforce: new Set(['hubspot-impl', 'salesforce-to-hubspot-crm-migration']),
       hubspot: new Set(['salesforce-impl', 'hubspot-to-salesforce-crm-migration']),
     };
-    const excluded = CRM_EXCLUDE[crm] || new Set();
+    return CRM_EXCLUDE[crm] || new Set();
+  }, [v3Result]);
+
+  const allProjects = useMemo(() => {
+    if (!mergedRoadmap?.phases) return [];
     return mergedRoadmap.phases.flatMap((phase, pi) =>
       (phase.projects || [])
-        .filter((proj) => !excluded.has(proj.serviceId))
+        .filter((proj) => !crmExcluded.has(proj.serviceId))
         .map((proj, idx) => ({
           ...proj,
           // Engine stores name under service.name; custom/overridden projects use .name directly
@@ -257,7 +260,7 @@ export default function DiagnosticDetails({
           priority: getProjectPriority(proj, pi),
         }))
     );
-  }, [mergedRoadmap, v3Result]);
+  }, [mergedRoadmap, crmExcluded]);
 
   const totalHours = useMemo(() => {
     return allProjects.reduce((sum, p) => {
@@ -497,15 +500,19 @@ export default function DiagnosticDetails({
           <>
             {mergedRoadmap.phases.map((phase, phaseIndex) => {
               const phaseColor = PHASE_COLORS[(phase.key || phase.name)?.toUpperCase()] || phase.color || '#718096';
-              const rawProjects = phase.projects || [];
-              // Normalize project names — engine stores under service.name, custom projects use .name
-              const projects = rawProjects.map((p) => ({
-                ...p,
-                name: p.name || p.service?.name || p.serviceId,
-                description: p.description || p.service?.description,
-              }));
+              // Normalize and apply same CRM filter as Deliverables Summary
+              const projects = (phase.projects || [])
+                .filter((p) => !crmExcluded.has(p.serviceId))
+                .map((p) => ({
+                  ...p,
+                  name: p.name || p.service?.name || p.serviceId,
+                  description: p.description || p.service?.description,
+                }));
               if (!projects.length) return null;
-              let globalNum = mergedRoadmap.phases.slice(0, phaseIndex).reduce((s, p) => s + (p.projects?.length || 0), 0);
+              // Count only non-excluded projects from previous phases for consistent numbering
+              let globalNum = mergedRoadmap.phases.slice(0, phaseIndex).reduce(
+                (s, p) => s + (p.projects?.filter((proj) => !crmExcluded.has(proj.serviceId))?.length || 0), 0
+              );
 
               return (
                 <div key={phase.id || phase.key || phase.name || phaseIndex} style={{ marginBottom: '2.5rem' }}>

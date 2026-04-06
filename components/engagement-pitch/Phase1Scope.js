@@ -52,9 +52,17 @@ function daysUntil(dateStr) {
   return diff;
 }
 
-export default function Phase1Scope({ roadmap, customerPath, editMode }) {
+export default function Phase1Scope({ roadmap, customerPath, editMode, onSelectCohort, selectedStartDate }) {
   const [cohorts, setCohorts] = useState([]);
   const [selectedCohort, setSelectedCohort] = useState(null);
+
+  // Sync selectedCohort from persisted start_date when cohorts load
+  useEffect(() => {
+    if (selectedStartDate && cohorts.length > 0) {
+      const match = cohorts.find(c => c.date === selectedStartDate);
+      if (match) setSelectedCohort(match.cohortNumber);
+    }
+  }, [selectedStartDate, cohorts]);
 
   useEffect(() => {
     fetch('/api/availability')
@@ -154,7 +162,12 @@ export default function Phase1Scope({ roadmap, customerPath, editMode }) {
                 key={cohort.cohortNumber}
                 whileHover={isBookable ? { y: -3, scale: 1.02 } : {}}
                 whileTap={isBookable ? { scale: 0.98 } : {}}
-                onClick={() => isBookable && setSelectedCohort(isSelected ? null : cohort.cohortNumber)}
+                onClick={() => {
+                  if (!isBookable) return;
+                  const next = isSelected ? null : cohort.cohortNumber;
+                  setSelectedCohort(next);
+                  onSelectCohort?.(next ? cohort.date : null);
+                }}
                 style={{
                   padding: '1rem',
                   borderRadius: 12,

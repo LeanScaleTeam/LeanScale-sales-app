@@ -458,6 +458,12 @@ export default function EngagementPitch({
               roadmap={effectiveRoadmap}
               customerPath={customerPath}
               editMode={editMode}
+              onSelectCohort={(dateStr) => {
+                const next = { ...overrides, start_date: dateStr };
+                setOverrides(next);
+                onOverridesChange?.(next);
+              }}
+              selectedStartDate={overrides.start_date || null}
             />
           )}
         </motion.div>

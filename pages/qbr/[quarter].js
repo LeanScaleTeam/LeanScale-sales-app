@@ -1515,9 +1515,6 @@ export async function getServerSideProps(context) {
 
   if (error || !qbrData) return { notFound: true };
 
-  // Non-admin can't see drafts
-  if (!isAdmin && qbrData.status !== 'published') return { notFound: true };
-
   // Load all QBRs for this customer (for baseline/prev context)
   const { data: allQBRs } = await supabaseAdmin
     .from('customer_qbrs')

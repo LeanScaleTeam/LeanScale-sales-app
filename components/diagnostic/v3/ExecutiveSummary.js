@@ -475,7 +475,10 @@ export default function ExecutiveSummary({
       </div>
 
       {/* ── Section 6: Top Priorities ── */}
-      {allProjects.length > 0 && (
+      {allProjects.length > 0 && (() => {
+        const scoredProjects = allProjects.filter(p => !p.isCustom);
+        const displayProjects = scoredProjects.length > 0 ? scoredProjects : allProjects;
+        return (
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -485,11 +488,11 @@ export default function ExecutiveSummary({
               </h2>
             </div>
             <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-              {allProjects.length} total project{allProjects.length !== 1 ? 's' : ''}
+              {displayProjects.length} scored project{displayProjects.length !== 1 ? 's' : ''}
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {allProjects.slice(0, 8).map((proj, i) => (
+            {displayProjects.slice(0, 8).map((proj, i) => (
               <div
                 key={proj.id || proj.serviceId || i}
                 style={{
@@ -528,13 +531,14 @@ export default function ExecutiveSummary({
               </div>
             ))}
           </div>
-          {allProjects.length > 8 && (
+          {displayProjects.length > 8 && (
             <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
-              +{allProjects.length - 8} more in Full Details
+              +{displayProjects.length - 8} more — see Full Details
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Section 7: How These Gaps Compound ── */}
       {gapItems.length > 0 && (

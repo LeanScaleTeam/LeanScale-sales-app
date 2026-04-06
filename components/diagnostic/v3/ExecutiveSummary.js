@@ -135,16 +135,24 @@ export default function ExecutiveSummary({
 
   const allProjects = useMemo(() => {
     if (!mergedRoadmap?.phases) return [];
+    const crm = (v3Result?.company_profile?.crm || v3Result?.crmType || '').toLowerCase();
+    const CRM_EXCLUDE = {
+      salesforce: new Set(['hubspot-impl', 'salesforce-to-hubspot-crm-migration']),
+      hubspot: new Set(['salesforce-impl', 'hubspot-to-salesforce-crm-migration']),
+    };
+    const excluded = CRM_EXCLUDE[crm] || new Set();
     return mergedRoadmap.phases.flatMap((p) =>
-      (p.projects || []).map((proj) => ({
-        ...proj,
-        name: proj.name || proj.service?.name || proj.serviceId,
-        description: proj.description || proj.service?.description,
-        phaseName: p.name,
-        phaseColor: PHASE_COLORS[(p.key || p.name)?.toUpperCase()] || p.color || '#718096',
-      }))
+      (p.projects || [])
+        .filter((proj) => !excluded.has(proj.serviceId))
+        .map((proj) => ({
+          ...proj,
+          name: proj.name || proj.service?.name || proj.serviceId,
+          description: proj.description || proj.service?.description,
+          phaseName: p.name,
+          phaseColor: PHASE_COLORS[(p.key || p.name)?.toUpperCase()] || p.color || '#718096',
+        }))
     );
-  }, [mergedRoadmap]);
+  }, [mergedRoadmap, v3Result]);
 
   const engagement = useMemo(() => resolveEngagement(engagementOverrides), [engagementOverrides]);
 

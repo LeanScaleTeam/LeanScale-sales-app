@@ -1142,7 +1142,14 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                 }}>
                   CRM Health
                 </h2>
-                <SystemsHealth editMode={editMode} />
+                <SystemsHealth
+                  editMode={editMode}
+                  integrityScore={engagementOverrides?.crm_health?.integrity_score}
+                  bowtieStages={engagementOverrides?.crm_health?.bowtie_stages}
+                  eventStatus={engagementOverrides?.crm_health?.event_status}
+                  issues={engagementOverrides?.crm_health?.issues}
+                  employees={engagementOverrides?.crm_health?.employees}
+                />
               </div>
             </div>
           )}
@@ -1550,7 +1557,14 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
             v3Result,
             transcriptAssessments,
             companyProfile: v3Result.company_profile,
-            power10Data,
+            power10Data: (() => {
+              const p10Overrides = engagementOverrides?.power10 || {};
+              return (power10Data || []).map((m) => ({
+                ...m,
+                ableToReport: p10Overrides[m.name]?.ableToReport ?? m.ableToReport,
+                statusAgainstPlan: p10Overrides[m.name]?.statusAgainstPlan ?? m.statusAgainstPlan,
+              }));
+            })(),
             roadmap: roadmapOverrides || v3Result.roadmap,
           })}
           onClose={() => setShowPresenter(false)}

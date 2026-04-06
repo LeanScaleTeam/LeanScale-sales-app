@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Power10Anchor from './Power10Anchor';
 import FindingsWalkthrough from './FindingsWalkthrough';
@@ -181,12 +181,32 @@ export default function EngagementPitch({
   transcriptAssessments,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTierId, setSelectedTierId] = useState(null);
+  const [selectedTierId, setSelectedTierId] = useState(
+    () => engagementOverrides?.engagement_type?.toLowerCase() || null
+  );
 
   // Override state — initialized from persisted overrides
   const [overrides, setOverrides] = useState(
     engagementOverrides || { power10: {}, findings: {}, roadmap: {} }
   );
+
+  // Sync overrides and selectedTierId when the prop arrives asynchronously
+  // (EngagementPitch can mount before DiagnosticResults finishes loading from DB)
+  useEffect(() => {
+    if (!engagementOverrides) return;
+    setOverrides((prev) => {
+      // Only sync if the DB value differs from current local state
+      if (prev.engagement_type === engagementOverrides.engagement_type &&
+          prev.monthly_investment === engagementOverrides.monthly_investment) {
+        return prev;
+      }
+      return engagementOverrides;
+    });
+    setSelectedTierId((prev) => {
+      const incoming = engagementOverrides.engagement_type?.toLowerCase() || null;
+      return prev || incoming;
+    });
+  }, [engagementOverrides]);
 
   const context = parseIntakeContext(companyProfile);
 
@@ -229,7 +249,8 @@ export default function EngagementPitch({
     });
   }, [items, power10Data, companyProfile, context]);
 
-  const activeTier = selectedTierId || autoTier;
+  const persistedTierId = overrides?.engagement_type?.toLowerCase() || null;
+  const activeTier = selectedTierId || persistedTierId || autoTier;
 
   // Persist tier selection to engagementOverrides so Exec Summary / Details stay in sync
   function handleSelectTier(tierId) {

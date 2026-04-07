@@ -409,7 +409,11 @@ export default function EngagementPitch({
   // and all catalog tool impls when showAll
   const effectiveManagedServices = useMemo(() => {
     const roadmapOv = overrides?.roadmap || {};
-    const base = resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
+    // Suppress the default placeholders (CRM Admin, Enrichment Tools Admin, Ongoing Reporting)
+    // once real tool impls are detected from the systems landscape
+    const base = systemsToolImpls.length > 0
+      ? []
+      : resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
     const existingIds = new Set(base.map(ms => ms.serviceId));
 
     // Always: add tool impls for confirmed/likely tools from systems landscape

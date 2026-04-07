@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { fadeUpItem, staggerContainer } from '../../lib/animations';
 import { ENGAGEMENT_TIERS } from '../../data/engagement-tiers';
+import CatalogPickerModal from './CatalogPickerModal';
 
 const PHASE_COLORS = {
   stabilize: { bg: 'rgba(239, 68, 68, 0.07)', border: 'rgba(239, 68, 68, 0.22)', accent: '#DC2626', text: '#fca5a5', bar: '#DC2626' },
@@ -11,7 +12,7 @@ const PHASE_COLORS = {
   scale:     { bg: 'rgba(34, 197, 94, 0.07)',   border: 'rgba(34, 197, 94, 0.22)',   accent: '#16A34A', text: '#86efac', bar: '#16A34A' },
 };
 
-const PHASE_IDS = ['stabilize', 'activate', 'optimize', 'scale'];
+export const PHASE_IDS = ['stabilize', 'activate', 'optimize', 'scale'];
 
 const PRIORITY_OPTIONS = [
   { value: 'critical',    label: 'Critical',    color: '#DC2626', bg: 'rgba(239, 68, 68, 0.12)' },
@@ -763,10 +764,11 @@ export default function PhaseRoadmap({
   overrides,
   activeTier,
   onSelectTier,
-  showAll,
-  onToggleShowAll,
 }) {
   const [presentMode, setPresentMode] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerPhase, setPickerPhase] = useState('activate');
+  const [pickerMode, setPickerMode] = useState('projects');
 
   if (!roadmap || !roadmap.phases) return null;
 
@@ -824,7 +826,7 @@ export default function PhaseRoadmap({
         </motion.div>
 
         {/* Ongoing Managed Services */}
-        {managedServices?.length > 0 && (
+        {(managedServices?.length > 0 || editMode) && (
           <motion.div variants={fadeUpItem}>
             <div style={{
               display: 'flex',
@@ -839,27 +841,46 @@ export default function PhaseRoadmap({
                 Ongoing Managed Services
               </div>
               <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+              {editMode ? (
+                <button
+                  onClick={() => { setPickerMode('services'); setPickerOpen(true); }}
+                  style={{
+                    background: 'none', border: '1px solid rgba(124,58,237,0.3)',
+                    borderRadius: 6, padding: '0.2rem 0.55rem', fontSize: '0.62rem',
+                    fontWeight: 600, color: 'rgba(124,58,237,0.7)', cursor: 'pointer',
+                  }}
+                >
+                  + Add service
+                </button>
+              ) : (
+                <div style={{
+                  fontSize: '0.58rem', color: 'rgba(124,58,237,0.7)',
+                  fontWeight: 600, letterSpacing: '0.04em',
+                }}>
+                  Always Included
+                </div>
+              )}
+            </div>
+            {managedServices?.length > 0 ? (
               <div style={{
-                fontSize: '0.58rem', color: 'rgba(124,58,237,0.7)',
-                fontWeight: 600, letterSpacing: '0.04em',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 'var(--space-2)',
               }}>
-                Always Included
+                {managedServices.map(ms => (
+                  <ManagedServiceCard
+                    key={ms.serviceId || ms.name}
+                    service={ms}
+                    editMode={editMode}
+                    onOverride={onOverride}
+                  />
+                ))}
               </div>
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 'var(--space-2)',
-            }}>
-              {managedServices.map(ms => (
-                <ManagedServiceCard
-                  key={ms.serviceId || ms.name}
-                  service={ms}
-                  editMode={editMode}
-                  onOverride={onOverride}
-                />
-              ))}
-            </div>
+            ) : (
+              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '0.75rem 0' }}>
+                No managed services added. Click &ldquo;+ Add service&rdquo; to add tools you manage.
+              </p>
+            )}
           </motion.div>
         )}
 
@@ -999,24 +1020,36 @@ export default function PhaseRoadmap({
                     No additional projects needed in this phase based on your diagnostic results.
                   </p>
                 )}
+                {editMode && (
+                  <div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.65rem' }}>
+                    <button
+                      onClick={() => { setPickerPhase(phase.id); setPickerMode('projects'); setPickerOpen(true); }}
+                      style={{
+                        background: 'none', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 8,
+                        width: '100%', padding: '0.45rem', fontSize: '0.7rem', fontWeight: 600,
+                        color: 'rgba(255,255,255,0.25)', cursor: 'pointer',
+                      }}
+                    >
+                      + Add project to {phase.name}
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           );
         })}
 
-        {onToggleShowAll && (
-          <button
-            onClick={onToggleShowAll}
-            style={{
-              alignSelf: 'center', background: 'none',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
-              padding: '0.5rem 1.25rem', cursor: 'pointer', fontSize: '0.78rem',
-              color: 'rgba(255,255,255,0.45)', marginTop: '0.5rem',
-            }}
-          >
-            {showAll ? 'Show recommended only' : 'Show all projects'}
-          </button>
-        )}
+        <CatalogPickerModal
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          mode={pickerMode}
+          defaultPhase={pickerPhase}
+          overrides={overrides}
+          onOverride={onOverride}
+          currentItems={managedServices || []}
+          phases={roadmap?.phases || []}
+        />
+
       </motion.div>
     </Tooltip.Provider>
   );

@@ -6,7 +6,7 @@ import PhaseRoadmap from './PhaseRoadmap';
 import TierSelector from './TierSelector';
 import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
-import { managedServices as managedServicesCatalog, functionLabels } from '../../data/services-catalog';
+import { strategicProjects as strategicProjectsCatalog, managedServices as managedServicesCatalog, functionLabels } from '../../data/services-catalog';
 import { TOOL_CATALOG } from '../diagnostic/v3/GTMLandscape';
 
 // Map GTMLandscape tool IDs → managedServices catalog service IDs
@@ -268,8 +268,6 @@ export default function EngagementPitch({
   const [selectedTierId, setSelectedTierId] = useState(
     () => engagementOverrides?.engagement_type?.toLowerCase() || null
   );
-  const [showAll, setShowAll] = useState(false);
-
   // Override state — initialized from persisted overrides
   const [overrides, setOverrides] = useState(
     engagementOverrides || { power10: {}, findings: {}, roadmap: {} }
@@ -373,11 +371,10 @@ export default function EngagementPitch({
       return buildEngagementRoadmap(items, activeTier, {
         processes: processes || [],
         managedServices: [],
-        includeAll: showAll,
       });
     }
     return buildEngagementRoadmapV1(processes || [], activeTier, []);
-  }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier, showAll]);
+  }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier]);
 
   // Compute which tool impls to show based on systems landscape detection
   const systemsToolImpls = useMemo(() => {
@@ -405,41 +402,43 @@ export default function EngagementPitch({
     return result;
   }, [crmSignals, crmType, overrides?.gtmLandscape?.tools]);
 
-  // Filter managed services by exclusion overrides; include systems-detected tool impls always,
-  // and all catalog tool impls when showAll
+  // Build effective managed services: defaults (pre-diagnostic only) + systems-detected + manually included
   const effectiveManagedServices = useMemo(() => {
     const roadmapOv = overrides?.roadmap || {};
-    // Suppress the default placeholders (CRM Admin, Enrichment Tools Admin, Ongoing Reporting)
-    // once a real diagnostic has been run — they're only for demo / pre-diagnostic state
+    // Suppress defaults once a real diagnostic has run
     const diagnosticRan = diagnosticVersion === 3 && v3Result?.competencies?.length > 0;
     const base = diagnosticRan
       ? []
       : resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
     const existingIds = new Set(base.map(ms => ms.serviceId));
 
-    // Always: add tool impls for confirmed/likely tools from systems landscape
+    // Systems-detected tool impls (confirmed/likely from GTM Landscape)
     const fromSystems = systemsToolImpls.filter(
       ms => !existingIds.has(ms.serviceId) && !roadmapOv[ms.serviceId]?.excluded
     );
     fromSystems.forEach(ms => existingIds.add(ms.serviceId));
 
-    if (!showAll) return [...base, ...fromSystems];
+    // Manually included via picker (included: true)
+    const manuallyAdded = [];
+    for (const [serviceId, ov] of Object.entries(roadmapOv)) {
+      if (!ov.included || ov.excluded || existingIds.has(serviceId)) continue;
+      const entry = MANAGED_CATALOG_LOOKUP[serviceId];
+      if (entry) {
+        existingIds.add(serviceId);
+        manuallyAdded.push({
+          serviceId: entry.id,
+          name: entry.name,
+          description: entry.description,
+          icon: entry.icon,
+          primaryFunction: entry.primaryFunction,
+        });
+      }
+    }
 
-    // showAll: also append every remaining catalog tool impl
-    const allToolImpls = Object.entries(managedServicesCatalog).flatMap(([categoryKey, services]) =>
-      services.map(s => ({
-        serviceId: s.id,
-        name: s.name,
-        description: s.description,
-        icon: s.icon,
-        primaryFunction: functionLabels[categoryKey] || 'Cross Functional',
-      }))
-    ).filter(ms => !existingIds.has(ms.serviceId) && !roadmapOv[ms.serviceId]?.excluded);
+    return [...base, ...fromSystems, ...manuallyAdded];
+  }, [resolvedManagedServices, systemsToolImpls, overrides?.roadmap, diagnosticVersion, v3Result]);
 
-    return [...base, ...fromSystems, ...allToolImpls];
-  }, [resolvedManagedServices, systemsToolImpls, overrides?.roadmap, showAll]);
-
-  // Apply roadmap overrides (phase reassignment, exclusions)
+  // Apply roadmap overrides (phase reassignment, exclusions, manual includes)
   const effectiveRoadmap = useMemo(() => {
     if (!roadmap?.phases) return roadmap;
     const roadmapOv = overrides?.roadmap || {};
@@ -466,6 +465,42 @@ export default function EngagementPitch({
         const target = phases.find(p => p.id === ov.phase);
         if (target) target.projects.push(movedProject);
       }
+    }
+
+    // Inject manually-included projects (included: true, not already on roadmap)
+    const existingServiceIds = new Set(phases.flatMap(p => p.projects.map(pr => pr.serviceId)));
+    for (const [serviceId, ov] of Object.entries(roadmapOv)) {
+      if (!ov.included || ov.excluded || existingServiceIds.has(serviceId)) continue;
+      let catalogEntry = null;
+      let primaryFunction = 'Cross Functional';
+      for (const [catKey, services] of Object.entries(strategicProjectsCatalog)) {
+        const found = services.find(s => s.id === serviceId);
+        if (found) { catalogEntry = found; primaryFunction = functionLabels[catKey] || 'Cross Functional'; break; }
+      }
+      if (!catalogEntry) continue;
+      const targetPhase = phases.find(p => p.id === (ov.phase || 'activate'));
+      if (!targetPhase) continue;
+      existingServiceIds.add(serviceId);
+      targetPhase.projects.push({
+        serviceId: catalogEntry.id,
+        name: catalogEntry.name,
+        description: catalogEntry.description,
+        icon: catalogEntry.icon || '📋',
+        type: 'strategic',
+        defaultPhase: ov.phase || 'activate',
+        severity: 0,
+        diagnosticItemId: null,
+        diagnosticItemName: null,
+        hasPlaybook: catalogEntry.hasPlaybook || false,
+        primaryFunction,
+        outcome: null,
+        metric: null,
+        avgScore: null,
+        pillar: null,
+        layer: null,
+        suggestedPriority: ov.priority || 'optional',
+        manuallyAdded: true,
+      });
     }
 
     return { ...roadmap, phases };
@@ -603,8 +638,6 @@ export default function EngagementPitch({
               overrides={overrides}
               activeTier={activeTier}
               onSelectTier={handleSelectTier}
-              showAll={showAll}
-              onToggleShowAll={() => setShowAll(v => !v)}
             />
           )}
 

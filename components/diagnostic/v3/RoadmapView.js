@@ -68,7 +68,26 @@ export default function RoadmapView({
     return roadmap.phases.flatMap((p) => p.projects).reduce((s, p) => s + (p.hours || 0), 0);
   }, [roadmap]);
 
-  if (!roadmap?.phases) return null;
+  if (!roadmap?.phases) {
+    return onToggleHealthy ? (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem 0' }}>
+        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)' }}>
+          No projects flagged based on current scores.
+        </div>
+        <button
+          onClick={onToggleHealthy}
+          style={{
+            alignSelf: 'center', background: 'none',
+            border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+            padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.78rem',
+            color: 'rgba(255,255,255,0.45)',
+          }}
+        >
+          Show all items
+        </button>
+      </div>
+    ) : null;
+  }
 
   const emit = (action) => onRoadmapChange?.(action);
 

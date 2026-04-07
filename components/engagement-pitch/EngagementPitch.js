@@ -184,6 +184,7 @@ export default function EngagementPitch({
   const [selectedTierId, setSelectedTierId] = useState(
     () => engagementOverrides?.engagement_type?.toLowerCase() || null
   );
+  const [showAll, setShowAll] = useState(false);
 
   // Override state — initialized from persisted overrides
   const [overrides, setOverrides] = useState(
@@ -288,10 +289,11 @@ export default function EngagementPitch({
       return buildEngagementRoadmap(items, activeTier, {
         processes: processes || [],
         managedServices: [],
+        includeAll: showAll,
       });
     }
     return buildEngagementRoadmapV1(processes || [], activeTier, []);
-  }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier]);
+  }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier, showAll]);
 
   // Filter managed services by exclusion overrides
   const effectiveManagedServices = useMemo(() => {
@@ -463,6 +465,8 @@ export default function EngagementPitch({
               overrides={overrides}
               activeTier={activeTier}
               onSelectTier={handleSelectTier}
+              showAll={showAll}
+              onToggleShowAll={() => setShowAll(v => !v)}
             />
           )}
 

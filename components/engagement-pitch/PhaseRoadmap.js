@@ -763,6 +763,8 @@ export default function PhaseRoadmap({
   overrides,
   activeTier,
   onSelectTier,
+  showAll,
+  onToggleShowAll,
 }) {
   const [presentMode, setPresentMode] = useState(false);
 
@@ -1001,6 +1003,20 @@ export default function PhaseRoadmap({
             </motion.div>
           );
         })}
+
+        {onToggleShowAll && (
+          <button
+            onClick={onToggleShowAll}
+            style={{
+              alignSelf: 'center', background: 'none',
+              border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+              padding: '0.5rem 1.25rem', cursor: 'pointer', fontSize: '0.78rem',
+              color: 'rgba(255,255,255,0.45)', marginTop: '0.5rem',
+            }}
+          >
+            {showAll ? 'Show recommended only' : 'Show all projects'}
+          </button>
+        )}
       </motion.div>
     </Tooltip.Provider>
   );
@@ -1051,7 +1067,7 @@ function FunctionGroup({ functionName, projects, colors, currentPhaseId, editMod
             editMode={editMode}
             onOverride={onOverride}
             customerPath={customerPath}
-            priority={overrides?.roadmap?.[proj.serviceId]?.priority}
+            priority={overrides?.roadmap?.[proj.serviceId]?.priority ?? proj.suggestedPriority}
           />
         ))}
       </div>

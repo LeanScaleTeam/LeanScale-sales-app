@@ -19,6 +19,7 @@ import ScoreCardGrid from './v3/ScoreCardGrid';
 import DataCoverage from './v3/DataCoverage';
 import SystemsHealth from './v3/SystemsHealth';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
+import { generateRoadmap } from '../../lib/diagnostic-engine/v3/generate-roadmap';
 import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 
 // Engagement Pitch — loaded when user clicks the Engagement tab
@@ -318,6 +319,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   const [roadmapOverrides, setRoadmapOverrides] = useState(null);
   const [roadmapDirty, setRoadmapDirty] = useState(false);
   const [roadmapSaving, setRoadmapSaving] = useState(false);
+  const [showHealthy, setShowHealthy] = useState(false);
   const [suggestedProjects, setSuggestedProjects] = useState([]);
   const [transcriptAssessments, setTranscriptAssessments] = useState({});
   const [showPresenter, setShowPresenter] = useState(false);
@@ -779,8 +781,16 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   }
 
   // Compute merged roadmap for display
-  const mergedRoadmap = v3Result?.roadmap
-    ? applyRoadmapOverrides(v3Result.roadmap, roadmapOverrides)
+  // When showHealthy is true, re-generate from competencies with all items included
+  const baseRoadmap = (() => {
+    if (!v3Result) return null;
+    if (showHealthy && v3Result.competencies?.length > 0) {
+      return generateRoadmap(v3Result.competencies, { includeHealthy: true });
+    }
+    return v3Result.roadmap || null;
+  })();
+  const mergedRoadmap = baseRoadmap
+    ? applyRoadmapOverrides(baseRoadmap, roadmapOverrides)
     : null;
 
   // Collect removed projects info for the "Removed" section in RoadmapView
@@ -1190,6 +1200,8 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
 
               <RoadmapView
                 roadmap={mergedRoadmap}
+                showHealthy={showHealthy}
+                onToggleHealthy={() => setShowHealthy((v) => !v)}
                 editMode={editMode}
                 onRoadmapChange={handleRoadmapChange}
                 removedProjects={removedProjectsList}

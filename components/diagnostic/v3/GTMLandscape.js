@@ -61,7 +61,7 @@ const AI_TOOLS = [
 
 // ─── Tool Catalog ─────────────────────────────────────────────────────────────
 
-const TOOL_CATALOG = [
+export const TOOL_CATALOG = [
   // Intelligence & Data
   {
     id: 'zoominfo', name: 'ZoomInfo', stage: 'intelligence', category: 'B2B Data',

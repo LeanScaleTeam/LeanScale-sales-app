@@ -1394,6 +1394,8 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
               onOverridesChange={handleEngagementOverridesChange}
               customerPath={customerPath}
               transcriptAssessments={transcriptAssessments}
+              crmSignals={crmSignals.computedSignals || {}}
+              crmType={crmSignals.crmType || v3Result?.crm_type || 'unknown'}
             />
           )}
 

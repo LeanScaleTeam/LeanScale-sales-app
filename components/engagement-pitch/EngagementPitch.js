@@ -7,6 +7,87 @@ import TierSelector from './TierSelector';
 import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
 import { managedServices as managedServicesCatalog, functionLabels } from '../../data/services-catalog';
+import { TOOL_CATALOG } from '../diagnostic/v3/GTMLandscape';
+
+// Map GTMLandscape tool IDs → managedServices catalog service IDs
+const TOOL_TO_SERVICE_ID = {
+  'salesforce': 'salesforce-impl',
+  'hubspot-crm': 'hubspot-impl',
+  'hubspot-marketing': 'hubspot-impl',
+  'clay': 'clay-impl',
+  'looker': 'looker-impl',
+  'tableau': 'tableau-impl',
+  'domo': 'domo-impl',
+  'powerbi': 'powerbi-impl',
+  'census': 'census-impl',
+  'hightouch': 'hightouch-impl',
+  'fivetran': 'fivetran-impl',
+  'segment': 'segment-impl',
+  'clearbit': 'clearbit-impl',
+  'zoominfo': 'zoominfo-impl',
+  'apollo': 'apollo-impl',
+  'lusha': 'lusha-impl',
+  'cognism': 'cognism-impl',
+  'demandbase': 'demandbase-impl',
+  '6sense': '6sense-impl',
+  'drift': 'drift-impl',
+  'intercom-mktg': 'intercom-impl',
+  'marketo': 'marketo-impl',
+  'pardot': 'pardot-impl',
+  'eloqua': 'eloqua-impl',
+  'mailchimp': 'mailchimp-impl',
+  'klaviyo': 'klaviyo-impl',
+  'customer-io': 'customer-io-impl',
+  'braze': 'braze-impl',
+  'iterable': 'iterable-impl',
+  'sendgrid': 'sendgrid-impl',
+  'unbounce': 'unbounce-impl',
+  'instapage': 'instapage-impl',
+  'calendly': 'calendly-impl',
+  'chili-piper': 'chilipiper-impl',
+  'bizible': 'bizible-impl',
+  'dreamdata': 'dreamdata-impl',
+  'hockeystack': 'hockeystack-impl',
+  'on24': 'on24-impl',
+  'goldcast': 'goldcast-impl',
+  'outreach': 'outreach-impl',
+  'salesloft': 'salesloft-impl',
+  'gong': 'gong-impl',
+  'chorus': 'chorus-impl',
+  'clari': 'clari-impl',
+  'aviso': 'aviso-impl',
+  'docusign': 'docusign-impl',
+  'pandadoc': 'pandadoc-impl',
+  'conga': 'conga-impl',
+  'dealpath': 'dealpath-impl',
+  'linkedin-sales-nav': 'linkedin-sales-nav-impl',
+  'seismic': 'seismic-impl',
+  'highspot': 'highspot-impl',
+  'showpad': 'showpad-impl',
+  'captivateiq': 'captivateiq-impl',
+  'spiff': 'spiff-impl',
+  'xactly': 'xactly-impl',
+  'dealfront': 'dealfront-impl',
+  'gainsight': 'gainsight-impl',
+  'churnzero': 'churnzero-impl',
+  'zendesk': 'zendesk-impl',
+  'vitally': 'vitally-impl',
+  'totango': 'totango-impl',
+  'freshdesk': 'freshdesk-impl',
+  'pendo': 'pendo-impl',
+  'userguiding': 'userguiding-impl',
+  'delighted': 'delighted-impl',
+  'surveymonkey': 'surveymonkey-impl',
+  'typeform': 'typeform-impl',
+};
+
+// Build a flat lookup: serviceId → service object from catalog
+const MANAGED_CATALOG_LOOKUP = {};
+for (const [categoryKey, services] of Object.entries(managedServicesCatalog)) {
+  for (const s of services) {
+    MANAGED_CATALOG_LOOKUP[s.id] = { ...s, primaryFunction: functionLabels[categoryKey] || 'Cross Functional' };
+  }
+}
 import { recommendTier, getTierById } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
 import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/v3/constants-v3';
@@ -180,6 +261,8 @@ export default function EngagementPitch({
   onOverridesChange,
   customerPath,
   transcriptAssessments,
+  crmSignals = {},
+  crmType = 'unknown',
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedTierId, setSelectedTierId] = useState(
@@ -296,13 +379,48 @@ export default function EngagementPitch({
     return buildEngagementRoadmapV1(processes || [], activeTier, []);
   }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier, showAll]);
 
-  // Filter managed services by exclusion overrides; when showAll, append all catalog tool impls
+  // Compute which tool impls to show based on systems landscape detection
+  const systemsToolImpls = useMemo(() => {
+    const manualOverrides = overrides?.gtmLandscape?.tools || {};
+    const seen = new Set();
+    const result = [];
+    for (const tool of TOOL_CATALOG) {
+      const serviceId = TOOL_TO_SERVICE_ID[tool.id];
+      if (!serviceId || seen.has(serviceId)) continue;
+      const status = manualOverrides[tool.id] ?? tool.detectFn(crmSignals, crmType);
+      if (status === 'confirmed' || status === 'likely') {
+        const catalogEntry = MANAGED_CATALOG_LOOKUP[serviceId];
+        if (catalogEntry) {
+          seen.add(serviceId);
+          result.push({
+            serviceId: catalogEntry.id,
+            name: catalogEntry.name,
+            description: catalogEntry.description,
+            icon: catalogEntry.icon,
+            primaryFunction: catalogEntry.primaryFunction,
+          });
+        }
+      }
+    }
+    return result;
+  }, [crmSignals, crmType, overrides?.gtmLandscape?.tools]);
+
+  // Filter managed services by exclusion overrides; include systems-detected tool impls always,
+  // and all catalog tool impls when showAll
   const effectiveManagedServices = useMemo(() => {
     const roadmapOv = overrides?.roadmap || {};
     const base = resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
-    if (!showAll) return base;
-
     const existingIds = new Set(base.map(ms => ms.serviceId));
+
+    // Always: add tool impls for confirmed/likely tools from systems landscape
+    const fromSystems = systemsToolImpls.filter(
+      ms => !existingIds.has(ms.serviceId) && !roadmapOv[ms.serviceId]?.excluded
+    );
+    fromSystems.forEach(ms => existingIds.add(ms.serviceId));
+
+    if (!showAll) return [...base, ...fromSystems];
+
+    // showAll: also append every remaining catalog tool impl
     const allToolImpls = Object.entries(managedServicesCatalog).flatMap(([categoryKey, services]) =>
       services.map(s => ({
         serviceId: s.id,
@@ -313,8 +431,8 @@ export default function EngagementPitch({
       }))
     ).filter(ms => !existingIds.has(ms.serviceId) && !roadmapOv[ms.serviceId]?.excluded);
 
-    return [...base, ...allToolImpls];
-  }, [resolvedManagedServices, overrides?.roadmap, showAll]);
+    return [...base, ...fromSystems, ...allToolImpls];
+  }, [resolvedManagedServices, systemsToolImpls, overrides?.roadmap, showAll]);
 
   // Apply roadmap overrides (phase reassignment, exclusions)
   const effectiveRoadmap = useMemo(() => {

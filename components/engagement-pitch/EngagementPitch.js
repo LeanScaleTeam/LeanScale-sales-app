@@ -410,8 +410,9 @@ export default function EngagementPitch({
   const effectiveManagedServices = useMemo(() => {
     const roadmapOv = overrides?.roadmap || {};
     // Suppress the default placeholders (CRM Admin, Enrichment Tools Admin, Ongoing Reporting)
-    // once real tool impls are detected from the systems landscape
-    const base = systemsToolImpls.length > 0
+    // once a real diagnostic has been run — they're only for demo / pre-diagnostic state
+    const diagnosticRan = diagnosticVersion === 3 && v3Result?.competencies?.length > 0;
+    const base = diagnosticRan
       ? []
       : resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
     const existingIds = new Set(base.map(ms => ms.serviceId));

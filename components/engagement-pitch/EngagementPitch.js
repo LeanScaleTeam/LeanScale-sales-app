@@ -467,10 +467,12 @@ export default function EngagementPitch({
       }
     }
 
-    // Inject manually-included projects (included: true, not already on roadmap)
+    // Inject manually-included projects or projects with a saved phase override that aren't
+    // diagnostic-generated (backward-compat: users who arranged projects while showAll was on).
     const existingServiceIds = new Set(phases.flatMap(p => p.projects.map(pr => pr.serviceId)));
     for (const [serviceId, ov] of Object.entries(roadmapOv)) {
-      if (!ov.included || ov.excluded || existingServiceIds.has(serviceId)) continue;
+      // Skip if: no inclusion signal, explicitly excluded, or already in roadmap
+      if ((!ov.included && !ov.phase) || ov.excluded || existingServiceIds.has(serviceId)) continue;
       let catalogEntry = null;
       let primaryFunction = 'Cross Functional';
       for (const [catKey, services] of Object.entries(strategicProjectsCatalog)) {

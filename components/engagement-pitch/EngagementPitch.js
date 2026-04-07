@@ -6,6 +6,7 @@ import PhaseRoadmap from './PhaseRoadmap';
 import TierSelector from './TierSelector';
 import Phase1Scope from './Phase1Scope';
 import { buildEngagementRoadmap, buildEngagementRoadmapV1 } from '../../lib/engagement-roadmap';
+import { managedServices as managedServicesCatalog, functionLabels } from '../../data/services-catalog';
 import { recommendTier, getTierById } from '../../data/engagement-tiers';
 import { parseIntakeContext, estimateTotalCostOfInaction, calculatePower10Summary } from '../../lib/impact-calculator';
 import { getCompetencyById, V3_COMPETENCIES } from '../../lib/diagnostic-engine/v3/constants-v3';
@@ -295,11 +296,25 @@ export default function EngagementPitch({
     return buildEngagementRoadmapV1(processes || [], activeTier, []);
   }, [diagnosticVersion, v2Result, v3Result, items, processes, activeTier, showAll]);
 
-  // Filter managed services by exclusion overrides
+  // Filter managed services by exclusion overrides; when showAll, append all catalog tool impls
   const effectiveManagedServices = useMemo(() => {
     const roadmapOv = overrides?.roadmap || {};
-    return resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
-  }, [resolvedManagedServices, overrides?.roadmap]);
+    const base = resolvedManagedServices.filter(ms => !roadmapOv[ms.serviceId]?.excluded);
+    if (!showAll) return base;
+
+    const existingIds = new Set(base.map(ms => ms.serviceId));
+    const allToolImpls = Object.entries(managedServicesCatalog).flatMap(([categoryKey, services]) =>
+      services.map(s => ({
+        serviceId: s.id,
+        name: s.name,
+        description: s.description,
+        icon: s.icon,
+        primaryFunction: functionLabels[categoryKey] || 'Cross Functional',
+      }))
+    ).filter(ms => !existingIds.has(ms.serviceId) && !roadmapOv[ms.serviceId]?.excluded);
+
+    return [...base, ...allToolImpls];
+  }, [resolvedManagedServices, overrides?.roadmap, showAll]);
 
   // Apply roadmap overrides (phase reassignment, exclusions)
   const effectiveRoadmap = useMemo(() => {

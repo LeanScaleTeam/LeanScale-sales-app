@@ -60,7 +60,7 @@ export default function Embedded() {
     : '/diagnostic/start';
 
   return (
-    <Layout title="Embedded">
+    <Layout title="GTM Embedded">
       {/* Dark Gradient Hero */}
       <div style={{
         background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
@@ -110,7 +110,7 @@ export default function Embedded() {
             marginBottom: '0.75rem',
             lineHeight: 1.15,
           }}>
-            Embedded{' '}
+            GTM Embedded{' '}
             <span style={{
               background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
               WebkitBackgroundClip: 'text',

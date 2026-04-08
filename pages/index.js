@@ -15,7 +15,7 @@ const stats = [
 const services = [
   {
     icon: '\u{1F680}',
-    title: 'Ultimate GTM',
+    title: 'GTM Launch',
     price: '$75K',
     description: 'Full-stack GTM infrastructure in 8 weeks. Purpose-built agents, prescriptive playbooks, and 11+ executive dashboards — everything you need to go from zero to operational.',
     href: '/getting-started/ultimate-gtm',
@@ -23,7 +23,7 @@ const services = [
   },
   {
     icon: '\u{1F91D}',
-    title: 'Embedded',
+    title: 'GTM Embedded',
     price: 'Custom',
     description: 'Dedicated GTM operators embedded in your team. Custom engagements with rolling 90-day outs — exactly how we sell today, tailored to your needs.',
     href: '/getting-started/embedded',
@@ -126,7 +126,7 @@ export default function Home() {
             margin: '0 auto 2.5rem',
             lineHeight: 1.6,
           }}>
-            We build full-stack GTM infrastructure for the fastest-growing B2B companies. Two products — Ultimate GTM or Embedded. No a la carte.
+            We build full-stack GTM infrastructure for the fastest-growing B2B companies. Two products — GTM Launch or GTM Embedded. No a la carte.
           </p>
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3.5rem' }}>

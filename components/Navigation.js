@@ -37,22 +37,22 @@ const diagnosticLinks = {
 
 const gettingStartedLinks = {
   default: [
-    { type: 'group', label: 'Ultimate GTM', children: [
+    { type: 'group', label: 'GTM Launch', children: [
       { href: '/getting-started/ultimate-gtm', label: 'Overview' },
       { href: '/getting-started/ultimate-gtm#review-scope', label: 'Review Scope' },
     ]},
-    { type: 'group', label: 'Embedded', children: [
+    { type: 'group', label: 'GTM Embedded', children: [
       { href: '/getting-started/embedded', label: 'Overview' },
       { href: '/getting-started/availability', label: 'Cohort Availability' },
       { href: '/getting-started/team', label: 'Your Team' },
     ]},
   ],
   clay: [
-    { type: 'group', label: 'Ultimate GTM', children: [
+    { type: 'group', label: 'GTM Launch', children: [
       { href: '/getting-started/ultimate-gtm', label: 'Overview' },
       { href: '/getting-started/ultimate-gtm#review-scope', label: 'Review Scope' },
     ]},
-    { type: 'group', label: 'Embedded', children: [
+    { type: 'group', label: 'GTM Embedded', children: [
       { href: '/getting-started/embedded', label: 'Overview' },
       { href: '/getting-started/availability', label: 'Cohort Availability' },
       { href: '/getting-started/team', label: 'Your Team' },

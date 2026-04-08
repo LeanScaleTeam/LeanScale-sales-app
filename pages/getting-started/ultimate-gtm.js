@@ -197,7 +197,7 @@ export default function UltimateGTM() {
     : '/diagnostic/start';
 
   return (
-    <Layout title="Ultimate GTM">
+    <Layout title="GTM Launch">
 
       {/* HERO */}
       <div style={{
@@ -235,7 +235,7 @@ export default function UltimateGTM() {
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
           }}>
-            Ultimate GTM.<br />
+            GTM Launch.<br />
             <span style={{
               background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
               WebkitBackgroundClip: 'text',
@@ -495,7 +495,7 @@ export default function UltimateGTM() {
             <p style={{ color: '#7c3aed', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Who This Is For</p>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '1rem' }}>Built for companies ready to scale.</h2>
             <p style={{ color: '#6b7280', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-              You&apos;ve found product-market fit. Revenue is growing. But your GTM engine is held together with duct tape and spreadsheets. Ultimate GTM fixes that — permanently.
+              You&apos;ve found product-market fit. Revenue is growing. But your GTM engine is held together with duct tape and spreadsheets. GTM Launch fixes that — permanently.
             </p>
             {[
               'Series A-C B2B tech companies',
@@ -514,7 +514,7 @@ export default function UltimateGTM() {
             <p style={{ color: '#ef4444', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.5rem' }}>Who This Is NOT For</p>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '1rem' }}>Not every company needs this.</h2>
             <p style={{ color: '#6b7280', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-              If you want something custom, go with Embedded with rolling 90-day outs. Ultimate GTM is for companies ready for the full stack.
+              If you want something custom, go with GTM Embedded with rolling 90-day outs. GTM Launch is for companies ready for the full stack.
             </p>
             {[
               'Pre-revenue or pre-PMF startups',

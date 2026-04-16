@@ -562,24 +562,9 @@ export default function AdminCustomers() {
                             borderRadius: '4px',
                             cursor: 'pointer',
                             fontSize: '0.875rem',
-                            marginRight: '0.5rem',
                           }}
                         >
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(customer)}
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            background: '#fee2e2',
-                            color: '#dc2626',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          Delete
                         </button>
                       </td>
                     </tr>
@@ -905,35 +890,53 @@ export default function AdminCustomers() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: '#f3f4f6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: saving ? '#ccc' : '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    fontWeight: 500,
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', alignItems: 'center' }}>
+                {editingCustomer ? (
+                  <button
+                    type="button"
+                    onClick={() => { setShowModal(false); handleDelete(editingCustomer); }}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'none',
+                      border: 'none',
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Delete Customer
+                  </button>
+                ) : <div />}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#f3f4f6',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: saving ? '#ccc' : '#7c3aed',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: saving ? 'not-allowed' : 'pointer',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

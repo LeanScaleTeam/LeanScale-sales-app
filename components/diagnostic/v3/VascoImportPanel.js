@@ -21,16 +21,16 @@ import { staggerContainer, fadeUpItem } from '../../../lib/animations';
 // ─── Metric → Competency Mapping ─────────────────────────────────────────────
 
 const VASCO_METRICS = [
-  { key: 'win_rate',            label: 'Win Rate',               pillar: 'process',    competency: 'PR-3',  description: '% of opportunities closed won' },
-  { key: 'pipeline_coverage',   label: 'Pipeline Coverage',      pillar: 'planning',   competency: 'PL-2',  description: 'Pipeline to quota ratio (target: 3-4x)' },
-  { key: 'forecast_accuracy',   label: 'Forecast Accuracy',      pillar: 'reporting',  competency: 'RE-1',  description: 'Forecast vs. actuals variance' },
-  { key: 'net_revenue_retention', label: 'Net Revenue Retention', pillar: 'process',   competency: 'CS-1',  description: 'NRR — expansion + retention' },
-  { key: 'mql_volume',          label: 'MQL Volume vs. Target',  pillar: 'planning',   competency: 'MK-1',  description: 'MQL attainment as % of monthly target' },
+  { key: 'win_rate',            label: 'Win Rate',               pillar: 'process',    competency: 'PR-10', description: '% of opportunities closed won' },
+  { key: 'pipeline_coverage',   label: 'Pipeline Coverage',      pillar: 'reporting',  competency: 'RP-5',  description: 'Pipeline to quota ratio (target: 3-4x)' },
+  { key: 'forecast_accuracy',   label: 'Forecast Accuracy',      pillar: 'reporting',  competency: 'RP-6',  description: 'Forecast vs. actuals variance' },
+  { key: 'net_revenue_retention', label: 'Net Revenue Retention', pillar: 'process',   competency: 'PR-3',  description: 'NRR — expansion + retention' },
+  { key: 'mql_volume',          label: 'MQL Volume vs. Target',  pillar: 'process',    competency: 'PR-1',  description: 'MQL attainment as % of monthly target' },
   { key: 'crm_completeness',    label: 'CRM Data Quality',       pillar: 'systems',    competency: 'SY-1',  description: 'Required field completeness rate' },
-  { key: 'rep_ramp_time',       label: 'Rep Ramp Time',          pillar: 'people',     competency: 'PE-1',  description: 'Avg months to full quota attainment' },
+  { key: 'rep_ramp_time',       label: 'Rep Ramp Time',          pillar: 'people',     competency: 'PE-3',  description: 'Avg months to full quota attainment' },
   { key: 'sales_cycle',         label: 'Sales Cycle Length',     pillar: 'process',    competency: 'PR-2',  description: 'Avg days from opportunity create to close' },
-  { key: 'quota_attainment',    label: 'Quota Attainment',       pillar: 'people',     competency: 'PE-2',  description: '% of reps at or above quota' },
-  { key: 'activity_compliance', label: 'Activity Logging Rate',  pillar: 'process',    competency: 'SE-1',  description: 'CRM activity compliance (calls, emails logged)' },
+  { key: 'quota_attainment',    label: 'Quota Attainment',       pillar: 'people',     competency: 'PE-5',  description: '% of reps at or above quota' },
+  { key: 'activity_compliance', label: 'Activity Logging Rate',  pillar: 'systems',    competency: 'SY-3',  description: 'CRM activity compliance (calls, emails logged)' },
 ];
 
 const PILLAR_COLORS = {

@@ -35,6 +35,8 @@ export default function AdminCustomers() {
   const [qbrForm, setQbrForm] = useState({ qPart: 'Q1', year: new Date().getFullYear(), periodStart: '', periodEnd: '', hoursBudgeted: '' });
   const [qbrSaving, setQbrSaving] = useState(false);
   const [qbrError, setQbrError] = useState(null);
+  const [syncingCustomerId, setSyncingCustomerId] = useState(null);
+  const [syncMessage, setSyncMessage] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -222,6 +224,25 @@ export default function AdminCustomers() {
     }
   };
 
+  const handleVascoSync = async (customer) => {
+    setSyncingCustomerId(customer.id);
+    setSyncMessage(null);
+    try {
+      const res = await fetch('/api/admin/vasco-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: customer.id, customerName: customer.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Sync failed');
+      setSyncMessage({ type: 'success', customerId: customer.id, text: data.message });
+    } catch (err) {
+      setSyncMessage({ type: 'error', customerId: customer.id, text: err.message });
+    } finally {
+      setSyncingCustomerId(null);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     router.push('/admin/login');
@@ -374,19 +395,20 @@ export default function AdminCustomers() {
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Diagnostic</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Portal URL</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>QBRs</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 500, fontSize: '0.875rem' }}>Vasco</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.875rem' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       Loading...
                     </td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       No customers yet. Click "Add Customer" to create one.
                     </td>
                   </tr>
@@ -500,6 +522,36 @@ export default function AdminCustomers() {
                           </div>
                         )}
                       </td>
+                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleVascoSync(customer)}
+                          disabled={syncingCustomerId === customer.id}
+                          title="Pull latest GTM data from Vasco"
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: syncingCustomerId === customer.id ? '#a5b4fc' : '#4338ca',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync'}
+                        </button>
+                        {syncMessage && syncMessage.customerId === customer.id && (
+                          <div style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 500,
+                            marginTop: '0.2rem',
+                            color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
+                          }}>
+                            {syncMessage.type === 'success' ? 'Fired' : 'Error'}
+                          </div>
+                        )}
+                      </td>
                       <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
                         <button
                           onClick={() => openEditModal(customer)}
@@ -510,24 +562,9 @@ export default function AdminCustomers() {
                             borderRadius: '4px',
                             cursor: 'pointer',
                             fontSize: '0.875rem',
-                            marginRight: '0.5rem',
                           }}
                         >
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(customer)}
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            background: '#fee2e2',
-                            color: '#dc2626',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          Delete
                         </button>
                       </td>
                     </tr>
@@ -853,35 +890,53 @@ export default function AdminCustomers() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: '#f3f4f6',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: saving ? '#ccc' : '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    fontWeight: 500,
-                  }}
-                >
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', alignItems: 'center' }}>
+                {editingCustomer ? (
+                  <button
+                    type="button"
+                    onClick={() => { setShowModal(false); handleDelete(editingCustomer); }}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'none',
+                      border: 'none',
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Delete Customer
+                  </button>
+                ) : <div />}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#f3f4f6',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: saving ? '#ccc' : '#7c3aed',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: saving ? 'not-allowed' : 'pointer',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -35,6 +35,8 @@ export default function AdminCustomers() {
   const [qbrForm, setQbrForm] = useState({ qPart: 'Q1', year: new Date().getFullYear(), periodStart: '', periodEnd: '', hoursBudgeted: '' });
   const [qbrSaving, setQbrSaving] = useState(false);
   const [qbrError, setQbrError] = useState(null);
+  const [syncingCustomerId, setSyncingCustomerId] = useState(null);
+  const [syncMessage, setSyncMessage] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -219,6 +221,25 @@ export default function AdminCustomers() {
       loadCustomers();
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  const handleVascoSync = async (customer) => {
+    setSyncingCustomerId(customer.id);
+    setSyncMessage(null);
+    try {
+      const res = await fetch('/api/admin/vasco-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: customer.id, customerName: customer.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Sync failed');
+      setSyncMessage({ type: 'success', customerId: customer.id, text: data.message });
+    } catch (err) {
+      setSyncMessage({ type: 'error', customerId: customer.id, text: err.message });
+    } finally {
+      setSyncingCustomerId(null);
     }
   };
 
@@ -501,6 +522,33 @@ export default function AdminCustomers() {
                         )}
                       </td>
                       <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleVascoSync(customer)}
+                          disabled={syncingCustomerId === customer.id}
+                          title="Pull latest data from Vasco"
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: syncingCustomerId === customer.id ? '#e0e7ff' : '#eef2ff',
+                            color: '#4338ca',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            marginRight: '0.5rem',
+                          }}
+                        >
+                          {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync Vasco'}
+                        </button>
+                        {syncMessage && syncMessage.customerId === customer.id && (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
+                            marginRight: '0.5rem',
+                          }}>
+                            {syncMessage.type === 'success' ? 'Started' : 'Failed'}
+                          </span>
+                        )}
                         <button
                           onClick={() => openEditModal(customer)}
                           style={{

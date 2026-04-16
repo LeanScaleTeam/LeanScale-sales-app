@@ -19,6 +19,7 @@ import V3Summary from './v3/V3Summary';
 import ScoreCardGrid from './v3/ScoreCardGrid';
 import DataCoverage from './v3/DataCoverage';
 import SystemsHealth from './v3/SystemsHealth';
+import VascoTrends from './v3/VascoTrends';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 import { generateRoadmap } from '../../lib/diagnostic-engine/v3/generate-roadmap';
 import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
@@ -316,6 +317,8 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   const [v3RunTimestamp, setV3RunTimestamp] = useState(null);
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
   const [consultantAssessments, setConsultantAssessments] = useState([]);
+  const [applyingVasco, setApplyingVasco] = useState(false);
+  const [vascoApplyResult, setVascoApplyResult] = useState(null);
   const [crmSignals, setCrmSignals] = useState({ computedSignals: {}, enhancedSignals: {}, crmType: 'salesforce' });
   const [roadmapOverrides, setRoadmapOverrides] = useState(null);
   const [roadmapDirty, setRoadmapDirty] = useState(false);
@@ -1153,6 +1156,54 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                 }}>
                   CRM Health
                 </h2>
+                {isAdmin && !engagementOverrides?.crm_health?._source && (
+                  <button
+                    onClick={async () => {
+                      setApplyingVasco(true);
+                      setVascoApplyResult(null);
+                      try {
+                        const res = await fetch('/api/admin/vasco-apply', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ customerId: customer.id }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok) throw new Error(json.error);
+                        setVascoApplyResult({ type: 'success', data: json.applied });
+                        // Reload diagnostic to reflect new data
+                        window.location.reload();
+                      } catch (err) {
+                        setVascoApplyResult({ type: 'error', message: err.message });
+                      } finally {
+                        setApplyingVasco(false);
+                      }
+                    }}
+                    disabled={applyingVasco}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: applyingVasco ? '#a5b4fc' : '#4338ca',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: applyingVasco ? 'not-allowed' : 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    {applyingVasco ? 'Applying Vasco Data...' : 'Apply Vasco Snapshot'}
+                  </button>
+                )}
+                {vascoApplyResult?.type === 'error' && (
+                  <div style={{ color: '#f87171', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                    {vascoApplyResult.message}
+                  </div>
+                )}
+                {engagementOverrides?.crm_health?._source === 'vasco_snapshot' && (
+                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', marginBottom: '0.75rem' }}>
+                    Auto-populated from Vasco snapshot ({engagementOverrides.crm_health._snapshot_date})
+                  </div>
+                )}
                 <SystemsHealth
                   editMode={editMode}
                   integrityScore={engagementOverrides?.crm_health?.integrity_score}
@@ -1160,6 +1211,10 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   eventStatus={engagementOverrides?.crm_health?.event_status}
                   issues={engagementOverrides?.crm_health?.issues}
                   employees={engagementOverrides?.crm_health?.employees}
+                />
+                <VascoTrends
+                  trends={engagementOverrides?.vasco_trends}
+                  snapshotDate={engagementOverrides?.crm_health?._snapshot_date}
                 />
               </div>
             </div>

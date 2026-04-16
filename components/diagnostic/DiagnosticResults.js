@@ -7,6 +7,7 @@ import { diagnosticRegistry, countStatuses } from '../../data/diagnostic-registr
 import { useCustomer } from '../../context/CustomerContext';
 import { useAuth } from '../../context/AuthContext';
 import { slideUp } from '../../lib/animations';
+import { V3_COMPETENCIES, expandDepartments } from '../../lib/diagnostic-engine/v3/constants-v3';
 
 // Always-needed views (on first paint for all diagnostic types)
 import DiagnosticNav from './DiagnosticNav';
@@ -1320,20 +1321,42 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
             <VascoImportPanel
               customerId={customer?.id}
               existingCrmHealth={engagementOverrides?.crm_health || null}
-              onApplyImport={(scoreOverrides) => {
-                // Merge Vasco scores as consultant overrides and re-run diagnostic
-                const existing = consultantAssessments || [];
-                const merged = { ...Object.fromEntries(existing.map(a => [a.competency_id, a])) };
+              onApplyImport={async (scoreOverrides) => {
+                // Build per-department assessments from Vasco competency scores
+                const bulkAssessments = [];
                 for (const [competencyId, score] of Object.entries(scoreOverrides)) {
-                  merged[competencyId] = {
-                    ...(merged[competencyId] || {}),
-                    competency_id: competencyId,
-                    score,
-                    source: 'vasco',
-                    notes: 'Imported from Vasco',
-                  };
+                  const comp = V3_COMPETENCIES.find(c => c.id === competencyId);
+                  const depts = comp ? expandDepartments(comp.departments) : ['sales'];
+                  for (const dept of depts) {
+                    bulkAssessments.push({
+                      competencyId,
+                      department: dept,
+                      score,
+                      notes: 'Imported from Vasco',
+                    });
+                  }
                 }
-                setConsultantAssessments(Object.values(merged));
+
+                // Persist to DB first, then re-run diagnostic
+                try {
+                  const saveRes = await fetch('/api/diagnostic/consultant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      customerId: customer.id,
+                      assessments: bulkAssessments,
+                      assessedBy: 'vasco',
+                    }),
+                  });
+                  const saveJson = await saveRes.json();
+                  if (saveJson.success) {
+                    setConsultantAssessments(saveJson.data || []);
+                  }
+                } catch (err) {
+                  console.error('Failed to persist Vasco scores:', err);
+                }
+
+                // Re-run diagnostic with persisted scores
                 fetch('/api/diagnostic/v3/run', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },

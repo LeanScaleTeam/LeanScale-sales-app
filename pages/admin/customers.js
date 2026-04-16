@@ -395,19 +395,20 @@ export default function AdminCustomers() {
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Diagnostic</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>Portal URL</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 500, fontSize: '0.875rem' }}>QBRs</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 500, fontSize: '0.875rem' }}>Vasco</th>
                   <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.875rem' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       Loading...
                     </td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                    <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                       No customers yet. Click "Add Customer" to create one.
                     </td>
                   </tr>
@@ -521,64 +522,65 @@ export default function AdminCustomers() {
                           </div>
                         )}
                       </td>
+                      <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleVascoSync(customer)}
+                          disabled={syncingCustomerId === customer.id}
+                          title="Pull latest GTM data from Vasco"
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: syncingCustomerId === customer.id ? '#a5b4fc' : '#4338ca',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync'}
+                        </button>
+                        {syncMessage && syncMessage.customerId === customer.id && (
+                          <div style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 500,
+                            marginTop: '0.2rem',
+                            color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
+                          }}>
+                            {syncMessage.type === 'success' ? 'Fired' : 'Error'}
+                          </div>
+                        )}
+                      </td>
                       <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-                          <button
-                            onClick={() => openEditModal(customer)}
-                            style={{
-                              padding: '0.25rem 0.75rem',
-                              background: '#f3f4f6',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.8rem',
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(customer)}
-                            style={{
-                              padding: '0.25rem 0.75rem',
-                              background: '#fee2e2',
-                              color: '#dc2626',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.8rem',
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end', alignItems: 'center', marginTop: '0.35rem' }}>
-                          <button
-                            onClick={() => handleVascoSync(customer)}
-                            disabled={syncingCustomerId === customer.id}
-                            title="Pull latest GTM data from Vasco"
-                            style={{
-                              padding: '0.2rem 0.6rem',
-                              background: syncingCustomerId === customer.id ? '#a5b4fc' : '#4338ca',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
-                              fontSize: '0.7rem',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync Vasco'}
-                          </button>
-                          {syncMessage && syncMessage.customerId === customer.id && (
-                            <span style={{
-                              fontSize: '0.7rem',
-                              fontWeight: 500,
-                              color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
-                            }}>
-                              {syncMessage.type === 'success' ? 'Fired' : 'Error'}
-                            </span>
-                          )}
-                        </div>
+                        <button
+                          onClick={() => openEditModal(customer)}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: '#f3f4f6',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            marginRight: '0.5rem',
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(customer)}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: '#fee2e2',
+                            color: '#dc2626',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))

@@ -522,62 +522,63 @@ export default function AdminCustomers() {
                         )}
                       </td>
                       <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleVascoSync(customer)}
-                          disabled={syncingCustomerId === customer.id}
-                          title="Pull latest GTM data from Vasco"
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            background: syncingCustomerId === customer.id ? '#c7d2fe' : '#4338ca',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: 500,
-                            marginRight: '0.5rem',
-                          }}
-                        >
-                          {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync Vasco'}
-                        </button>
-                        {syncMessage && syncMessage.customerId === customer.id && (
-                          <span style={{
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                            color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
-                            marginRight: '0.5rem',
-                          }}>
-                            {syncMessage.type === 'success' ? 'Fired' : 'Error'}
-                          </span>
-                        )}
-                        <button
-                          onClick={() => openEditModal(customer)}
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            background: '#f3f4f6',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            marginRight: '0.5rem',
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(customer)}
-                          style={{
-                            padding: '0.25rem 0.75rem',
-                            background: '#fee2e2',
-                            color: '#dc2626',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          Delete
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <button
+                            onClick={() => openEditModal(customer)}
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              background: '#f3f4f6',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(customer)}
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              background: '#fee2e2',
+                              color: '#dc2626',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end', alignItems: 'center', marginTop: '0.35rem' }}>
+                          <button
+                            onClick={() => handleVascoSync(customer)}
+                            disabled={syncingCustomerId === customer.id}
+                            title="Pull latest GTM data from Vasco"
+                            style={{
+                              padding: '0.2rem 0.6rem',
+                              background: syncingCustomerId === customer.id ? '#a5b4fc' : '#4338ca',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
+                              fontSize: '0.7rem',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {syncingCustomerId === customer.id ? 'Syncing...' : 'Sync Vasco'}
+                          </button>
+                          {syncMessage && syncMessage.customerId === customer.id && (
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 500,
+                              color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
+                            }}>
+                              {syncMessage.type === 'success' ? 'Fired' : 'Error'}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

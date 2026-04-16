@@ -525,15 +525,15 @@ export default function AdminCustomers() {
                         <button
                           onClick={() => handleVascoSync(customer)}
                           disabled={syncingCustomerId === customer.id}
-                          title="Pull latest data from Vasco"
+                          title="Pull latest GTM data from Vasco"
                           style={{
                             padding: '0.25rem 0.75rem',
-                            background: syncingCustomerId === customer.id ? '#e0e7ff' : '#eef2ff',
-                            color: '#4338ca',
+                            background: syncingCustomerId === customer.id ? '#c7d2fe' : '#4338ca',
+                            color: 'white',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: syncingCustomerId === customer.id ? 'not-allowed' : 'pointer',
-                            fontSize: '0.75rem',
+                            fontSize: '0.8rem',
                             fontWeight: 500,
                             marginRight: '0.5rem',
                           }}
@@ -542,11 +542,12 @@ export default function AdminCustomers() {
                         </button>
                         {syncMessage && syncMessage.customerId === customer.id && (
                           <span style={{
-                            fontSize: '0.7rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
                             color: syncMessage.type === 'success' ? '#16a34a' : '#dc2626',
                             marginRight: '0.5rem',
                           }}>
-                            {syncMessage.type === 'success' ? 'Started' : 'Failed'}
+                            {syncMessage.type === 'success' ? 'Fired' : 'Error'}
                           </span>
                         )}
                         <button

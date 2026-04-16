@@ -72,18 +72,17 @@ async function handleSync(req, res) {
 
     // Invoke the Claude Code RemoteTrigger
     const triggerRes = await fetch(
-      `https://api.claude.ai/v1/code/triggers/${triggerId}/run`,
+      `https://api.anthropic.com/v1/claude_code/routines/${triggerId}/fire`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${triggerToken}`,
           'Content-Type': 'application/json',
+          'anthropic-beta': 'experimental-cc-routine-2026-04-01',
+          'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          customer_name: customerName,
-          customer_id: customerId,
-          snapshot_id: snapshot.id,
-          snapshot_date: today,
+          input: `Sync Vasco data for customer: ${customerName} (customer_id: ${customerId}, snapshot_id: ${snapshot.id}, snapshot_date: ${today})`,
         }),
       }
     );

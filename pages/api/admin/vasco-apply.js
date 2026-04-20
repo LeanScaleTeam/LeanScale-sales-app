@@ -77,11 +77,56 @@ export default async function handler(req, res) {
       .eq('customer_id', customerId)
       .single();
 
+    // Pull the previous snapshot (different date or quarter) for period-over-period comparison
+    const { data: priorSnapshots } = await supabaseAdmin
+      .from('vasco_snapshots')
+      .select('id, snapshot_date, quarter, integrity_score, volume_metrics')
+      .eq('customer_id', customerId)
+      .eq('sync_status', 'complete')
+      .neq('id', snapshot.id)
+      .order('snapshot_date', { ascending: false })
+      .limit(1);
+
+    const priorSnapshot = priorSnapshots?.[0] || null;
+    let periodComparison = null;
+    if (priorSnapshot) {
+      const priorIntegrity = priorSnapshot.integrity_score?.score;
+      const currIntegrity = snapshot.integrity_score?.score;
+      const priorVolume = priorSnapshot.volume_metrics?.data || [];
+      const currVolume = snapshot.volume_metrics?.data || [];
+      const priorLatest = priorVolume[priorVolume.length - 2] || priorVolume[0] || {};
+      const currLatest = currVolume[currVolume.length - 2] || currVolume[0] || {};
+
+      periodComparison = {
+        prior_snapshot_date: priorSnapshot.snapshot_date,
+        prior_quarter: priorSnapshot.quarter,
+        integrity_delta: (priorIntegrity != null && currIntegrity != null)
+          ? Math.round((currIntegrity - priorIntegrity) * 10) / 10
+          : null,
+        leads_delta: (priorLatest.leads != null && currLatest.leads != null)
+          ? currLatest.leads - priorLatest.leads : null,
+        won_delta: (priorLatest.won != null && currLatest.won != null)
+          ? currLatest.won - priorLatest.won : null,
+        win_rate_delta: (priorLatest.cvr_sal_won != null && currLatest.cvr_sal_won != null)
+          ? Math.round((currLatest.cvr_sal_won - priorLatest.cvr_sal_won) * 1000) / 10
+          : null,
+        net_arr_delta: (priorLatest.net_arr != null && currLatest.net_arr != null)
+          ? currLatest.net_arr - priorLatest.net_arr : null,
+      };
+    }
+
     const currentOverrides = existing?.engagement_overrides || {};
     const updatedOverrides = {
       ...currentOverrides,
       crm_health: crmHealth,
       vasco_trends: trends,
+      // New: skill-uploaded fields
+      vasco_matrix: snapshot.matrix_statuses || null,
+      vasco_tech_stack: snapshot.tech_stack || null,
+      vasco_insights: snapshot.claude_insights || null,
+      vasco_architect: snapshot.architect || null,
+      vasco_quarter: snapshot.quarter || null,
+      vasco_period_comparison: periodComparison,
       vasco_applied_at: new Date().toISOString(),
       vasco_snapshot_id: snapshot.id,
     };

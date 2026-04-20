@@ -20,6 +20,7 @@ import ScoreCardGrid from './v3/ScoreCardGrid';
 import DataCoverage from './v3/DataCoverage';
 import SystemsHealth from './v3/SystemsHealth';
 import VascoTrends from './v3/VascoTrends';
+import VascoMatrix from './v3/VascoMatrix';
 import { applyRoadmapOverrides } from '../../lib/diagnostic-engine/v3/apply-roadmap-overrides';
 import { generateRoadmap } from '../../lib/diagnostic-engine/v3/generate-roadmap';
 import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
@@ -1214,6 +1215,15 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                 />
                 <VascoTrends
                   trends={engagementOverrides?.vasco_trends}
+                  snapshotDate={engagementOverrides?.crm_health?._snapshot_date}
+                />
+                <VascoMatrix
+                  matrix={engagementOverrides?.vasco_matrix}
+                  techStack={engagementOverrides?.vasco_tech_stack}
+                  insights={engagementOverrides?.vasco_insights}
+                  architect={engagementOverrides?.vasco_architect}
+                  quarter={engagementOverrides?.vasco_quarter}
+                  periodComparison={engagementOverrides?.vasco_period_comparison}
                   snapshotDate={engagementOverrides?.crm_health?._snapshot_date}
                 />
               </div>

@@ -287,6 +287,17 @@ export default function AdminDiagnostics() {
             }}>
               Submissions
             </Link>
+            <Link href="/admin/vasco-upload" style={{
+              padding: '0.5rem 1rem',
+              background: 'white',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              color: '#333',
+            }}>
+              Vasco Upload
+            </Link>
           </nav>
 
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1.5rem' }}>

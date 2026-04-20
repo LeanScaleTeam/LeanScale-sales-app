@@ -113,6 +113,8 @@ export default function VascoUploadPage() {
             <Link href="/admin" style={navLinkStyle}>Dashboard</Link>
             <Link href="/admin/customers" style={navLinkStyle}>Customers</Link>
             <Link href="/admin/diagnostics" style={navLinkStyle}>Diagnostics</Link>
+            <Link href="/admin/availability" style={navLinkStyle}>Availability</Link>
+            <Link href="/admin/submissions" style={navLinkStyle}>Submissions</Link>
             <Link href="/admin/vasco-upload" style={{ ...navLinkStyle, background: '#7c3aed', color: 'white', border: 'none' }}>Vasco Upload</Link>
           </nav>
 

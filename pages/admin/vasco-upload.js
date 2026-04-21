@@ -119,13 +119,19 @@ export default function VascoUploadPage() {
           </nav>
 
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Vasco QBR Bulk Upload
+            QBR Snapshot Upload
           </h2>
           <p style={{ color: '#666', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-            Drop one or more JSON files produced by the <code>vasco-qbr-snapshot</code> skill.
-            Each file will be validated and written to <code>vasco_snapshots</code>.
-            {' '}<a href="https://github.com/LeanScaleTeam/Skills-and-SOPs/tree/main/vasco-qbr-snapshot" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>Skill docs →</a>
+            Drop one or more JSON files produced by a QBR snapshot skill. Each file
+            will be validated and written to <code>vasco_snapshots</code>.
+            {' '}Accepted sources: <strong>Vasco</strong>, <strong>HubSpot</strong>, <strong>Salesforce</strong>.
           </p>
+          <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '1.5rem' }}>
+            Docs:
+            {' '}<a href="https://github.com/LeanScaleTeam/Skills-and-SOPs/tree/main/vasco-qbr-snapshot" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>Vasco</a>
+            {' · '}<a href="https://github.com/LeanScaleTeam/Skills-and-SOPs/tree/main/hubspot-qbr-snapshot" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>HubSpot</a>
+            {' · '}<a href="https://github.com/LeanScaleTeam/Skills-and-SOPs/tree/main/salesforce-qbr-snapshot" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed' }}>Salesforce</a>
+          </div>
 
           {/* Drop zone */}
           <div
@@ -197,6 +203,7 @@ export default function VascoUploadPage() {
                     <li key={i} style={{ padding: '0.5rem 0', borderBottom: '1px solid #f3f4f6', color }}>
                       <span style={{ fontWeight: 600 }}>{icon}</span> {f.name}
                       {r?.data?.customer && <span style={{ color: '#6b7280' }}> → {r.data.customer.name}</span>}
+                      {r?.data?.source && <span style={{ color: '#6b7280' }}> [{r.data.source}]</span>}
                       {r?.data?.action && <span style={{ color: '#6b7280' }}> ({r.data.action})</span>}
                       {r?.data?.error && <span style={{ color: '#dc2626' }}> — {r.data.error}</span>}
                       {r?.data?.details && <div style={{ color: '#dc2626', fontSize: '0.75rem', paddingLeft: '1.5rem' }}>{r.data.details.join('; ')}</div>}

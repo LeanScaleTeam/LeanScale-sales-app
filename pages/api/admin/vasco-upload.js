@@ -24,15 +24,27 @@ function verifyAuth(req) {
   ) || !!(cookies['admin-session']);
 }
 
+const ALLOWED_SOURCES = new Set(['vasco', 'hubspot', 'salesforce', 'manual']);
+
 function validateSnapshot(snapshot) {
   const errors = [];
   if (!snapshot || typeof snapshot !== 'object') return ['Snapshot must be a JSON object'];
 
   if (!snapshot.customer_slug) errors.push('customer_slug is required');
   if (!snapshot.snapshot_date) errors.push('snapshot_date is required (YYYY-MM-DD)');
-  if (!snapshot.vasco || typeof snapshot.vasco !== 'object') errors.push('vasco object is required');
+
+  // Accept either `vasco` (legacy) or `crm` (hubspot/salesforce) as the data container
+  const hasDataContainer = (snapshot.vasco && typeof snapshot.vasco === 'object') ||
+                           (snapshot.crm && typeof snapshot.crm === 'object');
+  if (!hasDataContainer) errors.push('A `vasco` or `crm` data object is required');
+
   if (snapshot.schema_version && snapshot.schema_version !== '1.0') {
     errors.push(`Unsupported schema_version: ${snapshot.schema_version}`);
+  }
+
+  // Validate source if provided
+  if (snapshot.source && !ALLOWED_SOURCES.has(snapshot.source)) {
+    errors.push(`Invalid source "${snapshot.source}" — must be one of: ${[...ALLOWED_SOURCES].join(', ')}`);
   }
 
   // Validate matrix statuses use allowed values
@@ -89,7 +101,14 @@ export default async function handler(req, res) {
 
     const quarter = snapshot.quarter || null;
     const snapshotDate = snapshot.snapshot_date;
-    const vasco = snapshot.vasco || {};
+    // Accept either shape — CRM skills use `crm`, Vasco skill uses `vasco`
+    const dataContainer = snapshot.vasco || snapshot.crm || {};
+    const source = snapshot.source || 'vasco';
+    // Normalize: "org_id" for Vasco, "portal_id"/"org_id" for CRMs, "org_alias" for SFDC
+    const orgIdentifier = dataContainer.org_id ||
+                          dataContainer.portal_id ||
+                          dataContainer.org_alias ||
+                          'unknown';
 
     // 2. Check for existing snapshot by (customer, snapshot_date)
     const { data: existing } = await supabaseAdmin
@@ -113,25 +132,28 @@ export default async function handler(req, res) {
     }
 
     // 3. Build the row
+    // gtm_stages — Vasco calls them "gtm_stages", CRMs call them "stages"
+    const stages = dataContainer.gtm_stages || dataContainer.stages;
     const row = {
       customer_id: customer.id,
-      vasco_org_id: vasco.org_id || 'unknown',
+      vasco_org_id: orgIdentifier,
+      source,
       snapshot_date: snapshotDate,
       sync_status: 'complete',
       sync_errors: null,
-      integrity_score: vasco.integrity_score || null,
-      integrity_issues: vasco.integrity_issues ? { issues: vasco.integrity_issues } : null,
-      gtm_stages: vasco.gtm_stages ? { stages: vasco.gtm_stages } : null,
-      volume_metrics: vasco.volume_metrics || null,
-      time_in_stage: vasco.time_in_stage || null,
-      context_graph: vasco.context_graph || null,
+      integrity_score: dataContainer.integrity_score || null,
+      integrity_issues: dataContainer.integrity_issues ? { issues: dataContainer.integrity_issues } : null,
+      gtm_stages: stages ? { stages } : null,
+      volume_metrics: dataContainer.volume_metrics || null,
+      time_in_stage: dataContainer.time_in_stage || null,
+      context_graph: dataContainer.context_graph || null,
       architect: snapshot.architect || null,
       quarter,
       matrix_statuses: snapshot.matrix_statuses || null,
       tech_stack: snapshot.tech_stack || null,
       claude_insights: snapshot.claude_insights || null,
       schema_version: snapshot.schema_version || '1.0',
-      upload_source: 'skill',
+      upload_source: `skill-${source}`,
       uploaded_by: snapshot.generator_account || null,
       uploaded_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -161,11 +183,12 @@ export default async function handler(req, res) {
       action = 'created';
     }
 
-    // 4. Update customer vasco_org_id if provided
-    if (vasco.org_id && vasco.org_id !== 'unknown') {
+    // 4. Update customer vasco_org_id only for Vasco-sourced snapshots
+    // (HubSpot/Salesforce identifiers live elsewhere — portal_id in hubspot_connections, org_id in salesforce_connections)
+    if (source === 'vasco' && dataContainer.org_id && dataContainer.org_id !== 'unknown') {
       await supabaseAdmin
         .from('customers')
-        .update({ vasco_org_id: vasco.org_id })
+        .update({ vasco_org_id: dataContainer.org_id })
         .eq('id', customer.id);
     }
 
@@ -175,6 +198,7 @@ export default async function handler(req, res) {
       customer: { id: customer.id, slug: customer.slug, name: customer.name },
       quarter,
       architect: snapshot.architect,
+      source,
       action,
     });
   } catch (err) {

@@ -126,6 +126,7 @@ export default async function handler(req, res) {
       vasco_insights: snapshot.claude_insights || null,
       vasco_architect: snapshot.architect || null,
       vasco_quarter: snapshot.quarter || null,
+      vasco_source: snapshot.source || 'vasco',
       vasco_period_comparison: periodComparison,
       vasco_applied_at: new Date().toISOString(),
       vasco_snapshot_id: snapshot.id,

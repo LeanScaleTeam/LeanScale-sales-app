@@ -1223,6 +1223,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   insights={engagementOverrides?.vasco_insights}
                   architect={engagementOverrides?.vasco_architect}
                   quarter={engagementOverrides?.vasco_quarter}
+                  source={engagementOverrides?.vasco_source}
                   periodComparison={engagementOverrides?.vasco_period_comparison}
                   snapshotDate={engagementOverrides?.crm_health?._snapshot_date}
                 />

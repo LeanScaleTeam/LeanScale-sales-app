@@ -11,6 +11,7 @@ export default function VascoUploadPage() {
   const [results, setResults] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [applying, setApplying] = useState({});
 
   if (!authLoading && !isAuthenticated) {
     if (typeof window !== 'undefined') router.push('/admin/login');
@@ -51,6 +52,36 @@ export default function VascoUploadPage() {
       setResults([...newResults]);
     }
     setUploading(false);
+  }
+
+  async function applyToDiagnostic(index) {
+    const result = results[index];
+    if (!result?.data?.customer?.id || !result?.data?.snapshotId) return;
+    setApplying(prev => ({ ...prev, [index]: true }));
+    try {
+      const res = await fetch('/api/admin/vasco-apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: result.data.customer.id,
+          snapshotId: result.data.snapshotId,
+        }),
+      });
+      const data = await res.json();
+      const newResults = [...results];
+      newResults[index] = {
+        ...result,
+        applied: res.ok,
+        applyData: data,
+      };
+      setResults(newResults);
+    } catch (err) {
+      const newResults = [...results];
+      newResults[index] = { ...result, applied: false, applyData: { error: err.message } };
+      setResults(newResults);
+    } finally {
+      setApplying(prev => ({ ...prev, [index]: false }));
+    }
   }
 
   async function overwriteConflicts() {
@@ -199,6 +230,8 @@ export default function VascoUploadPage() {
                              : r?.status === 'conflict' ? '⚠'
                              : r?.status === 'error' ? '✗'
                              : '·';
+                  const slug = r?.data?.customer?.slug;
+                  const quarter = r?.data?.quarter;
                   return (
                     <li key={i} style={{ padding: '0.5rem 0', borderBottom: '1px solid #f3f4f6', color }}>
                       <span style={{ fontWeight: 600 }}>{icon}</span> {f.name}
@@ -207,6 +240,47 @@ export default function VascoUploadPage() {
                       {r?.data?.action && <span style={{ color: '#6b7280' }}> ({r.data.action})</span>}
                       {r?.data?.error && <span style={{ color: '#dc2626' }}> — {r.data.error}</span>}
                       {r?.data?.details && <div style={{ color: '#dc2626', fontSize: '0.75rem', paddingLeft: '1.5rem' }}>{r.data.details.join('; ')}</div>}
+                      {r?.status === 'success' && slug && (
+                        <div style={{ marginTop: '0.5rem', paddingLeft: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => applyToDiagnostic(i)}
+                            disabled={applying[i] || r.applied}
+                            style={{
+                              ...primaryButtonStyle,
+                              padding: '0.3rem 0.75rem',
+                              fontSize: '0.8rem',
+                              background: r.applied ? '#16a34a' : '#7c3aed',
+                              opacity: applying[i] ? 0.6 : 1,
+                            }}
+                          >
+                            {applying[i] ? 'Applying…' : r.applied ? '✓ Applied' : 'Apply to Diagnostic'}
+                          </button>
+                          <a
+                            href={`https://clients.leanscale.team/c/${slug}/qbr${quarter ? `/${encodeURIComponent(quarter)}` : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ ...secondaryButtonStyle, textDecoration: 'none', display: 'inline-block', padding: '0.3rem 0.75rem', fontSize: '0.8rem', color: '#374151' }}
+                          >
+                            View QBR ↗
+                          </a>
+                          <a
+                            href={`https://clients.leanscale.team/c/${slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ ...secondaryButtonStyle, textDecoration: 'none', display: 'inline-block', padding: '0.3rem 0.75rem', fontSize: '0.8rem', color: '#374151' }}
+                          >
+                            View Customer ↗
+                          </a>
+                          {r.applyData?.error && (
+                            <span style={{ color: '#dc2626', fontSize: '0.75rem' }}>— {r.applyData.error}</span>
+                          )}
+                          {r.applied && r.applyData?.applied && (
+                            <span style={{ color: '#16a34a', fontSize: '0.75rem' }}>
+                              · {r.applyData.applied.competency_count || 0} competencies, {r.applyData.applied.trends_months || 0} months of trends
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </li>
                   );
                 })}

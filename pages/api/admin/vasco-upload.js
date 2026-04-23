@@ -73,11 +73,22 @@ export default async function handler(req, res) {
   if (!verifyAuth(req)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  // GET → recent uploads (for history panel)
+  if (req.method === 'GET') {
+    const { data, error } = await supabaseAdmin
+      .from('vasco_snapshots')
+      .select('id, snapshot_date, quarter, architect, source, uploaded_at, integrity_score, customer:customers(id, slug, name)')
+      .order('uploaded_at', { ascending: false })
+      .limit(15);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ recent: data || [] });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { snapshot, mode = 'prompt' } = req.body || {};
+  const { snapshot, mode = 'prompt', customerIdOverride, architectOverride } = req.body || {};
 
   // Validate
   const errors = validateSnapshot(snapshot);
@@ -86,20 +97,47 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Resolve customer by slug
-    const { data: customer, error: custErr } = await supabaseAdmin
-      .from('customers')
-      .select('id, name, slug')
-      .eq('slug', snapshot.customer_slug)
-      .single();
+    // 1. Resolve customer — by override id first, else by slug
+    let customer = null;
+    if (customerIdOverride) {
+      const { data } = await supabaseAdmin
+        .from('customers')
+        .select('id, name, slug')
+        .eq('id', customerIdOverride)
+        .single();
+      customer = data;
+    } else {
+      const { data } = await supabaseAdmin
+        .from('customers')
+        .select('id, name, slug')
+        .eq('slug', snapshot.customer_slug)
+        .maybeSingle();
+      customer = data;
+    }
 
-    if (custErr || !customer) {
+    if (!customer) {
+      // Fuzzy-match candidates so the UI can offer a picker
+      const slugStem = (snapshot.customer_slug || '').replace(/-\d+$/, '').toLowerCase();
+      const { data: candidates } = await supabaseAdmin
+        .from('customers')
+        .select('id, name, slug')
+        .or(`slug.ilike.%${slugStem}%,name.ilike.%${slugStem}%`)
+        .limit(10);
       return res.status(404).json({
         error: `No customer found with slug "${snapshot.customer_slug}"`,
+        candidates: candidates || [],
       });
     }
 
-    const quarter = snapshot.quarter || null;
+    // Infer quarter from snapshot_date if missing (fiscal-year = calendar year assumption)
+    let quarter = snapshot.quarter || null;
+    if (!quarter && snapshot.snapshot_date) {
+      const d = new Date(snapshot.snapshot_date);
+      if (!isNaN(d)) {
+        const q = Math.floor(d.getUTCMonth() / 3) + 1;
+        quarter = `Q${q}-${d.getUTCFullYear()}`;
+      }
+    }
     const snapshotDate = snapshot.snapshot_date;
     // Accept either shape — CRM skills use `crm`, Vasco skill uses `vasco`
     const dataContainer = snapshot.vasco || snapshot.crm || {};
@@ -113,12 +151,14 @@ export default async function handler(req, res) {
     // 2. Check for existing snapshot by (customer, snapshot_date)
     const { data: existing } = await supabaseAdmin
       .from('vasco_snapshots')
-      .select('id, quarter, architect, uploaded_at')
+      .select('id, quarter, architect, uploaded_at, integrity_score, volume_metrics')
       .eq('customer_id', customer.id)
       .eq('snapshot_date', snapshotDate)
       .maybeSingle();
 
     if (existing && mode === 'prompt') {
+      const newMonths = dataContainer.volume_metrics?.data?.length || 0;
+      const existingMonths = existing.volume_metrics?.data?.length || 0;
       return res.status(409).json({
         error: 'Snapshot already exists for this customer and date',
         existing: {
@@ -126,6 +166,14 @@ export default async function handler(req, res) {
           quarter: existing.quarter,
           architect: existing.architect,
           uploaded_at: existing.uploaded_at,
+          integrity_score: existing.integrity_score?.score ?? null,
+          months: existingMonths,
+        },
+        incoming: {
+          quarter,
+          architect: architectOverride || snapshot.architect || null,
+          integrity_score: dataContainer.integrity_score?.score ?? null,
+          months: newMonths,
         },
         hint: 'Re-submit with mode: "overwrite" to replace',
       });
@@ -147,7 +195,7 @@ export default async function handler(req, res) {
       volume_metrics: dataContainer.volume_metrics || null,
       time_in_stage: dataContainer.time_in_stage || null,
       context_graph: dataContainer.context_graph || null,
-      architect: snapshot.architect || null,
+      architect: architectOverride || snapshot.architect || null,
       quarter,
       matrix_statuses: snapshot.matrix_statuses || null,
       tech_stack: snapshot.tech_stack || null,

@@ -181,6 +181,7 @@ export default async function handler(req, res) {
         competency_scores: competencyScores,
         competency_count: bulkAssessments.length,
         trends_months: trends.funnelTrend.length,
+        period_comparison: periodComparison,
       },
     });
   } catch (err) {

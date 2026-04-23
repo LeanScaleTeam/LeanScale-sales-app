@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabaseAdmin
       .from('vasco_snapshots')
       .select('id, snapshot_date, quarter, architect, source, uploaded_at, integrity_score, customer:customers(id, slug, name)')
-      .order('uploaded_at', { ascending: false })
+      .order('uploaded_at', { ascending: false, nullsFirst: false })
       .limit(15);
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ recent: data || [] });

@@ -464,12 +464,12 @@ export default function VascoUploadPage() {
                             {applying[i] ? 'Applying…' : r.applied ? '✓ Applied' : 'Apply to Diagnostic'}
                           </button>
                           <a
-                            href={`https://clients.leanscale.team/c/${slug}/qbr`}
+                            href={`https://clients.leanscale.team/c/${slug}/diagnostic/gtm`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ ...secondaryButtonStyle, textDecoration: 'none', display: 'inline-block', padding: '0.3rem 0.75rem', fontSize: '0.8rem', color: '#374151' }}
                           >
-                            View QBR ↗
+                            View Diagnostic ↗
                           </a>
                           <a
                             href={`https://clients.leanscale.team/c/${slug}`}
@@ -550,10 +550,10 @@ export default function VascoUploadPage() {
                       <td style={{ padding: '0.4rem 0.5rem' }}>{r.architect || '—'}</td>
                       <td style={{ padding: '0.4rem 0.5rem' }}>{r.source}</td>
                       <td style={{ padding: '0.4rem 0.5rem' }}>{r.integrity_score?.score != null ? `${r.integrity_score.score.toFixed(1)}%` : '—'}</td>
-                      <td style={{ padding: '0.4rem 0.5rem', color: '#6b7280' }}>{new Date(r.uploaded_at).toLocaleDateString()}</td>
+                      <td style={{ padding: '0.4rem 0.5rem', color: '#6b7280' }}>{r.uploaded_at ? new Date(r.uploaded_at).toLocaleDateString() : '—'}</td>
                       <td style={{ padding: '0.4rem 0.5rem' }}>
                         {r.customer?.slug && (
-                          <a href={`https://clients.leanscale.team/c/${r.customer.slug}/qbr`} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none', fontSize: '0.75rem' }}>View QBR ↗</a>
+                          <a href={`https://clients.leanscale.team/c/${r.customer.slug}/diagnostic/gtm`} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none', fontSize: '0.75rem' }}>View Diagnostic ↗</a>
                         )}
                       </td>
                     </tr>

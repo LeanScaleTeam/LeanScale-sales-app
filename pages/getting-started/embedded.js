@@ -440,38 +440,41 @@ export default function Embedded() {
           }}>
             {engagementSteps.map((step, idx) => (
               <div key={step.label} style={{
-                position: 'relative',
                 background: '#fafafa',
                 border: '1px solid #ececf2',
                 borderRadius: '14px',
-                padding: '1.5rem 1.5rem 1.5rem 2.75rem',
+                padding: '1.75rem',
               }}>
                 <div style={{
-                  position: 'absolute',
-                  top: 24,
-                  left: 18,
-                  width: 32, height: 32,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-                  color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  boxShadow: '0 4px 10px rgba(124,58,237,0.25)',
+                  gap: '0.75rem',
+                  marginBottom: '1rem',
                 }}>
-                  {idx + 1}
-                </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color: '#7c3aed',
-                  marginBottom: '0.35rem',
-                }}>
-                  {step.label}
+                  <div style={{
+                    width: 32, height: 32,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    boxShadow: '0 4px 10px rgba(124,58,237,0.25)',
+                    flexShrink: 0,
+                  }}>
+                    {idx + 1}
+                  </div>
+                  <div style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: '#7c3aed',
+                  }}>
+                    {step.label}
+                  </div>
                 </div>
                 <h3 style={{
                   fontSize: '1.05rem',

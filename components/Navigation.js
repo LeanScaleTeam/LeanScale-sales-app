@@ -38,18 +38,14 @@ const diagnosticLinks = {
 
 const gettingStartedLinks = {
   default: [
-    { type: 'group', label: 'GTM Embedded', children: [
-      { href: '/getting-started/embedded', label: 'Overview' },
-      { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/team', label: 'Your Team' },
-    ]},
+    { href: '/getting-started/embedded', label: 'Pricing & Tiers' },
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/team', label: 'Your Team' },
   ],
   clay: [
-    { type: 'group', label: 'GTM Embedded', children: [
-      { href: '/getting-started/embedded', label: 'Overview' },
-      { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/team', label: 'Your Team' },
-    ]},
+    { href: '/getting-started/embedded', label: 'Pricing & Tiers' },
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/team', label: 'Your Team' },
     { href: '/getting-started/clay', label: 'Clay x LeanScale' },
   ],
 };

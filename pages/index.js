@@ -12,15 +12,24 @@ const stats = [
   { value: '68', label: 'Playbooks' },
 ];
 
-const services = [
-  {
-    icon: '\u{1F91D}',
-    title: 'GTM Embedded',
-    price: 'Custom',
-    description: 'Dedicated GTM operators embedded in your team. Custom engagements with rolling 90-day outs — exactly how we sell today, tailored to your needs.',
-    href: '/getting-started/embedded',
-    borderColor: '#7c3aed',
-  },
+const revopsItems = [
+  'CRM administration & optimization',
+  'Process design & improvement',
+  'Data hygiene & enrichment',
+  'Reporting & dashboards',
+  'Integration management',
+  'Cross-functional alignment',
+  'Tool evaluation & implementation',
+];
+
+const mopsItems = [
+  'Campaign execution & QA',
+  'Automation building',
+  'Lead management & scoring',
+  'Attribution setup & analysis',
+  'MarTech optimization',
+  'Email operations',
+  'Event lead processing',
 ];
 
 const testimonials = [
@@ -217,56 +226,100 @@ export default function Home() {
         <div className="container" style={{ position: 'relative', zIndex: 1, padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
             <p style={{ color: '#a3e635', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>How We Work</p>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>How we engage</h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 500, margin: '0 auto', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Dedicated GTM operators embedded in your team. No a la carte projects.
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Operators embedded in your team</h2>
+            <p style={{ color: 'rgba(255,255,255,0.65)', maxWidth: 720, margin: '0 auto', fontSize: '1rem', lineHeight: 1.7 }}>
+              We assign dedicated GTM operators to your team and run the work alongside you — custom engagements with rolling 90-day outs, no a la carte projects. Every engagement spans two disciplines: RevOps and Marketing Ops. You scope where you need the most leverage, and we staff to it.
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 800, margin: '0 auto' }}>
-            {services.map((service) => (
-              <Link key={service.title} href={customerPath(service.href)} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="service-card" style={{
-                  display: 'flex',
-                  alignItems: 'stretch',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  transition: 'all 0.25s ease',
-                  cursor: 'pointer',
-                }}>
-                  <div style={{
-                    width: 4,
-                    flexShrink: 0,
-                    background: `linear-gradient(180deg, ${service.borderColor}, ${service.borderColor}66)`,
-                  }} />
-                  <div style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2.5vw, 1.75rem)',
-                    gap: '1.5rem',
-                    flexWrap: 'wrap',
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1.25rem',
+            maxWidth: 900,
+            margin: '0 auto',
+          }}>
+            {/* RevOps */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12,
+              padding: 'clamp(1.25rem, 2vw, 1.75rem)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#7c3aed' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>🔧</span>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>RevOps</h3>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+                The systems and process layer that makes your revenue engine work.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {revopsItems.map((item) => (
+                  <li key={item} style={{
+                    fontSize: '0.85rem',
+                    color: 'rgba(255,255,255,0.75)',
+                    lineHeight: 1.7,
+                    paddingLeft: '1rem',
+                    position: 'relative',
                   }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontSize: '1.25rem' }}>{service.icon}</span>
-                        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>{service.title}</h3>
-                      </div>
-                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.5, margin: 0 }}>
-                        {service.description}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: '1.35rem', fontWeight: 800, color: service.borderColor, letterSpacing: '-0.02em' }}>{service.price}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginTop: '0.15rem' }}>Learn more &rarr;</div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                    <span style={{ position: 'absolute', left: 0, color: '#7c3aed' }}>•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Marketing Ops */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12,
+              padding: 'clamp(1.25rem, 2vw, 1.75rem)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#a855f7' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>📊</span>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>Marketing Ops</h3>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+                The campaign, automation, and lead-flow layer that fills the funnel.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {mopsItems.map((item) => (
+                  <li key={item} style={{
+                    fontSize: '0.85rem',
+                    color: 'rgba(255,255,255,0.75)',
+                    lineHeight: 1.7,
+                    paddingLeft: '1rem',
+                    position: 'relative',
+                  }}>
+                    <span style={{ position: 'absolute', left: 0, color: '#a855f7' }}>•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <Link href={customerPath('/getting-started/embedded')} style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              textDecoration: 'none',
+              borderBottom: '1px solid rgba(255,255,255,0.2)',
+              paddingBottom: '0.15rem',
+            }}>
+              See pricing &amp; tiers <span style={{ color: '#a3e635' }}>&rarr;</span>
+            </Link>
           </div>
         </div>
       </div>

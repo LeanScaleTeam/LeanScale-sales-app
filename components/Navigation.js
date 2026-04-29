@@ -10,6 +10,7 @@ const aboutLinks = [
   { href: '/about/references', label: 'Customer References' },
   { href: '/about/services', label: 'Services Catalog' },
   { href: '/about/glossary', label: 'GTM Ops Glossary' },
+  { href: '/about/security', label: 'Security' },
 ];
 
 const diagnosticLinks = {

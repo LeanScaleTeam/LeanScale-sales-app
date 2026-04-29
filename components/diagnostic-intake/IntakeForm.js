@@ -10,6 +10,7 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
+import { DEMO_INTAKE_ANSWERS } from '../../data/demo-v3-intake';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
 import SectionC from './SectionC_TeamOrg';
@@ -44,7 +45,7 @@ export default function IntakeForm() {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
   const [currentSection, setCurrentSection] = useState('A');
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => (isDemo ? { ...DEMO_INTAKE_ANSWERS } : {}));
   const [sectionsCompleted, setSectionsCompleted] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

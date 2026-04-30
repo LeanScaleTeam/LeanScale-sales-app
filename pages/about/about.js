@@ -116,7 +116,7 @@ export default function AboutUs() {
             color: 'rgba(255,255,255,0.8)',
           }}
         >
-          To attract and develop the world&apos;s best startup operators and help startups,
+          To attract and develop experienced startup operators and help startups,
           their people, and their investors succeed.
         </p>
       </section>
@@ -476,7 +476,7 @@ export default function AboutUs() {
             boxShadow: '0 4px 20px rgba(163,230,53,0.3)',
           }}
         >
-          Get in Touch
+          Book a Call
         </button>
       </section>
     </Layout>

@@ -85,7 +85,7 @@ export default function DiagnosticOverview() {
             maxWidth: 520,
             margin: '0 auto',
           }}>
-            Get clarity on your GTM engine with our comprehensive diagnostic assessment
+            See where your GTM engine has the most leverage to gain.
           </p>
         </div>
       </section>

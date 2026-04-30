@@ -524,7 +524,7 @@ export default function YourTeam() {
                 fontSize: '0.78rem', border: 'none', borderRadius: 8, cursor: 'pointer',
                 flexShrink: 0,
               }}>
-              Book a Kickoff →
+              Book a Kickoff Call →
             </button>
           </div>
         )}

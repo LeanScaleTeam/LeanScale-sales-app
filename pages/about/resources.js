@@ -197,7 +197,7 @@ export default function KeyResources() {
               color: '#7c3aed',
               margin: '0 0 0.5rem 0',
             }}>
-              Browse Resources
+              Library
             </p>
             <h2 style={{
               fontSize: 'clamp(1.5rem, 3vw, 2rem)',
@@ -205,7 +205,7 @@ export default function KeyResources() {
               color: '#111827',
               margin: 0,
             }}>
-              Everything You Need
+              All resources
             </h2>
           </div>
 

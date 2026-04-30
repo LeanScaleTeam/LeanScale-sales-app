@@ -101,7 +101,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
                 {member.title}
               </span>
               {member.location && (
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.65)' }}>
                   📍 {member.location}
                 </span>
               )}
@@ -155,7 +155,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
               borderRadius: 4,
               padding: '0.1rem 0.45rem',
               fontSize: '0.58rem',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(255,255,255,0.7)',
               fontWeight: 600,
             }}>
               {tag}
@@ -168,7 +168,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
           {member.experience.slice(0, 3).map((exp, i) => (
             <li key={i} style={{
               fontSize: '0.68rem',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(255,255,255,0.7)',
               lineHeight: 1.55,
               paddingBottom: '0.2rem',
               paddingLeft: '0.85rem',
@@ -186,7 +186,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
           paddingTop: '0.65rem',
           borderTop: '1px solid rgba(255,255,255,0.06)',
           fontSize: '0.66rem',
-          color: 'rgba(255,255,255,0.3)',
+          color: 'rgba(255,255,255,0.65)',
           fontStyle: 'italic',
           lineHeight: 1.5,
         }}>
@@ -291,7 +291,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
               {member.title || 'GTM Engineer'}
             </span>
             {member.location && (
-              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>📍 {member.location}</span>
+              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.65)' }}>📍 {member.location}</span>
             )}
           </div>
         </div>
@@ -318,7 +318,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
             borderRadius: 3,
             padding: '0.08rem 0.4rem',
             fontSize: '0.56rem',
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(255,255,255,0.7)',
             fontWeight: 600,
           }}>
             {tag}
@@ -331,7 +331,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
         {member.experience.slice(0, 2).map((exp, i) => (
           <li key={i} style={{
             fontSize: '0.65rem',
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(255,255,255,0.7)',
             lineHeight: 1.5,
             paddingBottom: '0.18rem',
             paddingLeft: '0.75rem',
@@ -456,7 +456,7 @@ export default function YourTeam() {
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a78bfa', lineHeight: 1, letterSpacing: '-0.02em' }}>
                     {stat.value}
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.7)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                     {stat.label}
                   </div>
                 </div>
@@ -507,7 +507,7 @@ export default function YourTeam() {
                     onClick={(e) => { e.stopPropagation(); toggle(m.id); }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(255,255,255,0.35)', fontSize: '1rem', lineHeight: 1,
+                      color: 'rgba(255,255,255,0.65)', fontSize: '1rem', lineHeight: 1,
                       width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       borderRadius: 4,
                     }}
@@ -543,7 +543,7 @@ export default function YourTeam() {
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', margin: '0 0 0.15rem', letterSpacing: '-0.01em' }}>
                   GTM Architects
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
                   Your strategic lead — owns the engagement, drives every decision, and runs the weekly cadence with your team
                 </p>
               </div>
@@ -589,7 +589,7 @@ export default function YourTeam() {
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', margin: '0 0 0.15rem', letterSpacing: '-0.01em' }}>
                   GTM Engineers
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
                   The builders — inside your systems every day, shipping the actual work
                 </p>
               </div>

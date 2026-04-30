@@ -286,7 +286,7 @@ export default function ServicesCatalog() {
                   <span style={{
                     fontSize: '0.8rem',
                     fontWeight: 500,
-                    color: '#9ca3af',
+                    color: '#6b7280',
                     marginLeft: '0.15rem',
                   }}>
                     ({group.services.length})
@@ -380,7 +380,7 @@ export default function ServicesCatalog() {
           </div>
 
           {/* Result count */}
-          <p style={{ marginTop: '1rem', color: '#9ca3af', textAlign: 'center', fontSize: '0.9rem' }}>
+          <p style={{ marginTop: '1rem', color: '#6b7280', textAlign: 'center', fontSize: '0.9rem' }}>
             Showing {totalCount} services
           </p>
 

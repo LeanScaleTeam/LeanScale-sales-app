@@ -176,7 +176,7 @@ export default function Embedded() {
                 </div>
                 <div style={{
                   fontSize: '0.72rem',
-                  color: 'rgba(255,255,255,0.45)',
+                  color: 'rgba(255,255,255,0.7)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   marginTop: '0.25rem',

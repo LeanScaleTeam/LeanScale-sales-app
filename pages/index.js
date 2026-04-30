@@ -109,14 +109,14 @@ export default function Home() {
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
           }}>
-            Top-Tier GTM Operations<br />
+            GTM Operations<br />
             <span style={{
               background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              for B2B Tech Companies
+              for B2B Tech
             </span>
           </h1>
 
@@ -127,7 +127,7 @@ export default function Home() {
             margin: '0 auto 2.5rem',
             lineHeight: 1.6,
           }}>
-            We build full-stack GTM infrastructure for the fastest-growing B2B companies. Dedicated GTM operators embedded in your team — no a la carte.
+            Dedicated RevOps and Marketing Ops operators embedded in your team. No a la carte projects, no junior consultants.
           </p>
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3.5rem' }}>

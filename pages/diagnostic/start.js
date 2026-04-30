@@ -76,7 +76,7 @@ export default function StartDiagnostic() {
             maxWidth: 480,
             margin: '0 auto',
           }}>
-            Complete two quick steps to kick off your GTM diagnostic assessment
+            Two quick steps to kick off your GTM Diagnostic — about 10 minutes.
           </p>
         </div>
       </section>
@@ -217,7 +217,7 @@ export default function StartDiagnostic() {
                   margin: '0.15rem 0 0',
                   lineHeight: 1.5,
                 }}>
-                  Share information about your current GTM tech stack including CRM, marketing automation, sales engagement, and more
+                  ~15 questions about your CRM, marketing automation, sales engagement, and reporting stack. Takes about 8 minutes.
                 </p>
               </div>
             </div>

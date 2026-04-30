@@ -21,7 +21,17 @@ function ArchitectCard({ member, isSelected, onToggle }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${member.name}, ${member.title}`}
       onClick={() => onToggle(member.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle(member.id);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -194,7 +204,17 @@ function EngineerCard({ member, isSelected, onToggle }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${member.name}, ${member.title}`}
       onClick={() => onToggle(member.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle(member.id);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -482,11 +502,14 @@ export default function YourTeam() {
                     {m.name.split(' ')[0]}
                   </span>
                   <button
+                    type="button"
+                    aria-label={`Remove ${m.name}`}
                     onClick={(e) => { e.stopPropagation(); toggle(m.id); }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', lineHeight: 1,
-                      padding: '0 1px', display: 'flex', alignItems: 'center',
+                      color: 'rgba(255,255,255,0.35)', fontSize: '1rem', lineHeight: 1,
+                      width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 4,
                     }}
                   >×</button>
                 </div>
@@ -608,12 +631,12 @@ export default function YourTeam() {
               pointerEvents: 'none',
             }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h3 style={{ color: 'white', marginBottom: '0.6rem', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              <h2 style={{ color: 'white', marginBottom: '0.6rem', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                 {selectedIds.length > 0
                   ? `You've picked your pod. Let's make it official.`
                   : `Ready to put a face to the work?`
                 }
-              </h3>
+              </h2>
               <p style={{ color: 'rgba(255,255,255,0.55)', marginBottom: '2rem', maxWidth: 520, margin: '0 auto 2rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
                 {selectedIds.length > 0
                   ? `${selectedIds.length} operator${selectedIds.length > 1 ? 's' : ''} selected. Book a kickoff call and we'll confirm your team assignment.`

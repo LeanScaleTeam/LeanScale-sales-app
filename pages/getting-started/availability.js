@@ -182,20 +182,18 @@ export default function Availability() {
             }}>
               Configure your engagement and secure your embedded team spot today.
             </p>
-            <Link href={customerPath(diagnosticHref)} style={{ textDecoration: 'none' }}>
-              <button style={{
-                background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
-                color: '#0a0118',
-                fontWeight: 700,
-                padding: '0.875rem 2rem',
-                fontSize: '1rem',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}>
-                {customer.hasDiagnosticResult ? 'View Diagnostic →' : 'Start Diagnostic →'}
-              </button>
+            <Link href={customerPath(diagnosticHref)} style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+              color: '#0a0118',
+              fontWeight: 700,
+              padding: '0.875rem 2rem',
+              fontSize: '1rem',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              transition: 'all 0.2s ease',
+            }}>
+              {customer.hasDiagnosticResult ? 'View Diagnostic →' : 'Start Diagnostic →'}
             </Link>
           </div>
         </div>

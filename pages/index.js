@@ -14,10 +14,10 @@ import {
 export const getServerSideProps = getCustomerServerSideProps;
 
 const stats = [
-  { value: '2021', label: 'Founded' },
-  { value: '25+', label: 'Team' },
-  { value: '100+', label: 'Customers' },
-  { value: '68', label: 'Playbooks' },
+  { value: 'From $15K', label: 'per month' },
+  { value: '90 days', label: 'rolling outs' },
+  { value: '100+', label: 'B2B teams' },
+  { value: '68', label: 'playbooks' },
 ];
 
 const revopsItems = [
@@ -107,7 +107,7 @@ export default function Home() {
             letterSpacing: '0.05em',
           }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: LIME, boxShadow: '0 0 8px #a3e635' }} />
-            GTM OPERATIONS FOR B2B TECH
+            BUILT FOR SERIES A–C
           </div>
 
           <h1 style={{
@@ -231,7 +231,7 @@ export default function Home() {
             <p style={{ color: LIME, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>How We Work</p>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Operators embedded in your team</h2>
             <p style={{ color: 'rgba(255,255,255,0.65)', maxWidth: 720, margin: '0 auto', fontSize: '1rem', lineHeight: 1.7 }}>
-              We assign dedicated GTM operators to your team and run the work alongside you — custom engagements with rolling 90-day outs, no a la carte projects. Every engagement spans two disciplines: RevOps and Marketing Ops. You scope where you need the most leverage, and we staff to it.
+              We assign dedicated GTM operators to your team. Custom engagements with rolling 90-day outs, no a la carte projects — every engagement spans RevOps and Marketing Ops, and you scope where you need the most leverage.
             </p>
           </div>
 

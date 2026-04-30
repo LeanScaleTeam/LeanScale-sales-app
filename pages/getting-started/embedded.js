@@ -421,7 +421,7 @@ export default function Embedded() {
               letterSpacing: '0.15em',
               fontWeight: 700,
               margin: '0 0 0.5rem',
-            }}>How it runs</p>
+            }}>Cadence</p>
             <h2 style={{
               fontSize: 'clamp(1.65rem, 3vw, 2.25rem)',
               fontWeight: 800,

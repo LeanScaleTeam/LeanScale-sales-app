@@ -158,7 +158,7 @@ export default function StartDiagnostic() {
               <p style={{
                 marginTop: '0.75rem',
                 fontSize: '0.8rem',
-                color: '#9ca3af',
+                color: '#6b7280',
               }}>
                 Having trouble?{' '}
                 <a

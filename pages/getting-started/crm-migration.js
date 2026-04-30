@@ -345,7 +345,7 @@ export default function CrmMigration() {
 
         <div style={{ maxWidth: 700, margin: '0 auto', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: '#f9fafb', padding: '0.75rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#9ca3af', letterSpacing: '0.05em' }}></div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.05em' }}></div>
             <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#ef4444', letterSpacing: '0.05em', textAlign: 'center' }}>Typical Firm</div>
             <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#7c3aed', letterSpacing: '0.05em', textAlign: 'center' }}>LeanScale</div>
           </div>
@@ -356,7 +356,7 @@ export default function CrmMigration() {
               background: i % 2 === 0 ? 'white' : '#fafafa', alignItems: 'center',
             }}>
               <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>{row.label}</div>
-              <div style={{ fontSize: '0.85rem', color: '#9ca3af', textAlign: 'center', textDecoration: 'line-through', textDecorationColor: '#fca5a5' }}>{row.theirs}</div>
+              <div style={{ fontSize: '0.85rem', color: '#6b7280', textAlign: 'center', textDecoration: 'line-through', textDecorationColor: '#fca5a5' }}>{row.theirs}</div>
               <div style={{ fontSize: '0.85rem', color: '#7c3aed', fontWeight: 600, textAlign: 'center' }}>{row.ours}</div>
             </div>
           ))}
@@ -530,7 +530,7 @@ export default function CrmMigration() {
                     }}>{study.logoText}</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{study.industry}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{study.industry}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -555,7 +555,7 @@ export default function CrmMigration() {
         </div>
 
         <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-          <p style={{ fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.75rem' }}>Trusted By</p>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '0.75rem' }}>Trusted By</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>
             {clients.map((name, i) => (
               <span key={i} style={{ padding: '0.35rem 0.85rem', background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: '9999px', fontSize: '0.78rem', color: '#6b7280', fontWeight: 500 }}>{name}</span>

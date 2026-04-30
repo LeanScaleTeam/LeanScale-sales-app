@@ -413,7 +413,7 @@ export default function OneTimeProjects() {
                   border: 'none',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
-                  color: '#9ca3af',
+                  color: '#6b7280',
                   padding: '0.25rem',
                   lineHeight: 1,
                 }}

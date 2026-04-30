@@ -173,7 +173,7 @@ export default function Home() {
             {stats.map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 800, color: '#a3e635', letterSpacing: '-0.02em' }}>{stat.value}</div>
-                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export default function Home() {
             alignItems: 'center',
             gap: 'clamp(2rem, 4vw, 3.5rem)',
           }}>
-            <span style={{ fontSize: '0.65rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Trusted by</span>
+            <span style={{ fontSize: '0.65rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Trusted by</span>
             {clients.map((client) => (
               <img
                 key={client.name}
@@ -202,12 +202,12 @@ export default function Home() {
                   maxWidth: 110,
                   width: 'auto',
                   objectFit: 'contain',
-                  opacity: 0.4,
+                  opacity: 0.7,
                   transition: 'opacity 0.2s ease',
                   cursor: 'default',
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.4'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
               />
             ))}
           </div>
@@ -396,7 +396,7 @@ export default function Home() {
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>{t.initials}</div>
                   <div>
                     <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.author}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{t.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>{t.title}</div>
                   </div>
                 </div>
               </div>

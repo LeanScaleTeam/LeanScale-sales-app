@@ -319,7 +319,7 @@ export default function WhyLeanScale() {
 
           <div style={{ maxWidth: 700, margin: '0 auto 2.5rem', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: '#f9fafb', padding: '0.75rem 1.25rem', borderBottom: '1px solid #e5e7eb' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#9ca3af', letterSpacing: '0.05em' }}></div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.05em' }}></div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#ef4444', letterSpacing: '0.05em', textAlign: 'center' }}>In-House</div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#7c3aed', letterSpacing: '0.05em', textAlign: 'center' }}>LeanScale</div>
             </div>
@@ -330,7 +330,7 @@ export default function WhyLeanScale() {
                 background: i % 2 === 0 ? 'white' : '#fafafa', alignItems: 'center',
               }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>{row.label}</div>
-                <div style={{ fontSize: '0.85rem', color: '#9ca3af', textAlign: 'center', textDecoration: 'line-through', textDecorationColor: '#fca5a5' }}>{row.theirs}</div>
+                <div style={{ fontSize: '0.85rem', color: '#6b7280', textAlign: 'center', textDecoration: 'line-through', textDecorationColor: '#fca5a5' }}>{row.theirs}</div>
                 <div style={{ fontSize: '0.85rem', color: '#7c3aed', fontWeight: 600, textAlign: 'center' }}>{row.ours}</div>
               </div>
             ))}

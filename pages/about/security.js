@@ -1,4 +1,13 @@
 import Layout from '../../components/Layout';
+import {
+  HERO_BG,
+  LIME,
+  LIME_GRADIENT,
+  LIME_GRADIENT_TEXT_STYLE,
+  PURPLE,
+  EYEBROW_LABEL_STYLE,
+  DARK_HEADING,
+} from '../../lib/designTokens';
 
 const principles = [
   {
@@ -74,20 +83,12 @@ const optionalCourses = [
   },
 ];
 
-const sectionLabelStyle = {
-  display: 'inline-block',
-  fontSize: '0.8rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.12em',
-  color: '#7c3aed',
-  marginBottom: '0.75rem',
-};
+const sectionLabelStyle = EYEBROW_LABEL_STYLE;
 
 const sectionHeadingStyle = {
   fontSize: 'clamp(1.75rem, 4vw, 2.75rem)',
   fontWeight: 800,
-  color: '#0f0524',
+  color: DARK_HEADING,
   marginBottom: '0.75rem',
 };
 
@@ -108,7 +109,7 @@ export default function Security() {
       {/* ── Dark Gradient Hero ── */}
       <section
         style={{
-          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          background: HERO_BG,
           padding: 'clamp(4rem, 10vw, 8rem) clamp(1rem, 5vw, 3rem)',
           textAlign: 'center',
           color: '#fff',
@@ -134,7 +135,7 @@ export default function Security() {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              background: '#a3e635',
+              background: LIME,
               display: 'inline-block',
             }}
           />
@@ -153,9 +154,7 @@ export default function Security() {
           How LeanScale safeguards customer information, devices, and{' '}
           <span
             style={{
-              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              ...LIME_GRADIENT_TEXT_STYLE,
             }}
           >
             data
@@ -248,7 +247,7 @@ export default function Security() {
                     fontWeight: 700,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
-                    color: '#7c3aed',
+                    color: PURPLE,
                     marginBottom: '0.5rem',
                   }}
                 >
@@ -306,7 +305,7 @@ export default function Security() {
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: '#7c3aed',
+                color: PURPLE,
                 background: 'rgba(124,58,237,0.08)',
                 border: '1px solid rgba(124,58,237,0.2)',
                 borderRadius: '999px',
@@ -381,7 +380,7 @@ export default function Security() {
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                color: '#7c3aed',
+                color: PURPLE,
                 marginBottom: '1.5rem',
               }}
             >
@@ -401,7 +400,7 @@ export default function Security() {
                     fontWeight: 700,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
-                    color: '#7c3aed',
+                    color: PURPLE,
                     marginBottom: '0.5rem',
                   }}
                 >
@@ -438,7 +437,7 @@ export default function Security() {
                     fontWeight: 700,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
-                    color: '#7c3aed',
+                    color: PURPLE,
                     marginBottom: '0.5rem',
                   }}
                 >
@@ -488,7 +487,7 @@ export default function Security() {
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                color: '#7c3aed',
+                color: PURPLE,
                 marginBottom: '1.5rem',
                 textAlign: 'center',
               }}
@@ -515,7 +514,7 @@ export default function Security() {
                       width: 8,
                       height: 8,
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                      background: LIME_GRADIENT,
                       flexShrink: 0,
                       marginTop: '0.55rem',
                     }}
@@ -529,7 +528,7 @@ export default function Security() {
           {/* Compliance alignment */}
           <div
             style={{
-              background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 50%, #2d1845 100%)',
+              background: HERO_BG,
               borderRadius: '16px',
               padding: 'clamp(1.5rem, 3vw, 2.5rem)',
               color: '#fff',
@@ -585,7 +584,7 @@ export default function Security() {
                       width: 6,
                       height: 6,
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
+                      background: LIME_GRADIENT,
                     }}
                   />
                   {f}
@@ -662,7 +661,7 @@ export default function Security() {
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.12em',
-                  color: '#7c3aed',
+                  color: PURPLE,
                 }}
               >
                 Month
@@ -736,7 +735,7 @@ export default function Security() {
                       fontWeight: 700,
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
-                      color: '#7c3aed',
+                      color: PURPLE,
                       marginBottom: '0.5rem',
                     }}
                   >
@@ -796,7 +795,7 @@ export default function Security() {
                   fontWeight: 700,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  color: '#7c3aed',
+                  color: PURPLE,
                   background: 'rgba(124,58,237,0.08)',
                   border: '1px solid rgba(124,58,237,0.25)',
                   borderRadius: '999px',
@@ -843,7 +842,7 @@ export default function Security() {
                         fontWeight: 700,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
-                        color: '#7c3aed',
+                        color: PURPLE,
                         background: 'rgba(124,58,237,0.08)',
                         border: '1px solid rgba(124,58,237,0.25)',
                         borderRadius: '6px',
@@ -858,7 +857,7 @@ export default function Security() {
                         fontWeight: 700,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
-                        color: '#7c3aed',
+                        color: PURPLE,
                         alignSelf: 'center',
                       }}
                     >
@@ -918,7 +917,7 @@ export default function Security() {
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: '#7c3aed',
+                color: PURPLE,
                 background: 'rgba(124,58,237,0.08)',
                 border: '1px solid rgba(124,58,237,0.2)',
                 borderRadius: '999px',
@@ -959,7 +958,7 @@ export default function Security() {
       {/* ── Contact CTA ── */}
       <section
         style={{
-          background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+          background: HERO_BG,
           padding: 'clamp(3rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem)',
           textAlign: 'center',
           color: '#fff',
@@ -988,9 +987,7 @@ export default function Security() {
           Questions or additional{' '}
           <span
             style={{
-              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              ...LIME_GRADIENT_TEXT_STYLE,
             }}
           >
             information

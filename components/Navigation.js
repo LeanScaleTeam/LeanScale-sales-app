@@ -575,28 +575,41 @@ export default function Navigation() {
             borderRadius: 16,
             width: '90vw',
             maxWidth: 650,
-            height: '80vh',
-            maxHeight: 700,
+            height: '85vh',
+            maxHeight: 760,
             position: 'relative',
             overflow: 'hidden',
             boxShadow: '0 24px 80px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
           }}>
-            <h2
-              id="booking-modal-title"
-              style={{
-                position: 'absolute',
-                width: 1,
-                height: 1,
-                padding: 0,
-                margin: -1,
-                overflow: 'hidden',
-                clip: 'rect(0, 0, 0, 0)',
-                whiteSpace: 'nowrap',
-                border: 0,
-              }}
-            >
-              Book a call with LeanScale
-            </h2>
+            {/* Modal header */}
+            <div style={{
+              padding: '1.25rem 3rem 1rem 1.5rem',
+              borderBottom: '1px solid #f0edf5',
+              flexShrink: 0,
+            }}>
+              <h2
+                id="booking-modal-title"
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#0f0524',
+                  margin: '0 0 0.25rem',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                Book a 30-minute intro call
+              </h2>
+              <p style={{
+                margin: 0,
+                fontSize: '0.85rem',
+                color: '#6b7280',
+                lineHeight: 1.5,
+              }}>
+                Pick a time that works — we&apos;ll send a calendar invite with the meeting link.
+              </p>
+            </div>
             {/* Close button */}
             <button
               type="button"
@@ -630,7 +643,7 @@ export default function Navigation() {
               ref={bookingRef}
               style={{
                 width: '100%',
-                height: '100%',
+                flex: 1,
                 overflow: 'auto',
               }}
             />

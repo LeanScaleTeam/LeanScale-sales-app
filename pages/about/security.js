@@ -1010,15 +1010,6 @@ export default function Security() {
           additional documentation related to a specific framework or customer requirement, please
           contact your LeanScale point of contact.
         </p>
-        <p
-          style={{
-            fontSize: '0.85rem',
-            color: 'rgba(255,255,255,0.45)',
-            margin: 0,
-          }}
-        >
-          © LeanScale. All Rights Reserved. Unauthorized Distribution Prohibited.
-        </p>
       </section>
     </Layout>
   );

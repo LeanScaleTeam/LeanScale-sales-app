@@ -2,6 +2,14 @@ import Link from 'next/link';
 import Layout from '../components/Layout';
 import { useCustomer } from '../context/CustomerContext';
 import { getCustomerServerSideProps } from '../lib/getCustomer';
+import {
+  HERO_BG,
+  LIME_GRADIENT,
+  LIME_GRADIENT_TEXT_STYLE,
+  LIME,
+  PURPLE,
+  DARK_BG,
+} from '../lib/designTokens';
 
 export const getServerSideProps = getCustomerServerSideProps;
 
@@ -74,7 +82,7 @@ export default function Home() {
 
       {/* HERO */}
       <div style={{
-        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 30%, #2d1845 60%, #1a0a2e 100%)',
+        background: HERO_BG,
         color: 'white',
         padding: '5rem 0 3rem',
         position: 'relative',
@@ -98,7 +106,7 @@ export default function Home() {
             color: '#c4b5fd',
             letterSpacing: '0.05em',
           }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#a3e635', boxShadow: '0 0 8px #a3e635' }} />
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: LIME, boxShadow: '0 0 8px #a3e635' }} />
             GTM OPERATIONS FOR B2B TECH
           </div>
 
@@ -110,12 +118,7 @@ export default function Home() {
             letterSpacing: '-0.02em',
           }}>
             GTM Operations<br />
-            <span style={{
-              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
+            <span style={LIME_GRADIENT_TEXT_STYLE}>
               for B2B Tech
             </span>
           </h1>
@@ -133,8 +136,8 @@ export default function Home() {
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3.5rem' }}>
             <Link href={customerPath(diagnosticHref)} style={{
               display: 'inline-block',
-              background: 'linear-gradient(135deg, #a3e635 0%, #84cc16 100%)',
-              color: '#0a0118',
+              background: LIME_GRADIENT,
+              color: DARK_BG,
               padding: '0.9rem 2rem',
               borderRadius: '9999px',
               fontWeight: 700,
@@ -172,7 +175,7 @@ export default function Home() {
           }}>
             {stats.map((stat, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 800, color: '#a3e635', letterSpacing: '-0.02em' }}>{stat.value}</div>
+                <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 800, color: LIME, letterSpacing: '-0.02em' }}>{stat.value}</div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
               </div>
             ))}
@@ -216,7 +219,7 @@ export default function Home() {
 
       {/* HOW WE WORK */}
       <div style={{
-        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 50%, #0f0720 100%)',
+        background: HERO_BG,
         padding: 'clamp(3rem, 6vw, 5rem) 0',
         color: 'white',
         position: 'relative',
@@ -225,7 +228,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: '20%', right: '5%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(163,230,53,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="container" style={{ position: 'relative', zIndex: 1, padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
-            <p style={{ color: '#a3e635', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>How We Work</p>
+            <p style={{ color: LIME, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>How We Work</p>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>Operators embedded in your team</h2>
             <p style={{ color: 'rgba(255,255,255,0.65)', maxWidth: 720, margin: '0 auto', fontSize: '1rem', lineHeight: 1.7 }}>
               We assign dedicated GTM operators to your team and run the work alongside you — custom engagements with rolling 90-day outs, no a la carte projects. Every engagement spans two disciplines: RevOps and Marketing Ops. You scope where you need the most leverage, and we staff to it.
@@ -265,7 +268,7 @@ export default function Home() {
                     paddingLeft: '1rem',
                     position: 'relative',
                   }}>
-                    <span style={{ position: 'absolute', left: 0, color: '#7c3aed' }}>•</span>
+                    <span style={{ position: 'absolute', left: 0, color: PURPLE }}>•</span>
                     {item}
                   </li>
                 ))}
@@ -318,7 +321,7 @@ export default function Home() {
               borderBottom: '1px solid rgba(255,255,255,0.2)',
               paddingBottom: '0.15rem',
             }}>
-              See pricing &amp; tiers <span style={{ color: '#a3e635' }}>&rarr;</span>
+              See pricing &amp; tiers <span style={{ color: LIME }}>&rarr;</span>
             </Link>
           </div>
         </div>
@@ -329,7 +332,7 @@ export default function Home() {
         <div style={{ background: '#fff', padding: '4rem 0' }}>
           <div className="container" style={{ padding: '0 2rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <p style={{ color: '#7c3aed', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>See It In Action</p>
+              <p style={{ color: PURPLE, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>See It In Action</p>
               <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em' }}>LeanScale Overview</h2>
             </div>
             <div className="video-container" style={{ maxWidth: 800, margin: '0 auto', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
@@ -350,7 +353,7 @@ export default function Home() {
         <div style={{ background: '#fff', padding: '4rem 0' }}>
           <div className="container" style={{ padding: '0 2rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <p style={{ color: '#7c3aed', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>Our Deck</p>
+              <p style={{ color: PURPLE, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>Our Deck</p>
               <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, letterSpacing: '-0.02em' }}>LeanScale Deck</h2>
             </div>
             <div className="video-container" style={{ maxWidth: 800, margin: '0 auto', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
@@ -367,7 +370,7 @@ export default function Home() {
 
       {/* TESTIMONIALS */}
       <div style={{
-        background: 'linear-gradient(160deg, #0a0118 0%, #1a0a2e 50%, #0f0720 100%)',
+        background: HERO_BG,
         padding: 'clamp(3rem, 6vw, 5rem) 0',
         color: 'white',
         position: 'relative',
@@ -376,7 +379,7 @@ export default function Home() {
         <div style={{ position: 'absolute', bottom: '10%', left: '5%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="container" style={{ position: 'relative', zIndex: 1, padding: '0 2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 4vw, 3rem)' }}>
-            <p style={{ color: '#a3e635', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>What Our Customers Say</p>
+            <p style={{ color: LIME, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.5rem' }}>What Our Customers Say</p>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.02em' }}>Trusted by the best in B2B</h2>
           </div>
 
@@ -412,7 +415,7 @@ export default function Home() {
         textAlign: 'center',
       }}>
         <div className="container" style={{ padding: '0 2rem' }}>
-          <p style={{ color: '#7c3aed', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.75rem' }}>Get Started</p>
+          <p style={{ color: PURPLE, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600, marginBottom: '0.75rem' }}>Get Started</p>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, marginBottom: '0.75rem', letterSpacing: '-0.02em', color: '#111' }}>
             Ready to accelerate your GTM?
           </h2>

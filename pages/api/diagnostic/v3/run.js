@@ -7,6 +7,7 @@
 import { supabaseAdmin } from '../../../../lib/supabase';
 import { runDiagnosticV3, recomputeV3 } from '../../../../lib/diagnostic-engine/v3';
 import { mergeSignals } from '../../../../lib/diagnostic-engine/signal-merger';
+import { vascoSnapshotToComputedSignals, mergeVascoSignals } from '../../../../lib/vasco/signals-adapter';
 
 function isAdmin(req) {
   const cookies = req.cookies || {};
@@ -86,6 +87,36 @@ async function handleRun(req, res) {
       }
     }
 
+    // Vasco-only or Vasco-augmented mode: inject signals derived from the latest
+    // completed snapshot into computedSignals. When crm_type='vasco' this is the
+    // sole source; when CRM is also connected, CRM signals win on schema-level
+    // metrics and Vasco fills gaps (mostly tool presence + matrix-derived counts).
+    if (crmType === 'vasco' || crmType === 'salesforce' || crmType === 'hubspot' || crmType === 'dual') {
+      const { data: vascoSnapshot } = await supabaseAdmin
+        .from('vasco_snapshots')
+        .select('id, snapshot_date, integrity_score, gtm_stages, volume_metrics, time_in_stage, context_graph, matrix_statuses, tech_stack')
+        .eq('customer_id', customerId)
+        .eq('sync_status', 'complete')
+        .order('snapshot_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (vascoSnapshot) {
+        const vascoSignals = vascoSnapshotToComputedSignals(vascoSnapshot);
+        if (crmType === 'vasco') {
+          // Vasco is the sole signal source
+          computedSignals = vascoSignals;
+        } else {
+          // CRM-primary: merge Vasco signals into the gaps
+          computedSignals = mergeVascoSignals(computedSignals, vascoSignals);
+        }
+      } else if (crmType === 'vasco') {
+        // Vasco-only customer with no completed snapshot yet — proceed with empty
+        // signals; consultant_assessments and transcripts will fill scoring.
+        computedSignals = { _vasco_only: true, _no_snapshot: true };
+      }
+    }
+
     // Fetch transcript assessments
     const { data: transcriptRows } = await supabaseAdmin
       .from('transcript_assessments')
@@ -157,7 +188,10 @@ async function handleRun(req, res) {
     const projectSignals = Object.values(signalMap);
 
     // Run the v3 engine
-    const effectiveCrmType = crmType === 'dual' ? 'salesforce' : crmType;
+    // 'dual' collapses to 'salesforce' (engine treats them the same); 'vasco' also
+    // maps to 'salesforce' since signals are now CRM-shaped — the engine doesn't
+    // need to know they came from Vasco.
+    const effectiveCrmType = (crmType === 'dual' || crmType === 'vasco') ? 'salesforce' : crmType;
     const result = runDiagnosticV3(
       intake?.answers || {},
       computedSignals,

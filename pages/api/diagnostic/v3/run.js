@@ -110,18 +110,25 @@ async function handleRun(req, res) {
     }
 
     // Fetch consultant assessments
+    // Vasco-derived rows are tagged with assessed_by='vasco-auto' — surface this
+    // in the engine's signal trail by prefixing the notes so the UI can show
+    // "Auto-scored from Vasco" instead of treating it as a manual override.
     const { data: consultantRows } = await supabaseAdmin
       .from('consultant_assessments')
-      .select('competency_id, department, score, notes')
+      .select('competency_id, department, score, notes, assessed_by')
       .eq('customer_id', customerId);
 
     const consultantAssessments = {};
     if (consultantRows) {
       for (const row of consultantRows) {
         const key = `${row.competency_id}_${row.department}`;
+        const isVasco = row.assessed_by === 'vasco-auto';
         consultantAssessments[key] = {
           score: row.score,
-          notes: row.notes,
+          notes: isVasco
+            ? `[From Vasco] ${row.notes || `Score: ${row.score}`}`
+            : row.notes,
+          assessed_by: row.assessed_by || null,
         };
       }
     }

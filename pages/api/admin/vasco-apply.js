@@ -11,6 +11,7 @@ import { supabaseAdmin } from '../../../lib/supabase';
 import {
   mapSnapshotToCrmHealth,
   mapSnapshotToCompetencyScores,
+  mapMatrixStatusesToCompetencyScores,
   mapSnapshotToTrends,
   mapSnapshotToTechStackOverrides,
 } from '../../../lib/vasco/map-snapshot';
@@ -66,7 +67,22 @@ export default async function handler(req, res) {
     const crmHealth = mapSnapshotToCrmHealth(snapshot);
 
     // 3. Map snapshot → competency scores
-    const competencyScores = mapSnapshotToCompetencyScores(snapshot);
+    //    Metric-driven scores (volume_metrics, time_in_stage, integrity, tech_stack)
+    //    take priority over matrix-status scores when both are present, since
+    //    metrics are objective measurements while matrix is consultant-curated.
+    const metricScores = mapSnapshotToCompetencyScores(snapshot);
+    const matrixScores = mapMatrixStatusesToCompetencyScores(snapshot);
+
+    const competencyScores = { ...matrixScores };
+    // Metric scores overwrite matrix scores for the same competency
+    for (const [competencyId, entry] of Object.entries(metricScores)) {
+      competencyScores[competencyId] = entry;
+    }
+    // _PR-1_matrix is a fallback — only promote to PR-1 if metrics didn't score it
+    if (competencyScores['_PR-1_matrix'] && !competencyScores['PR-1']) {
+      competencyScores['PR-1'] = competencyScores['_PR-1_matrix'];
+    }
+    delete competencyScores['_PR-1_matrix'];
 
     // 4. Map snapshot → trend data
     const trends = mapSnapshotToTrends(snapshot);

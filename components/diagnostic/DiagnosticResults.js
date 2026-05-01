@@ -28,6 +28,7 @@ import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 // Engagement Pitch — loaded when user clicks the Engagement tab
 import EngagementPitch, { reconstructCompetencies, adaptV3ToPitchItems } from '../engagement-pitch/EngagementPitch';
 import GTMLandscape from './v3/GTMLandscape';
+import TechStackGrid from './v3/TechStackGrid';
 import Power10Anchor from '../engagement-pitch/Power10Anchor';
 import FindingsWalkthrough from '../engagement-pitch/FindingsWalkthrough';
 
@@ -1146,6 +1147,20 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   handleEngagementOverridesChange(next);
                 }}
               />
+              {/* Tech Stack Scorecard — auto-detects from CRM signals + Vasco tech_stack overrides */}
+              <TechStackGrid
+                computedSignals={crmSignals.computedSignals || {}}
+                crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+                editMode={editMode}
+                overrides={engagementOverrides}
+                onOverride={(section, key, value) => {
+                  const next = {
+                    ...engagementOverrides,
+                    [section]: { ...engagementOverrides?.[section], [key]: value },
+                  };
+                  handleEngagementOverridesChange(next);
+                }}
+              />
               {/* CRM Data Integrity */}
               <div>
                 <h2 style={{
@@ -1386,6 +1401,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           {isV3 && isAdmin && activeView === 'vasco' && (
             <VascoImportPanel
               customerId={customer?.id}
+              customerName={customer?.name}
               existingCrmHealth={engagementOverrides?.crm_health || null}
               onApplyImport={async (scoreOverrides) => {
                 // Build per-department assessments from Vasco competency scores

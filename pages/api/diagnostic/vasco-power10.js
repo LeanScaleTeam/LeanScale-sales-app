@@ -33,7 +33,8 @@ export default async function handler(req, res) {
 
   // PGRST116 = no rows found — that's not an error, just an empty result
   if (error && error.code !== 'PGRST116') {
-    return res.status(500).json({ error: error.message });
+    console.error('vasco-power10: snapshot load failed', error);
+    return res.status(500).json({ error: 'Failed to load snapshot' });
   }
 
   return res.status(200).json({ vascoPower10: resolvePower10FromSnapshot(data) });

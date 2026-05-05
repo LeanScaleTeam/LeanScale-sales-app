@@ -23,7 +23,13 @@ function mockReqRes({ method = 'GET', query = {} } = {}) {
 }
 
 describe('/api/diagnostic/vasco-power10', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Reset only the leaf mock — the chain mocks (from/select/eq/order/limit) keep
+    // their return-next-level wiring set in the jest.mock factory above.
+    __mocks.single.mockReset();
+    __mocks.single.mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+  });
 
   test('400 when customerId missing', async () => {
     const [req, res] = mockReqRes({ query: {} });
@@ -60,8 +66,11 @@ describe('/api/diagnostic/vasco-power10', () => {
 
   test('500 on unexpected supabase error', async () => {
     __mocks.single.mockResolvedValue({ data: null, error: { code: 'XX000', message: 'boom' } });
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const [req, res] = mockReqRes({ query: { customerId: 'c-1' } });
     await handler(req, res);
     expect(res.statusCode).toBe(500);
+    expect(res.body).toEqual({ error: 'Failed to load snapshot' });
+    errSpy.mockRestore();
   });
 });

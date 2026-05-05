@@ -38,6 +38,24 @@ describe('isStale guard', () => {
     const out = resolvePower10FromSnapshot(snapshot);
     expect(out.D5_arr.stale).toBe(true);
   });
+
+  test('marks snapshot > 90 days old as stale', () => {
+    const oldDate = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString();
+    const snapshot = {
+      snapshot_date: oldDate,
+      volume_metrics: { data: [{ month: '2026-01', net_arr: 1000000 }] },
+    };
+    expect(resolvePower10FromSnapshot(snapshot).D5_arr.stale).toBe(true);
+  });
+
+  test('marks fresh snapshot as not stale', () => {
+    const recent = new Date().toISOString();
+    const snapshot = {
+      snapshot_date: recent,
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1000000 }] },
+    };
+    expect(resolvePower10FromSnapshot(snapshot).D5_arr.stale).toBe(false);
+  });
 });
 
 describe('resolvePower10FromSnapshot — volume + tis metrics', () => {

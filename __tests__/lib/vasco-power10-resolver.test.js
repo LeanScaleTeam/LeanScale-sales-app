@@ -223,3 +223,41 @@ describe('resolvePower10FromSnapshot — recurring revenue', () => {
     expect(out.D5_nrr).toMatchObject({ available: false });
   });
 });
+
+import { buildPower10Payload } from '../../lib/vasco/power10-resolver';
+
+describe('buildPower10Payload', () => {
+  test('marks userOverride when user answered something other than Automated for an available metric', () => {
+    const answers = { D5_arr: 'Manual calc' };
+    const vasco = { D5_arr: { name: 'ARR', available: true, value: 1, formatted: '$1', source: 'x', asOf: '2026-03', stale: false } };
+    const out = buildPower10Payload(answers, vasco);
+    expect(out.find(p => p.key === 'D5_arr')).toMatchObject({
+      key: 'D5_arr', name: 'ARR', capability: 'Manual calc', vascoValue: 1, vascoFormatted: '$1', userOverride: true,
+    });
+  });
+
+  test('userOverride false when user accepted Automated', () => {
+    const answers = { D5_arr: 'Automated' };
+    const vasco = { D5_arr: { name: 'ARR', available: true, value: 1, formatted: '$1', source: 'x', asOf: '2026-03', stale: false } };
+    const out = buildPower10Payload(answers, vasco);
+    expect(out.find(p => p.key === 'D5_arr').userOverride).toBe(false);
+  });
+
+  test('userOverride false when metric not available in Vasco (legacy / not synced)', () => {
+    const answers = { D5_grr: "Can't report" };
+    const out = buildPower10Payload(answers, {});
+    expect(out.find(p => p.key === 'D5_grr')).toMatchObject({
+      key: 'D5_grr', name: 'Gross retention', capability: "Can't report", vascoValue: null, vascoFormatted: null, vascoSource: null, asOf: null, userOverride: false,
+    });
+  });
+
+  test('returns 10 entries (one per Power 10 metric) even when answers and vasco are empty', () => {
+    const out = buildPower10Payload({}, {});
+    expect(out).toHaveLength(10);
+    expect(out.map(p => p.key).sort()).toEqual([
+      'D5_arr', 'D5_bookings', 'D5_cycle', 'D5_gross_churn', 'D5_grr',
+      'D5_mql', 'D5_mql_opp', 'D5_nrr', 'D5_opp_cw', 'D5_pipeline',
+    ]);
+    expect(out.every(p => p.capability === null && p.vascoValue === null)).toBe(true);
+  });
+});

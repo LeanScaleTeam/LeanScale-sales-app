@@ -167,6 +167,28 @@ describe('resolvePower10FromSnapshot — recurring revenue', () => {
     expect(out.D5_nrr).toMatchObject({ available: true, value: 1.032, formatted: '103%', source: 'recurring_revenue_changes' });
   });
 
+  test('value and formatted are consistent at rounding boundaries', () => {
+    // gross_churn = 1245 / 50000 = 0.0249 (raw) → rounds to value=0.025 → formatted from rounded = "3%" (since round(2.5)=3)
+    // Without the fix: formatted would have been formatPct(0.0249) = round(2.49)% = "2%", diverging from value=0.025.
+    const snapshot = {
+      snapshot_date: '2026-04-30',
+      volume_metrics: { data: [{ month: '2026-03', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-03',
+        balances: {
+          start_of_period: { date: '2026-03-01', mrr: 50000, customers: 42 },
+          end_of_period: { date: '2026-04-01', mrr: 48755, customers: 41 },
+        },
+        monthly: [
+          { month: '2026-03', phase: 'RETENTION', recurring_revenue_actuals: -1245, recurring_customers_actuals: -1 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn.value).toBe(0.025);
+    expect(out.D5_gross_churn.formatted).toBe('3%');
+  });
+
   test('returns available: false when start_of_period mrr is 0', () => {
     const snapshot = {
       snapshot_date: '2026-04-30',

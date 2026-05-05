@@ -128,3 +128,58 @@ describe('resolvePower10FromSnapshot — volume + tis metrics', () => {
     expect(out.D5_opp_cw).toMatchObject({ available: true, value: 0, formatted: '0%' });
   });
 });
+
+describe('resolvePower10FromSnapshot — recurring revenue', () => {
+  test('returns available: false when recurring_revenue_changes column missing (legacy snapshot)', () => {
+    const out = resolvePower10FromSnapshot({ snapshot_date: '2026-04-30', volume_metrics: { data: [{ month: '2026-03', net_arr: 1 }] } });
+    expect(out.D5_gross_churn).toMatchObject({ available: false, source: 'recurring_revenue_changes (not synced for this snapshot)' });
+    expect(out.D5_grr).toMatchObject({ available: false });
+    expect(out.D5_nrr).toMatchObject({ available: false });
+  });
+
+  test('computes churn / GRR / NRR from monthly deltas + balances', () => {
+    // Period: 2026-03. Start MRR = 50000.
+    // RETENTION deltas in 2026-03: -1000 (churn loss) + +200 (re-up) — net = -800; loss = -1000.
+    // EXPANSION deltas in 2026-03: +2400.
+    // Gross churn = 1000 / 50000 = 2.0% → GRR = 98%
+    // NRR = (50000 - 800 + 2400) / 50000 = 51600/50000 = 103.2% → "103%"
+    const snapshot = {
+      snapshot_date: '2026-04-30',
+      volume_metrics: { data: [{ month: '2026-03', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-03',
+        balances: {
+          start_of_period: { date: '2026-03-01', mrr: 50000, customers: 42 },
+          end_of_period: { date: '2026-04-01', mrr: 51600, customers: 43 },
+        },
+        monthly: [
+          { month: '2026-03', phase: 'RETENTION', recurring_revenue_actuals: -1000, recurring_customers_actuals: -1 },
+          { month: '2026-03', phase: 'RETENTION', recurring_revenue_actuals: 200, recurring_customers_actuals: 0 },
+          { month: '2026-03', phase: 'EXPANSION', recurring_revenue_actuals: 2400, recurring_customers_actuals: 0 },
+          { month: '2026-03', phase: 'ACQUISITION', recurring_revenue_actuals: 5000, recurring_customers_actuals: 1 },
+          { month: '2026-02', phase: 'RETENTION', recurring_revenue_actuals: -9999, recurring_customers_actuals: 0 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn).toMatchObject({ available: true, value: 0.02, formatted: '2%', source: 'recurring_revenue_changes' });
+    expect(out.D5_grr).toMatchObject({ available: true, value: 0.98, formatted: '98%', source: 'recurring_revenue_changes' });
+    expect(out.D5_nrr).toMatchObject({ available: true, value: 1.032, formatted: '103%', source: 'recurring_revenue_changes' });
+  });
+
+  test('returns available: false when start_of_period mrr is 0', () => {
+    const snapshot = {
+      snapshot_date: '2026-04-30',
+      volume_metrics: { data: [{ month: '2026-03', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-03',
+        balances: { start_of_period: { date: '2026-03-01', mrr: 0, customers: 0 }, end_of_period: { date: '2026-04-01', mrr: 1, customers: 1 } },
+        monthly: [],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn).toMatchObject({ available: false });
+    expect(out.D5_grr).toMatchObject({ available: false });
+    expect(out.D5_nrr).toMatchObject({ available: false });
+  });
+});

@@ -1,31 +1,89 @@
 import { resolvePower10FromSnapshot } from '../../lib/vasco/power10-resolver';
 
 describe('resolvePower10FromSnapshot — D5_arr', () => {
-  test('returns ARR from latest full month net_arr', () => {
+  test('returns empty object when snapshot is null', () => {
+    expect(resolvePower10FromSnapshot(null)).toEqual({});
+  });
+});
+
+describe('resolvePower10FromSnapshot — D5_arr from balance', () => {
+  test('uses recurring_revenue_changes.balances.end_of_period.mrr as ARR source', () => {
     const snapshot = {
-      snapshot_date: '2026-04-30',
-      volume_metrics: {
-        data: [
-          { month: '2026-02', net_arr: 1000000 },
-          { month: '2026-03', net_arr: 1100000 }, // latest full
-          { month: '2026-04', net_arr: 1234567 }, // partial — skipped
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: -100000 }] },
+      recurring_revenue_changes: {
+        period: '2026-04',
+        balances: {
+          start_of_period: { date: '2026-04-01', mrr: 5100000, customers: 110 },
+          end_of_period:   { date: '2026-05-01', mrr: 5000000, customers: 109 },
+        },
+        monthly: [],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_arr).toMatchObject({
+      available: true,
+      value: 5000000,
+      formatted: '$5.0M',
+      source: 'recurring_revenue_changes.balances.end_of_period.mrr',
+      asOf: '2026-04',
+    });
+  });
+
+  test('D5_arr unavailable when no recurring_revenue_changes', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1000000 }] },
+    };
+    expect(resolvePower10FromSnapshot(snapshot).D5_arr).toMatchObject({ available: false });
+  });
+});
+
+describe('resolvePower10FromSnapshot — performance field', () => {
+  test('reads perf ratio from volume_metrics_performance for forecasted metrics', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', amount_won: 600000, mqls: 84 }] },
+      volume_metrics_performance: {
+        period: '2026-04',
+        D5_bookings: { perf: 0.95 },
+        D5_mql:      { perf: 0.45 },
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_bookings.performance).toBe('healthy'); // 0.95 >= 0.9
+    expect(out.D5_mql.performance).toBe('warning');      // 0.45 < 0.6
+  });
+
+  test('threshold-based performance for retention metrics', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-04',
+        balances: { start_of_period: { date: '2026-04-01', mrr: 100000, customers: 10 }, end_of_period: { date: '2026-05-01', mrr: 110000, customers: 11 } },
+        monthly: [
+          { month: '2026-04', phase: 'EXPANSION', recurring_revenue_actuals: 12000, recurring_customers_actuals: 0 },
+          { month: '2026-04', phase: 'RETENTION', recurring_revenue_actuals: -2000, recurring_customers_actuals: 0 },
         ],
       },
     };
     const out = resolvePower10FromSnapshot(snapshot);
-    expect(out.D5_arr).toEqual({
-      name: 'ARR',
-      available: true,
-      value: 1100000,
-      formatted: '$1.1M',
-      source: 'volume_metrics.net_arr',
-      asOf: '2026-03',
-      stale: false,
-    });
+    // gross_churn = 2000 / 100000 = 0.02 monthly → 0.24 annualized → > 0.10 → warning
+    expect(out.D5_gross_churn.performance).toBe('warning');
+    // grr = 1 - 0.02 = 0.98 monthly → not annualized for this rule (we use as-is); >= 0.90 → healthy
+    expect(out.D5_grr.performance).toBe('healthy');
+    // nrr = 1.10 → >= 1.10 → healthy
+    expect(out.D5_nrr.performance).toBe('healthy');
   });
 
-  test('returns empty object when snapshot is null', () => {
-    expect(resolvePower10FromSnapshot(null)).toEqual({});
+  test('performance defaults to unable when no signal', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', amount_won: 600000 }] },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_bookings.performance).toBe('unable');
   });
 });
 

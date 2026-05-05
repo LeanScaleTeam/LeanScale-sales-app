@@ -28,3 +28,14 @@ describe('resolvePower10FromSnapshot — D5_arr', () => {
     expect(resolvePower10FromSnapshot(null)).toEqual({});
   });
 });
+
+describe('isStale guard', () => {
+  test('treats malformed snapshot_date as stale', () => {
+    const snapshot = {
+      snapshot_date: 'not-a-date',
+      volume_metrics: { data: [{ month: '2026-03', net_arr: 1000000 }] },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_arr.stale).toBe(true);
+  });
+});

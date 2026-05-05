@@ -111,4 +111,20 @@ describe('resolvePower10FromSnapshot — volume + tis metrics', () => {
     const out = resolvePower10FromSnapshot({ snapshot_date: '2026-04-30', volume_metrics: { data: [{ month: '2026-03' }] } });
     expect(out.D5_bookings).toBeUndefined();
   });
+
+  test('emits 0% conversion rates as legitimate values, not missing', () => {
+    const snapshot = {
+      snapshot_date: '2026-04-30',
+      volume_metrics: {
+        data: [
+          { month: '2026-02', cvr_mql_sql: 0, cvr_sal_won: 0 },
+          { month: '2026-03', cvr_mql_sql: 0, cvr_sal_won: 0 },
+          { month: '2026-04', cvr_mql_sql: 0, cvr_sal_won: 0 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_mql_opp).toMatchObject({ available: true, value: 0, formatted: '0%' });
+    expect(out.D5_opp_cw).toMatchObject({ available: true, value: 0, formatted: '0%' });
+  });
 });

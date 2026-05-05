@@ -32,7 +32,7 @@ const POWER_10_METRICS = [
 
 const POWER_10_OPTIONS = ['Automated', 'Manual calc', "Can't report"];
 
-export default function SectionE_Reporting({ answers, skipRules, preFill = {}, onComplete, onBack }) {
+export default function SectionE_Reporting({ answers, skipRules, preFill = {}, vascoPower10 = {}, onComplete, onBack }) {
   // Filter reporting questions based on CRM-adaptive visibility
   const visibleReporting = REPORTING_QUESTIONS.filter((q) => {
     if (q.hideWhenAutoDetected && (skipRules.hasSalesforceSignals || skipRules.hasHubSpotSignals)) return false;
@@ -44,7 +44,9 @@ export default function SectionE_Reporting({ answers, skipRules, preFill = {}, o
     const init = {};
     // Initialize from all questions (including hidden ones for data preservation)
     for (const q of [...REPORTING_QUESTIONS, ...POWER_10_METRICS.map((m) => ({ ...m, options: POWER_10_OPTIONS }))]) {
-      init[q.key] = answers[q.key] || preFill[q.key]?.value || '';
+      const vasco = vascoPower10[q.key];
+      const vascoDefault = vasco?.available ? 'Automated' : '';
+      init[q.key] = answers[q.key] || vascoDefault || preFill[q.key]?.value || '';
     }
     return init;
   });
@@ -105,25 +107,40 @@ export default function SectionE_Reporting({ answers, skipRules, preFill = {}, o
         </p>
       </div>
 
-      {POWER_10_METRICS.map((m) => (
-        <div key={m.key} style={styles.question}>
-          <label style={styles.label}>{m.label}</label>
-          <div style={styles.optionGrid}>
-            {POWER_10_OPTIONS.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => handleSelect(m.key, opt)}
-                style={{
-                  ...styles.optionBtn,
-                  ...(local[m.key] === opt ? styles.optionSelected : {}),
-                }}
-              >
-                {opt}
-              </button>
-            ))}
+      {POWER_10_METRICS.map((m) => {
+        const vasco = vascoPower10[m.key];
+        const showVascoBadge = vasco?.available && !overridden.has(m.key);
+        const showNotSyncedBadge = vasco && !vasco.available && typeof vasco.source === 'string' && vasco.source.includes('not synced');
+        return (
+          <div key={m.key} style={styles.question}>
+            <label style={styles.label}>{m.label}</label>
+            <div style={styles.optionGrid}>
+              {POWER_10_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleSelect(m.key, opt)}
+                  style={{
+                    ...styles.optionBtn,
+                    ...(local[m.key] === opt ? styles.optionSelected : {}),
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+            {showVascoBadge && (
+              <div style={styles.autoDetectedHint}>
+                From Vasco: {vasco.formatted} ({vasco.asOf}){vasco.stale ? ' · stale' : ''}
+              </div>
+            )}
+            {showNotSyncedBadge && (
+              <div style={{ ...styles.autoDetectedHint, background: '#FEF3C7', color: '#92400E' }}>
+                Vasco snapshot doesn&apos;t include this metric yet
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <div style={styles.navRow}>
         <button onClick={onBack} style={styles.backBtn}>Back</button>

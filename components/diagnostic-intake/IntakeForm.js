@@ -59,6 +59,7 @@ export default function IntakeForm() {
   const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
   const [transcriptUploaded, setTranscriptUploaded] = useState(false);
+  const [vascoPower10, setVascoPower10] = useState({});
 
   const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
   const skipRules = getSkipRules(answers, crmMetadataExists);
@@ -100,6 +101,17 @@ export default function IntakeForm() {
         if (sfRes.ok) {
           const sfData = await sfRes.json();
           setSalesforceStatus(sfData);
+        }
+
+        // Load Vasco Power 10 auto-fill (non-fatal — Section E falls back to manual entry)
+        try {
+          const vRes = await fetch(`/api/diagnostic/vasco-power10?customerId=${customer.id}`);
+          if (vRes.ok) {
+            const vData = await vRes.json();
+            setVascoPower10(vData.vascoPower10 || {});
+          }
+        } catch (e) {
+          // Non-fatal — Section E falls back to manual entry
         }
       } catch (err) {
         console.error('Error loading intake:', err);
@@ -604,6 +616,7 @@ export default function IntakeForm() {
                 onComplete={(a) => handleSectionComplete('E', a)}
                 onBack={handleBack}
                 preFill={preFill}
+                vascoPower10={vascoPower10}
               />
             </>
           )}

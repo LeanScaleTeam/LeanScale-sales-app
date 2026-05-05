@@ -26,6 +26,7 @@ export default function ScoreCardGrid({
   competencies,
   transcriptAssessments,
   consultantAssessments,
+  customerId,
   editMode,
   onCellClick,
 }) {
@@ -198,6 +199,7 @@ export default function ScoreCardGrid({
                     score={score}
                     transcriptData={transcriptAssessments?.[`${comp.id}_${expandedCell.dept}`]}
                     consultantData={consultantAssessments?.[`${comp.id}_${expandedCell.dept}`]}
+                    customerId={customerId}
                     editMode={editMode}
                     onScoreChange={onCellClick}
                   />

@@ -251,6 +251,7 @@ function ScoreCardView({
           departmentScores={v3Result.department_scores}
           competencies={v3Result.competencies}
           transcriptAssessments={transcriptAssessments}
+          customerId={customer?.id}
           editMode={editMode}
           onCellClick={(compId, dept, score) => {
             if (!editMode) return;

@@ -167,6 +167,27 @@ function MetricCard({ metric, index, editMode, onCycle }) {
         </div>
       )}
 
+      {/* Actual value (from Vasco) */}
+      {metric.formatted && (
+        <div style={{
+          fontSize: '1.5rem', fontWeight: 700,
+          color: 'rgba(255,255,255,0.95)',
+          lineHeight: 1.1,
+          marginTop: '0.25rem',
+        }}>
+          {metric.formatted}
+          {metric.asOf && (
+            <span style={{
+              fontSize: '0.6rem', fontWeight: 400,
+              color: 'rgba(255,255,255,0.35)',
+              marginLeft: '0.5rem',
+            }}>
+              {metric.asOf}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Divider */}
       <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
 

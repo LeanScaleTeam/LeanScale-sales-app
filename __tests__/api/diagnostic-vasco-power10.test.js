@@ -50,6 +50,14 @@ describe('/api/diagnostic/vasco-power10', () => {
       data: {
         snapshot_date: new Date().toISOString(),
         volume_metrics: { data: [{ month: '2026-03', net_arr: 1100000 }, { month: '2026-04', net_arr: 9 }] },
+        recurring_revenue_changes: {
+          period: '2026-03',
+          balances: {
+            start_of_period: { date: '2026-03-01', mrr: 1000000, customers: 100 },
+            end_of_period:   { date: '2026-04-01', mrr: 1100000, customers: 110 },
+          },
+          monthly: [],
+        },
       },
       error: null,
     });

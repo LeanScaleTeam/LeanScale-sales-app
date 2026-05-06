@@ -6,6 +6,18 @@ import { useCustomer } from '../../context/CustomerContext';
 
 const projects = [
   {
+    id: 'claude-gtm',
+    name: 'Claude GTM Transformation',
+    status: 'Available',
+    icon: '🤖',
+    badge: 'Anthropic',
+    badgeColor: '#e8722a',
+    price: '$50,000',
+    duration: '1 month',
+    playbookId: null,
+    landingPage: '/getting-started/claude-gtm',
+  },
+  {
     id: 'market-map',
     name: 'Market Map',
     status: 'Available',
@@ -357,7 +369,7 @@ export default function OneTimeProjects() {
                   </span>
                   {project.badge && (
                     <span style={{
-                      background: '#7c3aed',
+                      background: project.badgeColor || '#7c3aed',
                       color: 'white',
                       padding: '0.2rem 0.5rem',
                       borderRadius: '9999px',

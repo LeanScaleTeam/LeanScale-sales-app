@@ -282,6 +282,103 @@ describe('resolvePower10FromSnapshot — recurring revenue', () => {
   });
 });
 
+describe('resolvePower10FromSnapshot — TTM cadence for retention metrics', () => {
+  test('uses trailing-12-month math when window_start.mrr is present', () => {
+    // window_start.mrr = 3,200,000 (denominator)
+    // RETENTION negatives across 12 months: -240K total → gross_churn = 240K / 3.2M = 7.5%
+    // RETENTION net (positives + negatives): -240K + 0 = -240K
+    // EXPANSION net: 360K
+    // NRR = (3.2M - 240K + 360K) / 3.2M = 3.32M / 3.2M = 1.0375 → 104%
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-04',
+        balances: {
+          window_start:    { date: '2025-05-01', mrr: 3200000, customers: 95 },
+          start_of_period: { date: '2026-04-01', mrr: 4000000, customers: 110 },
+          end_of_period:   { date: '2026-05-01', mrr: 4120000, customers: 113 },
+        },
+        monthly: [
+          // RETENTION losses scattered across the 12 months
+          { month: '2025-06', phase: 'RETENTION', recurring_revenue_actuals: -50000, recurring_customers_actuals: -1 },
+          { month: '2025-09', phase: 'RETENTION', recurring_revenue_actuals: -90000, recurring_customers_actuals: -2 },
+          { month: '2026-01', phase: 'RETENTION', recurring_revenue_actuals: -100000, recurring_customers_actuals: -2 },
+          // EXPANSION across the 12 months
+          { month: '2025-08', phase: 'EXPANSION', recurring_revenue_actuals: 120000, recurring_customers_actuals: 0 },
+          { month: '2025-11', phase: 'EXPANSION', recurring_revenue_actuals: 140000, recurring_customers_actuals: 0 },
+          { month: '2026-03', phase: 'EXPANSION', recurring_revenue_actuals: 100000, recurring_customers_actuals: 0 },
+          // ACQUISITION rows ignored entirely for retention metrics
+          { month: '2026-04', phase: 'ACQUISITION', recurring_revenue_actuals: 999999, recurring_customers_actuals: 5 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn).toMatchObject({ available: true, value: 0.075, formatted: '8%', cadence: 'trailing_12m' });
+    expect(out.D5_grr).toMatchObject({ available: true, value: 0.925, formatted: '93%', cadence: 'trailing_12m' });
+    expect(out.D5_nrr).toMatchObject({ available: true, value: 1.038, formatted: '104%', cadence: 'trailing_12m' });
+    // 7.5% TTM gross churn → annualization NOT applied → > 5% but < 10% → careful
+    expect(out.D5_gross_churn.performance).toBe('careful');
+    // 92.5% GRR → >= 90% → healthy
+    expect(out.D5_grr.performance).toBe('healthy');
+    // 103.8% NRR → >= 100% but < 110% → careful
+    expect(out.D5_nrr.performance).toBe('careful');
+  });
+
+  test('falls back to single-month cadence when window_start absent (legacy snapshot)', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-04',
+        balances: {
+          start_of_period: { date: '2026-04-01', mrr: 100000, customers: 10 },
+          end_of_period:   { date: '2026-05-01', mrr: 95000, customers: 9 },
+        },
+        monthly: [
+          { month: '2026-04', phase: 'RETENTION', recurring_revenue_actuals: -5000, recurring_customers_actuals: -1 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn).toMatchObject({ cadence: 'single_month', value: 0.05 });
+    // Single-month 5% × 12 = 60% annualized → > 10% → warning (preserves pre-TTM behavior)
+    expect(out.D5_gross_churn.performance).toBe('warning');
+  });
+
+  test('falls back to single-month when window_start.mrr is 0 (new customer)', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1 }] },
+      recurring_revenue_changes: {
+        period: '2026-04',
+        balances: {
+          window_start:    { date: '2025-05-01', mrr: 0, customers: 0 },
+          start_of_period: { date: '2026-04-01', mrr: 50000, customers: 5 },
+          end_of_period:   { date: '2026-05-01', mrr: 52000, customers: 5 },
+        },
+        monthly: [
+          { month: '2026-04', phase: 'RETENTION', recurring_revenue_actuals: -1000, recurring_customers_actuals: 0 },
+        ],
+      },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    expect(out.D5_gross_churn).toMatchObject({ cadence: 'single_month' });
+    expect(out.D5_gross_churn.value).toBe(0.02); // 1000 / 50000 single-month
+  });
+
+  test('all metrics carry cadence field', () => {
+    const snapshot = {
+      snapshot_date: '2026-05-01',
+      volume_metrics: { data: [{ month: '2026-04', net_arr: 1, amount_won: 100, mqls: 10, sqls: 5, amount_sqls: 50, cvr_mql_sql: 0.5, cvr_sal_won: 0.2 }] },
+    };
+    const out = resolvePower10FromSnapshot(snapshot);
+    for (const key of ['D5_arr', 'D5_bookings', 'D5_mql', 'D5_mql_opp', 'D5_pipeline', 'D5_opp_cw']) {
+      expect(out[key].cadence).toBeDefined();
+    }
+  });
+});
+
 import { buildPower10Payload } from '../../lib/vasco/power10-resolver';
 
 describe('buildPower10Payload', () => {

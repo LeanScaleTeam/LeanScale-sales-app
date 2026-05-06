@@ -182,7 +182,7 @@ function MetricCard({ metric, index, editMode, onCycle }) {
               color: 'rgba(255,255,255,0.35)',
               marginLeft: '0.5rem',
             }}>
-              {metric.asOf}
+              {metric.asOf}{metric.cadence === 'trailing_12m' ? ' · TTM' : ''}
             </span>
           )}
         </div>

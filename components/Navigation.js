@@ -42,14 +42,12 @@ const gettingStartedLinks = {
     { href: '/getting-started/availability', label: 'Cohort Availability' },
     { href: '/getting-started/team', label: 'Your Team' },
     { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
-    { href: '/getting-started/claude-gtm', label: 'Claude GTM Transformation' },
   ],
   clay: [
     { href: '/getting-started/embedded', label: 'Pricing & Tiers' },
     { href: '/getting-started/availability', label: 'Cohort Availability' },
     { href: '/getting-started/team', label: 'Your Team' },
     { href: '/getting-started/one-time-projects', label: 'One-Time Projects' },
-    { href: '/getting-started/claude-gtm', label: 'Claude GTM Transformation' },
     { href: '/getting-started/clay', label: 'Clay x LeanScale' },
   ],
 };

@@ -6,18 +6,6 @@ import { useCustomer } from '../../context/CustomerContext';
 
 const projects = [
   {
-    id: 'claude-gtm',
-    name: 'Claude GTM Transformation',
-    status: 'Available',
-    icon: '🤖',
-    badge: 'Anthropic',
-    badgeColor: '#e8722a',
-    price: '$50,000',
-    duration: '1 month',
-    playbookId: null,
-    landingPage: '/getting-started/claude-gtm',
-  },
-  {
     id: 'market-map',
     name: 'Market Map',
     status: 'Available',

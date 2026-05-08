@@ -71,11 +71,14 @@ export default async function handler(req, res) {
     const trends = mapSnapshotToTrends(snapshot);
 
     // 5. Write crm_health to engagement_overrides
-    const { data: existing } = await supabaseAdmin
+    // Use maybeSingle: customers without an existing diagnostic row should still
+    // accept a Vasco apply (we upsert below), so missing-row is not an error.
+    const { data: existing, error: existingErr } = await supabaseAdmin
       .from('diagnostic_results_v3')
-      .select('engagement_overrides')
+      .select('id, engagement_overrides')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
+    if (existingErr) throw existingErr;
 
     // Pull the previous snapshot (different date or quarter) for period-over-period comparison
     const { data: priorSnapshots } = await supabaseAdmin
@@ -131,10 +134,21 @@ export default async function handler(req, res) {
       vasco_snapshot_id: snapshot.id,
     };
 
+    // Upsert so customers without an existing diagnostic_results_v3 row still
+    // get their crm_health/vasco data persisted. Previously this was a bare
+    // .update() that silently affected 0 rows when the row didn't exist,
+    // making the UI appear to "reset" on next load.
     const { error: updateErr } = await supabaseAdmin
       .from('diagnostic_results_v3')
-      .update({ engagement_overrides: updatedOverrides })
-      .eq('customer_id', customerId);
+      .upsert(
+        {
+          customer_id: customerId,
+          version: 3,
+          engagement_overrides: updatedOverrides,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'customer_id' }
+      );
 
     if (updateErr) throw updateErr;
 

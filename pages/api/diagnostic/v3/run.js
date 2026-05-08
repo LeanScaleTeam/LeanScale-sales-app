@@ -25,26 +25,39 @@ export default async function handler(req, res) {
 }
 
 async function handleRun(req, res) {
-  const { customerId, preserveRoadmap } = req.body;
+  const { customerId, preserveRoadmap, force } = req.body;
 
   if (!customerId) {
     return res.status(400).json({ error: 'customerId is required' });
   }
 
   try {
+    // Snapshot existing roadmap so we can refuse to overwrite a non-empty one
+    // with an empty regenerated one (data-loss guard).
+    const { data: existingRow } = await supabaseAdmin
+      .from('diagnostic_results_v3')
+      .select('roadmap')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+    const existingRoadmapLen = Array.isArray(existingRow?.roadmap)
+      ? existingRow.roadmap.length
+      : 0;
+
     // Read intake answers
-    const { data: intake } = await supabaseAdmin
+    const { data: intake, error: intakeError } = await supabaseAdmin
       .from('diagnostic_intake')
       .select('id, answers')
       .eq('customer_id', customerId)
       .maybeSingle();
+    if (intakeError) throw new Error(`intake fetch failed: ${intakeError.message}`);
 
     // Detect CRM type
-    const { data: customer } = await supabaseAdmin
+    const { data: customer, error: customerError } = await supabaseAdmin
       .from('customers')
       .select('crm_type')
       .eq('id', customerId)
       .maybeSingle();
+    if (customerError) throw new Error(`customer fetch failed: ${customerError.message}`);
 
     const crmType = customer?.crm_type || 'unknown';
     let computedSignals = {};
@@ -53,13 +66,14 @@ async function handleRun(req, res) {
 
     // Fetch CRM signals
     if (crmType === 'dual' || crmType === 'salesforce') {
-      const { data: sfMetadata } = await supabaseAdmin
+      const { data: sfMetadata, error: sfError } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('id, computed_signals')
         .eq('customer_id', customerId)
         .order('fetched_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (sfError) throw new Error(`salesforce_metadata fetch failed: ${sfError.message}`);
 
       if (sfMetadata) {
         sfMetadataId = sfMetadata.id;
@@ -68,13 +82,14 @@ async function handleRun(req, res) {
     }
 
     if (crmType === 'dual' || crmType === 'hubspot') {
-      const { data: hsMetadata } = await supabaseAdmin
+      const { data: hsMetadata, error: hsError } = await supabaseAdmin
         .from('hubspot_metadata')
         .select('id, computed_signals')
         .eq('customer_id', customerId)
         .order('downloaded_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (hsError) throw new Error(`hubspot_metadata fetch failed: ${hsError.message}`);
 
       if (hsMetadata) {
         hsMetadataId = hsMetadata.id;
@@ -87,10 +102,11 @@ async function handleRun(req, res) {
     }
 
     // Fetch transcript assessments
-    const { data: transcriptRows } = await supabaseAdmin
+    const { data: transcriptRows, error: trError } = await supabaseAdmin
       .from('transcript_assessments')
       .select('competency_id, department, score, confidence, evidence_quotes, assessment, reasoning')
       .eq('customer_id', customerId);
+    if (trError) throw new Error(`transcript_assessments fetch failed: ${trError.message}`);
 
     const transcriptAssessments = {};
     if (transcriptRows) {
@@ -110,10 +126,11 @@ async function handleRun(req, res) {
     }
 
     // Fetch consultant assessments
-    const { data: consultantRows } = await supabaseAdmin
+    const { data: consultantRows, error: caError } = await supabaseAdmin
       .from('consultant_assessments')
       .select('competency_id, department, score, notes')
       .eq('customer_id', customerId);
+    if (caError) throw new Error(`consultant_assessments fetch failed: ${caError.message}`);
 
     const consultantAssessments = {};
     if (consultantRows) {
@@ -127,18 +144,20 @@ async function handleRun(req, res) {
     }
 
     // Fetch transcript IDs
-    const { data: transcripts } = await supabaseAdmin
+    const { data: transcripts, error: dtError } = await supabaseAdmin
       .from('diagnostic_transcripts')
       .select('id')
       .eq('customer_id', customerId);
+    if (dtError) throw new Error(`diagnostic_transcripts fetch failed: ${dtError.message}`);
 
     const transcriptIds = (transcripts || []).map((t) => t.id);
 
     // Fetch transcript project signals
-    const { data: signalRows } = await supabaseAdmin
+    const { data: signalRows, error: psError } = await supabaseAdmin
       .from('transcript_project_signals')
       .select('service_id, signal_type, confidence, evidence, reasoning')
       .eq('customer_id', customerId);
+    if (psError) throw new Error(`transcript_project_signals fetch failed: ${psError.message}`);
 
     // Deduplicate: keep highest confidence per service_id
     const signalMap = {};
@@ -159,6 +178,27 @@ async function handleRun(req, res) {
       effectiveCrmType,
       projectSignals
     );
+
+    const newRoadmapLen = Array.isArray(result.roadmap) ? result.roadmap.length : 0;
+
+    // Data-loss guard: if we are about to overwrite a non-empty stored roadmap
+    // with an empty regenerated one, refuse unless caller passed force=true.
+    // This prevents accidental wipes when input fetches return empty (RLS, env
+    // misconfig, transient DB errors) and the engine produces no items.
+    if (!preserveRoadmap && existingRoadmapLen > 0 && newRoadmapLen === 0 && !force) {
+      return res.status(409).json({
+        error: 'Refusing to overwrite non-empty roadmap with empty regenerated roadmap',
+        existingRoadmapItems: existingRoadmapLen,
+        diagnostics: {
+          projectSignalCount: projectSignals.length,
+          transcriptAssessmentCount: Object.keys(transcriptAssessments).length,
+          consultantAssessmentCount: Object.keys(consultantAssessments).length,
+          crmSignalCount: Object.keys(computedSignals).length,
+          intakePresent: !!intake,
+        },
+        hint: 'Pass { force: true } to override, or { preserveRoadmap: true } to keep the stored roadmap.',
+      });
+    }
 
     // Store result — when preserveRoadmap is set, only update scores (not roadmap)
     const upsertData = {

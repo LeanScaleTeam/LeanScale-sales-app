@@ -109,13 +109,41 @@ function numField(val, onChange, placeholder) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrmHealth, existingCrmHealth }) {
+export default function VascoImportPanel({ customerId, customerName, onApplyImport, onApplyCrmHealth, existingCrmHealth }) {
   const [orgId, setOrgId] = useState('');
   const [jsonPaste, setJsonPaste] = useState('');
   const [parseError, setParseError] = useState(null);
   const [parsedData, setParsedData] = useState(null); // { [key]: { actual, target, status } }
   const [scoreOverrides, setScoreOverrides] = useState({}); // { [key]: number }
   const [applyStatus, setApplyStatus] = useState(null); // null | 'success' | 'error'
+
+  // Vasco MCP sync state
+  const [syncStatus, setSyncStatus] = useState(null); // null | 'starting' | 'running' | 'complete' | 'error'
+  const [syncMessage, setSyncMessage] = useState(null);
+
+  async function handleSyncFromVasco() {
+    if (!customerId) {
+      setSyncMessage('No customerId — open this panel from a customer record.');
+      setSyncStatus('error');
+      return;
+    }
+    setSyncStatus('starting');
+    setSyncMessage(null);
+    try {
+      const res = await fetch('/api/admin/vasco-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId, customerName: customerName || 'customer' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Sync request failed');
+      setSyncStatus('running');
+      setSyncMessage(json.message || 'Sync started — Claude is fetching from Vasco MCP. This may take a minute.');
+    } catch (err) {
+      setSyncStatus('error');
+      setSyncMessage(err.message);
+    }
+  }
 
   // ── CRM Health state — seeded from existingCrmHealth if present ───────────
   const [integrityScore, setIntegrityScore] = useState(
@@ -297,12 +325,12 @@ export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrm
           color: 'var(--text-muted)',
           marginBottom: 'var(--space-3)',
         }}>
-          Vasco Connection (coming soon via MCP)
+          Vasco Connection (via MCP)
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: '200px' }}>
             <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>
-              Customer Vasco Org ID
+              Customer Vasco Org ID (optional — Claude will look it up)
             </label>
             <input
               value={orgId}
@@ -321,25 +349,41 @@ export default function VascoImportPanel({ customerId, onApplyImport, onApplyCrm
             />
           </div>
           <button
-            disabled
-            title="Vasco MCP integration coming soon"
+            onClick={handleSyncFromVasco}
+            disabled={syncStatus === 'starting' || syncStatus === 'running'}
+            title="Triggers Claude Code to pull a fresh QBR snapshot from the Vasco MCP server"
             style={{
               padding: '0.5rem 1.1rem',
               borderRadius: 7,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'rgba(255,255,255,0.25)',
+              border: '1px solid rgba(96,165,250,0.4)',
+              background: (syncStatus === 'starting' || syncStatus === 'running')
+                ? 'rgba(96,165,250,0.15)'
+                : 'rgba(96,165,250,0.18)',
+              color: (syncStatus === 'starting' || syncStatus === 'running')
+                ? 'rgba(255,255,255,0.5)'
+                : 'rgba(255,255,255,0.9)',
               fontSize: 'var(--text-sm)',
-              cursor: 'not-allowed',
-              fontWeight: 500,
+              cursor: (syncStatus === 'starting' || syncStatus === 'running') ? 'wait' : 'pointer',
+              fontWeight: 600,
               whiteSpace: 'nowrap',
             }}
           >
-            Fetch from Vasco
+            {syncStatus === 'starting' && 'Starting...'}
+            {syncStatus === 'running' && 'Syncing...'}
+            {(!syncStatus || syncStatus === 'complete' || syncStatus === 'error') && 'Sync from Vasco'}
           </button>
         </div>
-        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', margin: 'var(--space-2) 0 0' }}>
-          Direct API connection via Vasco MCP available soon. Each customer requires their own Vasco org token (SOC 2 compliant).
+        {syncMessage && (
+          <p style={{
+            fontSize: '0.7rem',
+            color: syncStatus === 'error' ? '#fca5a5' : 'rgba(134,239,172,0.85)',
+            margin: 'var(--space-2) 0 0',
+          }}>
+            {syncMessage}
+          </p>
+        )}
+        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', margin: 'var(--space-2) 0 0' }}>
+          Triggers the <code style={{ color: 'rgba(255,255,255,0.5)' }}>vasco-qbr-snapshot</code> skill via Claude Code. The snapshot uploads automatically when complete — refresh this page after ~1 minute to see new data and apply it.
         </p>
       </motion.div>
 

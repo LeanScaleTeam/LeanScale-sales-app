@@ -115,8 +115,17 @@ function Section({ title, rows }) {
   );
 }
 
-export default function VascoMatrix({ matrix, techStack, insights, architect, quarter, periodComparison, snapshotDate }) {
+const SOURCE_LABELS = {
+  vasco: 'Vasco',
+  hubspot: 'HubSpot',
+  salesforce: 'Salesforce',
+  manual: 'Manual',
+};
+
+export default function VascoMatrix({ matrix, techStack, insights, architect, quarter, periodComparison, snapshotDate, source }) {
   if (!matrix && !techStack && !insights) return null;
+
+  const sourceLabel = SOURCE_LABELS[source] || 'Snapshot';
 
   return (
     <div style={{
@@ -129,6 +138,11 @@ export default function VascoMatrix({ matrix, techStack, insights, architect, qu
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1rem', fontWeight: 600, margin: 0 }}>
           GTM Matrix
+          {source && source !== 'vasco' && (
+            <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 500, color: 'rgba(255,255,255,0.5)' }}>
+              (via {sourceLabel})
+            </span>
+          )}
         </h3>
         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>
           {quarter && <span>{quarter}</span>}

@@ -448,7 +448,7 @@ export default function ClayPartnership() {
                 <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: 1.5, marginBottom: '0.75rem' }}>
                   {book.description}
                 </p>
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                   <span>{book.scope}</span>
                 </div>
                 <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>

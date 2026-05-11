@@ -21,7 +21,17 @@ function ArchitectCard({ member, isSelected, onToggle }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${member.name}, ${member.title}`}
       onClick={() => onToggle(member.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle(member.id);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -91,7 +101,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
                 {member.title}
               </span>
               {member.location && (
-                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.65)' }}>
                   📍 {member.location}
                 </span>
               )}
@@ -145,7 +155,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
               borderRadius: 4,
               padding: '0.1rem 0.45rem',
               fontSize: '0.58rem',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(255,255,255,0.7)',
               fontWeight: 600,
             }}>
               {tag}
@@ -158,7 +168,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
           {member.experience.slice(0, 3).map((exp, i) => (
             <li key={i} style={{
               fontSize: '0.68rem',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(255,255,255,0.7)',
               lineHeight: 1.55,
               paddingBottom: '0.2rem',
               paddingLeft: '0.85rem',
@@ -176,7 +186,7 @@ function ArchitectCard({ member, isSelected, onToggle }) {
           paddingTop: '0.65rem',
           borderTop: '1px solid rgba(255,255,255,0.06)',
           fontSize: '0.66rem',
-          color: 'rgba(255,255,255,0.3)',
+          color: 'rgba(255,255,255,0.65)',
           fontStyle: 'italic',
           lineHeight: 1.5,
         }}>
@@ -194,7 +204,17 @@ function EngineerCard({ member, isSelected, onToggle }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`${isSelected ? 'Deselect' : 'Select'} ${member.name}, ${member.title}`}
       onClick={() => onToggle(member.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle(member.id);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -271,7 +291,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
               {member.title || 'GTM Engineer'}
             </span>
             {member.location && (
-              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>📍 {member.location}</span>
+              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.65)' }}>📍 {member.location}</span>
             )}
           </div>
         </div>
@@ -298,7 +318,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
             borderRadius: 3,
             padding: '0.08rem 0.4rem',
             fontSize: '0.56rem',
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(255,255,255,0.7)',
             fontWeight: 600,
           }}>
             {tag}
@@ -311,7 +331,7 @@ function EngineerCard({ member, isSelected, onToggle }) {
         {member.experience.slice(0, 2).map((exp, i) => (
           <li key={i} style={{
             fontSize: '0.65rem',
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(255,255,255,0.7)',
             lineHeight: 1.5,
             paddingBottom: '0.18rem',
             paddingLeft: '0.75rem',
@@ -436,7 +456,7 @@ export default function YourTeam() {
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#a78bfa', lineHeight: 1, letterSpacing: '-0.02em' }}>
                     {stat.value}
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.7)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                     {stat.label}
                   </div>
                 </div>
@@ -482,11 +502,14 @@ export default function YourTeam() {
                     {m.name.split(' ')[0]}
                   </span>
                   <button
+                    type="button"
+                    aria-label={`Remove ${m.name}`}
                     onClick={(e) => { e.stopPropagation(); toggle(m.id); }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem', lineHeight: 1,
-                      padding: '0 1px', display: 'flex', alignItems: 'center',
+                      color: 'rgba(255,255,255,0.65)', fontSize: '1rem', lineHeight: 1,
+                      width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 4,
                     }}
                   >×</button>
                 </div>
@@ -501,7 +524,7 @@ export default function YourTeam() {
                 fontSize: '0.78rem', border: 'none', borderRadius: 8, cursor: 'pointer',
                 flexShrink: 0,
               }}>
-              Book a Kickoff →
+              Book a Kickoff Call →
             </button>
           </div>
         )}
@@ -520,7 +543,7 @@ export default function YourTeam() {
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', margin: '0 0 0.15rem', letterSpacing: '-0.01em' }}>
                   GTM Architects
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
                   Your strategic lead — owns the engagement, drives every decision, and runs the weekly cadence with your team
                 </p>
               </div>
@@ -566,7 +589,7 @@ export default function YourTeam() {
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', margin: '0 0 0.15rem', letterSpacing: '-0.01em' }}>
                   GTM Engineers
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
                   The builders — inside your systems every day, shipping the actual work
                 </p>
               </div>
@@ -608,12 +631,12 @@ export default function YourTeam() {
               pointerEvents: 'none',
             }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <h3 style={{ color: 'white', marginBottom: '0.6rem', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              <h2 style={{ color: 'white', marginBottom: '0.6rem', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                 {selectedIds.length > 0
                   ? `You've picked your pod. Let's make it official.`
                   : `Ready to put a face to the work?`
                 }
-              </h3>
+              </h2>
               <p style={{ color: 'rgba(255,255,255,0.55)', marginBottom: '2rem', maxWidth: 520, margin: '0 auto 2rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
                 {selectedIds.length > 0
                   ? `${selectedIds.length} operator${selectedIds.length > 1 ? 's' : ''} selected. Book a kickoff call and we'll confirm your team assignment.`

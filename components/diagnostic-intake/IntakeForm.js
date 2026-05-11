@@ -10,6 +10,7 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
+import { DEMO_INTAKE_ANSWERS } from '../../data/demo-v3-intake';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
 import SectionC from './SectionC_TeamOrg';
@@ -47,7 +48,7 @@ export default function IntakeForm() {
   const router = useRouter();
   const { customer, isDemo, customerPath } = useCustomer();
   const [currentSection, setCurrentSection] = useState('A');
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => (isDemo ? { ...DEMO_INTAKE_ANSWERS } : {}));
   const [sectionsCompleted, setSectionsCompleted] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -63,6 +64,7 @@ export default function IntakeForm() {
   const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
   const [transcriptUploaded, setTranscriptUploaded] = useState(false);
+  const [vascoPower10, setVascoPower10] = useState({});
 
   const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected || attioStatus?.connected);
   const skipRules = getSkipRules(answers, crmMetadataExists);
@@ -113,6 +115,17 @@ export default function IntakeForm() {
         if (attioRes.ok) {
           const attioData = await attioRes.json();
           setAttioStatus(attioData);
+        }
+
+        // Load Vasco Power 10 auto-fill (non-fatal — Section E falls back to manual entry)
+        try {
+          const vRes = await fetch(`/api/diagnostic/vasco-power10?customerId=${customer.id}`);
+          if (vRes.ok) {
+            const vData = await vRes.json();
+            setVascoPower10(vData.vascoPower10 || {});
+          }
+        } catch (e) {
+          // Non-fatal — Section E falls back to manual entry
         }
       } catch (err) {
         console.error('Error loading intake:', err);
@@ -688,6 +701,7 @@ export default function IntakeForm() {
                 onComplete={(a) => handleSectionComplete('E', a)}
                 onBack={handleBack}
                 preFill={preFill}
+                vascoPower10={vascoPower10}
               />
             </>
           )}

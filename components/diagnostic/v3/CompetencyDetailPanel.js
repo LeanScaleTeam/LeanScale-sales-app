@@ -5,12 +5,14 @@
  * evidence quotes, consultant notes, linked services, and rubric reference.
  */
 
+import { useEffect, useState } from 'react';
 import {
   V3_STATUS,
   V3_STATUS_COLORS,
   V3_SOURCE_TYPES,
 } from '../../../lib/diagnostic-engine/v3/constants-v3';
 import { lookupServiceV3 } from '../../../lib/diagnostic-engine/v3/service-mapping-v3';
+import { buildPower10Payload } from '../../../lib/vasco/power10-resolver';
 
 export default function CompetencyDetailPanel({
   competency,
@@ -18,12 +20,41 @@ export default function CompetencyDetailPanel({
   score,
   transcriptData,
   consultantData,
+  customerId,
   editMode,
   onScoreChange,
 }) {
   const statusColor = score !== null && score !== undefined
     ? V3_STATUS_COLORS[Math.round(score)] || 'rgba(148, 163, 184, 0.5)'
     : 'rgba(148, 163, 184, 0.5)';
+
+  // RP-5 Power 10 Vasco actuals — fetch only when this is the RP-5 competency
+  const [power10Rows, setPower10Rows] = useState(null);
+  const isRP5 = competency?.id === 'RP-5';
+
+  useEffect(() => {
+    if (!isRP5 || !customerId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [vRes, iRes] = await Promise.all([
+          fetch(`/api/diagnostic/vasco-power10?customerId=${customerId}`),
+          fetch(`/api/diagnostic/intake?customerId=${customerId}`),
+        ]);
+        if (cancelled) return;
+        if (!vRes.ok || !iRes.ok) return;
+        const vData = await vRes.json();
+        const iData = await iRes.json();
+        if (cancelled) return;
+        const rows = buildPower10Payload(iData.answers || {}, vData.vascoPower10 || {});
+        setPower10Rows(rows);
+      } catch (_e) {
+        // Non-fatal — table just doesn't render
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [isRP5, customerId]);
 
   return (
     <div style={styles.panel}>
@@ -142,6 +173,33 @@ export default function CompetencyDetailPanel({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Power 10 — Vasco actuals (RP-5 only) */}
+      {isRP5 && power10Rows && power10Rows.length > 0 && (
+        <div style={styles.power10Section}>
+          <h4 style={styles.power10Heading}>Power 10 — Vasco actuals</h4>
+          <table style={styles.power10Table}>
+            <thead>
+              <tr>
+                <th style={styles.power10Th}>Metric</th>
+                <th style={styles.power10Th}>Reportable</th>
+                <th style={styles.power10Th}>Actual (Vasco)</th>
+                <th style={styles.power10Th}>As of</th>
+              </tr>
+            </thead>
+            <tbody>
+              {power10Rows.map((m) => (
+                <tr key={m.key} style={m.userOverride ? styles.power10RowOverride : undefined}>
+                  <td style={styles.power10Td}>{m.name}</td>
+                  <td style={styles.power10Td}>{m.capability || '—'}</td>
+                  <td style={styles.power10Td}>{m.vascoFormatted || '—'}</td>
+                  <td style={styles.power10Td}>{m.asOf || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -316,4 +374,10 @@ const styles = {
     cursor: 'pointer',
     transition: 'background 0.15s ease',
   },
+  power10Section: { marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.1)' },
+  power10Heading: { fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'rgba(255,255,255,0.85)' },
+  power10Table: { width: '100%', fontSize: 12, borderCollapse: 'collapse' },
+  power10Th: { textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.65)', fontWeight: 500 },
+  power10Td: { padding: '6px 8px', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.85)' },
+  power10RowOverride: { background: 'rgba(251, 191, 36, 0.08)' }, // amber tint for divergence
 };

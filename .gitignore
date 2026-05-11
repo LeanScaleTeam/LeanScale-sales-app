@@ -40,3 +40,6 @@ replit.nix
 
 # Generated from playbooks-content/ (rebuild with: node scripts/build-playbook-data.js)
 data/playbook-registry.json
+
+# Git worktrees (used for isolated feature workspaces)
+.worktrees/

@@ -4,28 +4,28 @@ const values = ['Integrity', 'Humility', 'Taking action', 'Challenging yourself 
 
 const differentiators = [
   {
-    title: 'Startup Operator Experience',
-    description: 'Our team has built and scaled GTM operations at startups from Series A to IPO.',
+    title: 'Startup operator experience',
+    description: "Our team has built and scaled GTM operations at startups from Series A to IPO. We've seen the playbook work, and we know which steps not to skip.",
   },
   {
-    title: 'Proactive Approach',
-    description: "We don't wait for problems—we anticipate them and build solutions before they become blockers.",
+    title: 'Proactive approach',
+    description: "We don't wait for problems — we anticipate them and build solutions before they become blockers.",
   },
   {
-    title: 'Assigned Team Members',
-    description: "Because business context matters. Your team gets better and better as they spend more time with you and your business. We don't switch consultants from project to project, we know business context matters and you don't need to waste your time getting someone new up to speed.",
+    title: 'Assigned team members',
+    description: "We assign the same operators to your account from day one. No revolving consultants — your team builds context with you instead of starting over each project.",
   },
   {
-    title: 'Broad Scope and Capabilities',
-    description: "We have a dynamic team and access to experts in every area of revenue operations. Give us a problem, and we can solve it. When it comes to new tools, new ways to measure your GTM engine, or novel operational approaches, we're always testing the limits of what's possible and helps our customers.",
+    title: 'Broad scope and capabilities',
+    description: "Bring us any GTM problem — new tools, new metrics, novel approaches. Our team has experts across every revenue function and keeps testing what's possible.",
   },
   {
-    title: 'Long Term Partnerships',
-    description: "We get more efficient and effective the longer the partnership continues. We use business context to help provide the best operational solutions possible.",
+    title: 'Long-term partnerships',
+    description: "We get more efficient the longer we work together. Accumulated context compounds — every new project moves faster than the last.",
   },
   {
-    title: "'Lean on Us' Mentality",
-    description: "Don't worry about what's \"in scope\" and focus on growing your revenue machine. Unload the operational burden of RevOps to your LeanScale team. With our broad scope and capabilities we welcome leaning on our team to achieve your goals.",
+    title: "'Lean on us' mentality",
+    description: "Don't sweat scope lines. Hand off the operational load and we'll cover it — the more you lean on us, the more leverage you get.",
   },
 ];
 
@@ -116,7 +116,7 @@ export default function AboutUs() {
             color: 'rgba(255,255,255,0.8)',
           }}
         >
-          To attract and develop the world&apos;s best startup operators and help startups,
+          To attract and develop experienced startup operators and help startups,
           their people, and their investors succeed.
         </p>
       </section>
@@ -140,7 +140,7 @@ export default function AboutUs() {
               marginBottom: '0.75rem',
             }}
           >
-            What We Stand For
+            Values
           </span>
           <h2
             style={{
@@ -150,7 +150,7 @@ export default function AboutUs() {
               marginBottom: '2.5rem',
             }}
           >
-            Our Values
+            What we stand for
           </h2>
 
           <div
@@ -213,7 +213,7 @@ export default function AboutUs() {
                 marginBottom: '0.75rem',
               }}
             >
-              Our Differentiators
+              Why us
             </span>
             <h2
               style={{
@@ -222,7 +222,7 @@ export default function AboutUs() {
                 color: '#0f0524',
               }}
             >
-              What Sets Us Apart
+              What sets us apart
             </h2>
           </div>
 
@@ -476,7 +476,7 @@ export default function AboutUs() {
             boxShadow: '0 4px 20px rgba(163,230,53,0.3)',
           }}
         >
-          Get in Touch
+          Book a Call
         </button>
       </section>
     </Layout>

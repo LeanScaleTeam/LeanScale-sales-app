@@ -11,7 +11,9 @@ import { supabaseAdmin } from '../../../lib/supabase';
 import {
   mapSnapshotToCrmHealth,
   mapSnapshotToCompetencyScores,
+  mapMatrixStatusesToCompetencyScores,
   mapSnapshotToTrends,
+  mapSnapshotToTechStackOverrides,
 } from '../../../lib/vasco/map-snapshot';
 import { V3_COMPETENCIES, expandDepartments } from '../../../lib/diagnostic-engine/v3/constants-v3';
 
@@ -65,10 +67,28 @@ export default async function handler(req, res) {
     const crmHealth = mapSnapshotToCrmHealth(snapshot);
 
     // 3. Map snapshot → competency scores
-    const competencyScores = mapSnapshotToCompetencyScores(snapshot);
+    //    Metric-driven scores (volume_metrics, time_in_stage, integrity, tech_stack)
+    //    take priority over matrix-status scores when both are present, since
+    //    metrics are objective measurements while matrix is consultant-curated.
+    const metricScores = mapSnapshotToCompetencyScores(snapshot);
+    const matrixScores = mapMatrixStatusesToCompetencyScores(snapshot);
+
+    const competencyScores = { ...matrixScores };
+    // Metric scores overwrite matrix scores for the same competency
+    for (const [competencyId, entry] of Object.entries(metricScores)) {
+      competencyScores[competencyId] = entry;
+    }
+    // _PR-1_matrix is a fallback — only promote to PR-1 if metrics didn't score it
+    if (competencyScores['_PR-1_matrix'] && !competencyScores['PR-1']) {
+      competencyScores['PR-1'] = competencyScores['_PR-1_matrix'];
+    }
+    delete competencyScores['_PR-1_matrix'];
 
     // 4. Map snapshot → trend data
     const trends = mapSnapshotToTrends(snapshot);
+
+    // 4b. Map snapshot.tech_stack → TechStackGrid overrides
+    const vascoTechStackTools = mapSnapshotToTechStackOverrides(snapshot);
 
     // 5. Write crm_health to engagement_overrides
     // Use maybeSingle: customers without an existing diagnostic row should still
@@ -119,16 +139,52 @@ export default async function handler(req, res) {
     }
 
     const currentOverrides = existing?.engagement_overrides || {};
+
+    // Merge Vasco-derived tech stack tools into engagement_overrides.techStack.tools.
+    // Manual overrides win: only fill auto-detected entries when no manual value exists
+    // for that tool ID. Tracks which IDs were Vasco-applied so they can be reverted later
+    // if the tool is removed from a future snapshot.
+    const existingTechStack = currentOverrides.techStack || {};
+    const existingTools = existingTechStack.tools || {};
+    const vascoApplied = existingTechStack._vasco_applied_tool_ids || [];
+    const mergedTools = { ...existingTools };
+
+    if (vascoTechStackTools) {
+      // Clear any tools previously auto-applied that are no longer in this snapshot,
+      // unless the user has since changed them (different status = manual edit).
+      for (const id of vascoApplied) {
+        if (!vascoTechStackTools[id] && existingTools[id] === 'adopted') {
+          delete mergedTools[id];
+        }
+      }
+      for (const [id, status] of Object.entries(vascoTechStackTools)) {
+        if (existingTools[id] == null || existingTools[id] === 'adopted') {
+          mergedTools[id] = status;
+        }
+      }
+    }
+
+    const updatedTechStack = vascoTechStackTools
+      ? {
+          ...existingTechStack,
+          tools: mergedTools,
+          _vasco_applied_tool_ids: Object.keys(vascoTechStackTools),
+          _vasco_applied_at: new Date().toISOString(),
+        }
+      : existingTechStack;
+
     const updatedOverrides = {
       ...currentOverrides,
       crm_health: crmHealth,
       vasco_trends: trends,
+      techStack: updatedTechStack,
       // New: skill-uploaded fields
       vasco_matrix: snapshot.matrix_statuses || null,
       vasco_tech_stack: snapshot.tech_stack || null,
       vasco_insights: snapshot.claude_insights || null,
       vasco_architect: snapshot.architect || null,
       vasco_quarter: snapshot.quarter || null,
+      vasco_source: snapshot.source || 'vasco',
       vasco_period_comparison: periodComparison,
       vasco_applied_at: new Date().toISOString(),
       vasco_snapshot_id: snapshot.id,
@@ -194,6 +250,9 @@ export default async function handler(req, res) {
         competency_scores: competencyScores,
         competency_count: bulkAssessments.length,
         trends_months: trends.funnelTrend.length,
+        period_comparison: periodComparison,
+        tech_stack_tools_applied: vascoTechStackTools ? Object.keys(vascoTechStackTools).length : 0,
+        employees_from_context_graph: crmHealth.employees?.length || 0,
       },
     });
   } catch (err) {

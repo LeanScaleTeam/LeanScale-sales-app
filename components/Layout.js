@@ -1,8 +1,9 @@
 import Head from 'next/head';
 import Navigation from './Navigation';
+import Footer from './Footer';
 import { useCustomer } from '../context/CustomerContext';
 
-export default function Layout({ children, title = "LeanScale" }) {
+export default function Layout({ children, title = "LeanScale", showFooter = true }) {
   const { displayName, customerType } = useCustomer();
   const pageTitle = displayName ? `${displayName} | ${title}` : title;
 
@@ -18,21 +19,24 @@ export default function Layout({ children, title = "LeanScale" }) {
           rel="stylesheet"
         />
       </Head>
-      {customerType === 'active' && displayName && (
-        <div style={{
-          background: 'linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%)',
-          color: 'rgba(255, 255, 255, 0.9)',
-          textAlign: 'center',
-          padding: '0.4rem 1rem',
-          fontSize: '0.72rem',
-          fontWeight: 600,
-          letterSpacing: '0.03em',
-        }}>
-          Customer Portal — {displayName}
-        </div>
-      )}
-      <Navigation />
-      <main>{children}</main>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        {customerType === 'active' && displayName && (
+          <div style={{
+            background: 'linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%)',
+            color: 'rgba(255, 255, 255, 0.9)',
+            textAlign: 'center',
+            padding: '0.4rem 1rem',
+            fontSize: '0.72rem',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+          }}>
+            Customer Portal — {displayName}
+          </div>
+        )}
+        <Navigation />
+        <main style={{ flex: 1 }}>{children}</main>
+        {showFooter && <Footer />}
+      </div>
     </>
   );
 }

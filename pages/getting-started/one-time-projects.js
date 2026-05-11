@@ -357,7 +357,7 @@ export default function OneTimeProjects() {
                   </span>
                   {project.badge && (
                     <span style={{
-                      background: '#7c3aed',
+                      background: project.badgeColor || '#7c3aed',
                       color: 'white',
                       padding: '0.2rem 0.5rem',
                       borderRadius: '9999px',
@@ -413,7 +413,7 @@ export default function OneTimeProjects() {
                   border: 'none',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
-                  color: '#9ca3af',
+                  color: '#6b7280',
                   padding: '0.25rem',
                   lineHeight: 1,
                 }}

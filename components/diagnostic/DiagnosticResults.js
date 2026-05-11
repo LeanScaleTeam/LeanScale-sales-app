@@ -28,6 +28,7 @@ import { runDiagnosticV3 } from '../../lib/diagnostic-engine/v3/index';
 // Engagement Pitch — loaded when user clicks the Engagement tab
 import EngagementPitch, { reconstructCompetencies, adaptV3ToPitchItems } from '../engagement-pitch/EngagementPitch';
 import GTMLandscape from './v3/GTMLandscape';
+import TechStackGrid from './v3/TechStackGrid';
 import Power10Anchor from '../engagement-pitch/Power10Anchor';
 import FindingsWalkthrough from '../engagement-pitch/FindingsWalkthrough';
 
@@ -82,17 +83,35 @@ const D5_TO_METRIC = [
   ['D5_cycle',     'Opportunity/Deal - CW cycle time',       'Cycle Time',   'Average days from opportunity creation to close-won.',                                                      'Shorter cycles mean faster cash — every extra week is a week of runway burned.'],
 ];
 
-function derivePower10FromIntake(answers) {
-  if (!answers) return null;
-  const hasAny = D5_TO_METRIC.some(([key]) => answers[key]);
+function derivePower10(answers, vascoPower10 = {}) {
+  if (!answers && !vascoPower10) return null;
+  const hasAny = D5_TO_METRIC.some(([key]) => answers?.[key]) || Object.keys(vascoPower10 || {}).length > 0;
   if (!hasAny) return null;
+
   return D5_TO_METRIC.map(([key, name, shortName, description, why]) => {
-    const val = answers[key];
+    const intakeVal = answers?.[key];
+    const vasco = vascoPower10?.[key];
+    const vascoAvailable = vasco?.available === true;
+
+    // Reporting status: Vasco available wins; else map intake answer
     let ableToReport = 'unable';
-    if (val === 'Automated') ableToReport = 'healthy';
-    else if (val === 'Manual calc') ableToReport = 'careful';
-    else if (val === "Can't report" || val === 'Not reported') ableToReport = 'warning';
-    return { name, shortName, description, why, ableToReport };
+    if (vascoAvailable) ableToReport = 'healthy';
+    else if (intakeVal === 'Automated') ableToReport = 'healthy';
+    else if (intakeVal === 'Manual calc') ableToReport = 'careful';
+    else if (intakeVal === "Can't report" || intakeVal === 'Not reported') ableToReport = 'warning';
+
+    const statusAgainstPlan = vasco?.performance || 'unable';
+
+    return {
+      name,
+      shortName,
+      description,
+      why,
+      ableToReport,
+      statusAgainstPlan,
+      formatted: vascoAvailable ? vasco.formatted : null,
+      asOf: vascoAvailable ? vasco.asOf : null,
+    };
   });
 }
 
@@ -250,6 +269,7 @@ function ScoreCardView({
           departmentScores={v3Result.department_scores}
           competencies={v3Result.competencies}
           transcriptAssessments={transcriptAssessments}
+          customerId={customer?.id}
           editMode={editMode}
           onCellClick={(compId, dept, score) => {
             if (!editMode) return;
@@ -293,6 +313,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
   const [editableProcesses, setEditableProcesses] = useState(null);
   const [editableTools, setEditableTools] = useState(null);
   const [editablePower10, setEditablePower10] = useState(null);
+  const [vascoPower10, setVascoPower10] = useState({});
   const [engagementOverrides, setEngagementOverrides] = useState(null);
   const [notes, setNotes] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -359,7 +380,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           const result = runDiagnosticV3(DEMO_INTAKE_ANSWERS, {}, {}, {}, 'salesforce');
           setDiagnosticVersion(3);
           setV3Result(result);
-          setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
+          setEditablePower10(derivePower10(DEMO_INTAKE_ANSWERS, {}));
           setEngagementOverrides({
             engagement_type: 'Scale',
             monthly_investment: 25000,
@@ -378,11 +399,23 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
       let foundResults = false;
       try {
         if (configuredVersion === 3 && diagnosticType === 'gtm') {
-          // v3: load from v3 endpoint
-          const [v3Res, intakeRes] = await Promise.all([
+          // v3: load from v3 endpoint (in parallel with intake + vasco-power10)
+          const [v3Res, intakeRes, vascoRes] = await Promise.all([
             fetch(`/api/diagnostic/v3/results?customerId=${customer.id}`),
             fetch(`/api/diagnostic/intake?customerId=${customer.id}`),
+            fetch(`/api/diagnostic/vasco-power10?customerId=${customer.id}`).catch(() => null),
           ]);
+          // Stash Vasco actuals (perf + values) for downstream derivation. Non-fatal.
+          let vascoP10 = {};
+          if (vascoRes && vascoRes.ok) {
+            try {
+              const vData = await vascoRes.json();
+              vascoP10 = vData.vascoPower10 || {};
+              setVascoPower10(vascoP10);
+            } catch (e) {
+              // ignore — falls back to capability-only display
+            }
+          }
           if (v3Res.ok) {
             const json = await v3Res.json();
             if (json.success && json.data) {
@@ -396,14 +429,16 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
               if (json.data.transcript_assessments) {
                 setTranscriptAssessments(json.data.transcript_assessments);
               }
-              // Derive Power 10 from intake answers for engagement details
+              // Derive Power 10 by merging intake answers + Vasco actuals
+              let intakeAnswers = null;
               if (intakeRes.ok) {
                 const intakeJson = await intakeRes.json();
                 if (intakeJson.success && intakeJson.answers) {
-                  const p10 = derivePower10FromIntake(intakeJson.answers);
-                  if (p10) setEditablePower10(p10);
+                  intakeAnswers = intakeJson.answers;
                 }
               }
+              const p10 = derivePower10(intakeAnswers, vascoP10);
+              if (p10) setEditablePower10(p10);
               setActiveView('executive-summary');
               foundResults = true;
             }
@@ -451,7 +486,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           const result = runDiagnosticV3(DEMO_INTAKE_ANSWERS, {}, {}, {}, 'salesforce');
           setDiagnosticVersion(3);
           setV3Result(result);
-          setEditablePower10(derivePower10FromIntake(DEMO_INTAKE_ANSWERS));
+          setEditablePower10(derivePower10(DEMO_INTAKE_ANSWERS, {}));
           setActiveView('executive-summary');
         }
       }
@@ -1146,6 +1181,20 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   handleEngagementOverridesChange(next);
                 }}
               />
+              {/* Tech Stack Scorecard — auto-detects from CRM signals + Vasco tech_stack overrides */}
+              <TechStackGrid
+                computedSignals={crmSignals.computedSignals || {}}
+                crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+                editMode={editMode}
+                overrides={engagementOverrides}
+                onOverride={(section, key, value) => {
+                  const next = {
+                    ...engagementOverrides,
+                    [section]: { ...engagementOverrides?.[section], [key]: value },
+                  };
+                  handleEngagementOverridesChange(next);
+                }}
+              />
               {/* CRM Data Integrity */}
               <div>
                 <h2 style={{
@@ -1223,6 +1272,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                   insights={engagementOverrides?.vasco_insights}
                   architect={engagementOverrides?.vasco_architect}
                   quarter={engagementOverrides?.vasco_quarter}
+                  source={engagementOverrides?.vasco_source}
                   periodComparison={engagementOverrides?.vasco_period_comparison}
                   snapshotDate={engagementOverrides?.crm_health?._snapshot_date}
                 />
@@ -1385,6 +1435,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           {isV3 && isAdmin && activeView === 'vasco' && (
             <VascoImportPanel
               customerId={customer?.id}
+              customerName={customer?.name}
               existingCrmHealth={engagementOverrides?.crm_health || null}
               onApplyImport={async (scoreOverrides) => {
                 // Build per-department assessments from Vasco competency scores

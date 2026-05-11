@@ -10,6 +10,7 @@ const aboutLinks = [
   { href: '/about/references', label: 'Customer References' },
   { href: '/about/services', label: 'Services Catalog' },
   { href: '/about/glossary', label: 'GTM Ops Glossary' },
+  { href: '/about/security', label: 'Security' },
 ];
 
 const diagnosticLinks = {
@@ -37,26 +38,14 @@ const diagnosticLinks = {
 
 const gettingStartedLinks = {
   default: [
-    { type: 'group', label: 'GTM Launch', children: [
-      { href: '/getting-started/ultimate-gtm', label: 'Overview' },
-      { href: '/getting-started/ultimate-gtm#review-scope', label: 'Review Scope' },
-    ]},
-    { type: 'group', label: 'GTM Embedded', children: [
-      { href: '/getting-started/embedded', label: 'Overview' },
-      { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/team', label: 'Your Team' },
-    ]},
+    { href: '/getting-started/embedded', label: 'Pricing & Tiers' },
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/team', label: 'Your Team' },
   ],
   clay: [
-    { type: 'group', label: 'GTM Launch', children: [
-      { href: '/getting-started/ultimate-gtm', label: 'Overview' },
-      { href: '/getting-started/ultimate-gtm#review-scope', label: 'Review Scope' },
-    ]},
-    { type: 'group', label: 'GTM Embedded', children: [
-      { href: '/getting-started/embedded', label: 'Overview' },
-      { href: '/getting-started/availability', label: 'Cohort Availability' },
-      { href: '/getting-started/team', label: 'Your Team' },
-    ]},
+    { href: '/getting-started/embedded', label: 'Pricing & Tiers' },
+    { href: '/getting-started/availability', label: 'Cohort Availability' },
+    { href: '/getting-started/team', label: 'Your Team' },
     { href: '/getting-started/clay', label: 'Clay x LeanScale' },
   ],
 };
@@ -199,15 +188,39 @@ export default function Navigation() {
           alignItems: 'center',
           gap: '0.25rem',
         }}>
-          {navSections.map((section) => (
+          {navSections.map((section) => {
+            const isOpen = hoveredDropdown === section.name || openDropdown === section.name;
+            const triggerId = `nav-trigger-${section.name}`;
+            const menuId = `nav-menu-${section.name}`;
+            return (
             <div
               key={section.name}
               style={{ position: 'relative' }}
               onMouseEnter={() => setHoveredDropdown(section.name)}
               onMouseLeave={() => setHoveredDropdown(null)}
+              onBlur={(e) => {
+                // Close click-opened dropdown when focus leaves the section
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  if (openDropdown === section.name) setOpenDropdown(null);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && openDropdown === section.name) {
+                  setOpenDropdown(null);
+                  // Return focus to the trigger
+                  const trigger = e.currentTarget.querySelector(`#${triggerId}`);
+                  if (trigger) trigger.focus();
+                }
+              }}
             >
               <button
+                id={triggerId}
                 className="nav-link-btn"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                aria-controls={menuId}
+                onClick={() => setOpenDropdown(openDropdown === section.name ? null : section.name)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -215,7 +228,7 @@ export default function Navigation() {
                   height: 72,
                   fontSize: '0.9rem',
                   fontWeight: 500,
-                  color: hoveredDropdown === section.name ? '#fff' : 'rgba(255,255,255,0.6)',
+                  color: isOpen ? '#fff' : 'rgba(255,255,255,0.6)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -234,15 +247,15 @@ export default function Navigation() {
                     borderRadius: '50%',
                     background: '#a3e635',
                     display: 'inline-block',
-                  }} />
+                  }} aria-label="New diagnostic results available" />
                 )}
                 {/* Active underline indicator */}
-                <span style={{
+                <span aria-hidden="true" style={{
                   position: 'absolute',
                   bottom: 16,
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  width: hoveredDropdown === section.name ? '60%' : '0%',
+                  width: isOpen ? '60%' : '0%',
                   height: 2,
                   background: '#a3e635',
                   borderRadius: 1,
@@ -251,17 +264,22 @@ export default function Navigation() {
               </button>
 
               {/* Dropdown */}
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                paddingTop: 4,
-                opacity: hoveredDropdown === section.name ? 1 : 0,
-                visibility: hoveredDropdown === section.name ? 'visible' : 'hidden',
-                transform: hoveredDropdown === section.name ? 'translateY(0)' : 'translateY(-6px)',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                pointerEvents: hoveredDropdown === section.name ? 'auto' : 'none',
-              }}>
+              <div
+                id={menuId}
+                role="menu"
+                aria-labelledby={triggerId}
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  paddingTop: 4,
+                  opacity: isOpen ? 1 : 0,
+                  visibility: isOpen ? 'visible' : 'hidden',
+                  transform: isOpen ? 'translateY(0)' : 'translateY(-6px)',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  pointerEvents: isOpen ? 'auto' : 'none',
+                }}
+              >
               <div style={{
                 background: '#1a1030',
                 border: '1px solid rgba(124, 58, 237, 0.15)',
@@ -329,7 +347,8 @@ export default function Navigation() {
               </div>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           {/* CTA Button */}
           <button
@@ -531,6 +550,10 @@ export default function Navigation() {
       {/* Booking Modal */}
       {bookingOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="booking-modal-title"
+          onKeyDown={(e) => { if (e.key === 'Escape') setBookingOpen(false); }}
           style={{
             position: 'fixed',
             top: 0,
@@ -552,14 +575,45 @@ export default function Navigation() {
             borderRadius: 16,
             width: '90vw',
             maxWidth: 650,
-            height: '80vh',
-            maxHeight: 700,
+            height: '85vh',
+            maxHeight: 760,
             position: 'relative',
             overflow: 'hidden',
             boxShadow: '0 24px 80px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
           }}>
+            {/* Modal header */}
+            <div style={{
+              padding: '1.25rem 3rem 1rem 1.5rem',
+              borderBottom: '1px solid #f0edf5',
+              flexShrink: 0,
+            }}>
+              <h2
+                id="booking-modal-title"
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#0f0524',
+                  margin: '0 0 0.25rem',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                Book a 30-minute intro call
+              </h2>
+              <p style={{
+                margin: 0,
+                fontSize: '0.85rem',
+                color: '#6b7280',
+                lineHeight: 1.5,
+              }}>
+                Pick a time that works — we&apos;ll send a calendar invite with the meeting link.
+              </p>
+            </div>
             {/* Close button */}
             <button
+              type="button"
+              aria-label="Close booking dialog"
               onClick={() => setBookingOpen(false)}
               style={{
                 position: 'absolute',
@@ -589,7 +643,7 @@ export default function Navigation() {
               ref={bookingRef}
               style={{
                 width: '100%',
-                height: '100%',
+                flex: 1,
                 overflow: 'auto',
               }}
             />

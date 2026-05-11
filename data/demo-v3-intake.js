@@ -16,14 +16,26 @@ export const DEMO_INTAKE_ANSWERS = {
   A4: 'Blended',
   A5: 'Building',
 
-  // Section B: Tools (partial adoption — has basics, missing advanced)
+  // Section B: GTM Tools (partial adoption — has basics, missing advanced)
   B1_tools: [
     'sales_engagement',
     'data_enrichment',
     'support',
   ],
+  B2_details: {
+    sales_engagement: { adoption: 'Partial adoption' },
+    data_enrichment: { adoption: 'Partial adoption' },
+    support: { adoption: 'Fully adopted by team' },
+  },
 
-  // Section C: Processes (mixed maturity)
+  // Section C: Team & Organization
+  T1: '26-50',
+  T2: '60-90 days',
+  T3: 'Named accounts',
+  T4: 'Yes basic',
+  T5: 'By function (SDR/AE/AM)',
+
+  // Section D: Process Maturity (mixed maturity)
   C1: 'Mix',
   C2: 'Same day',
   C3: 'Yes, criteria-based',
@@ -37,19 +49,22 @@ export const DEMO_INTAKE_ANSWERS = {
   C11: 'Yes, in CRM/MAP',
   C12: 'Occasionally',
   C13: 'Informal',
-  C14: 'Basic',
-  C15: 'Monthly',
-  C16: 'Shared',
-  C17: 'Yes basic',
-  C18: 'No',
 
-  // Section D: Reporting & Dashboards
+  // Attribution & Win/Loss (Section D)
+  M4_pipeline: 'Yes, in CRM',
+  M4_model: 'First-touch',
+  M7_tracking: 'Tags/fields',
+  R4_winloss: 'Ad hoc',
+
+  // Section E: Reporting & Metrics
+  D1: '5-10',
   D2: 'Somewhat',
   D3: 'Spreadsheet',
+  D4: 'Partial',
   D5: 'Manual email',
   D6: 'Tribal knowledge',
 
-  // Power 10 Metrics (4 of 10 reportable → score ~3)
+  // Power 10 Metrics (Section E — 4 of 10 reportable → score ~3)
   D5_arr: 'Manual calc',
   D5_bookings: 'Manual calc',
   D5_pipeline: 'Automated',
@@ -61,9 +76,9 @@ export const DEMO_INTAKE_ANSWERS = {
   D5_opp_cw: 'Manual calc',
   D5_cycle: 'Not reported',
 
-  // Attribution & Win/Loss
-  M4_pipeline: 'Yes, in CRM',
-  M4_model: 'First-touch',
-  M7_tracking: 'Tags/fields',
-  R4_winloss: 'Ad hoc',
+  // Section F: Planning & Enablement
+  E1: 'CRM data only',
+  E2: 'Shared drive/wiki',
+  E3: 'Monthly',
+  E4: 'Reporting gaps',
 };

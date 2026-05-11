@@ -38,7 +38,10 @@ export default function AnalyzingScreen({ customerId, crmType = 'salesforce', on
 
       // Step 3: Run inference
       try {
-        const inferUrl = crmType === 'hubspot' ? '/api/hubspot/infer' : '/api/salesforce/infer';
+        const inferUrl =
+          crmType === 'hubspot' ? '/api/hubspot/infer'
+          : crmType === 'attio' ? '/api/attio/infer'
+          : '/api/salesforce/infer';
         const res = await fetch(inferUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

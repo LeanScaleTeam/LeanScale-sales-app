@@ -22,6 +22,47 @@ const TOOL_CATEGORIES = [
 
 const ADOPTION_OPTIONS = ['Fully adopted by team', 'Partial adoption', 'Just implemented'];
 
+// Attio-only supplemental questions — used when skipRules.showAttioAutomationQuestions
+// is true, since Attio Workflows aren't exposed via the public API.
+const ATTIO_AUTOMATION_QUESTIONS = [
+  {
+    key: 'A_attio_workflow_count',
+    label: 'How many active Attio Workflows do you run?',
+    options: ['0', '1-3', '4-10', '10+'],
+  },
+  {
+    key: 'A_attio_workflow_blocks',
+    label: 'Which workflow blocks are you using? (check all that apply)',
+    multi: true,
+    options: [
+      'Send HTTP Request',
+      'Slack',
+      'Send email',
+      'AI (Research / Classify / Summarize)',
+      'Update attribute',
+      'Create task',
+      'Create record',
+      'None / not sure',
+    ],
+  },
+  {
+    key: 'A_attio_sequences',
+    label: 'Are you running Attio Sequences for outbound?',
+    options: ['Yes, several active', 'Yes, one or two', 'Tried, abandoned', 'No / not yet'],
+  },
+  {
+    key: 'A_attio_external_automation',
+    label: 'Which external automation tools push into Attio? (check all that apply)',
+    multi: true,
+    options: ['Zapier', 'Make', 'n8n', 'Custom code / webhook', 'None'],
+  },
+  {
+    key: 'A_attio_automation_owner',
+    label: 'Who owns automation maintenance in Attio?',
+    options: ['Dedicated RevOps person', 'Shared across team', 'No clear owner'],
+  },
+];
+
 export default function SectionB({ answers, skipRules, preFill = {}, onComplete, onBack }) {
   // Filter tool categories based on skip rules
   const visibleTools = TOOL_CATEGORIES.filter((tool) => {
@@ -39,6 +80,26 @@ export default function SectionB({ answers, skipRules, preFill = {}, onComplete,
   });
   const [overriddenTools, setOverriddenTools] = useState(new Set());
   const [toolDetails, setToolDetails] = useState(() => answers.B2_details || {});
+  const [attioAnswers, setAttioAnswers] = useState(() => {
+    const init = {};
+    for (const q of ATTIO_AUTOMATION_QUESTIONS) {
+      init[q.key] = answers[q.key] || (q.multi ? [] : '');
+    }
+    return init;
+  });
+
+  const setAttioAnswer = (key, value, multi) => {
+    setAttioAnswers((prev) => {
+      if (multi) {
+        const arr = Array.isArray(prev[key]) ? prev[key] : [];
+        return {
+          ...prev,
+          [key]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value],
+        };
+      }
+      return { ...prev, [key]: value };
+    });
+  };
 
   const toggleTool = (key) => {
     setSelectedTools((prev) =>
@@ -58,11 +119,49 @@ export default function SectionB({ answers, skipRules, preFill = {}, onComplete,
     onComplete({
       B1_tools: selectedTools,
       B2_details: toolDetails,
+      ...attioAnswers,
     });
   };
 
   return (
     <div style={styles.section}>
+      {skipRules.showAttioAutomationQuestions && (
+        <div style={styles.attioBlock}>
+          <h2 style={styles.sectionTitle}>Attio Automation</h2>
+          <p style={styles.sectionDesc}>
+            Attio Workflows aren&apos;t exposed via the API yet, so we need to ask a few
+            quick questions to grade automation maturity accurately.
+          </p>
+          {ATTIO_AUTOMATION_QUESTIONS.map((q) => (
+            <div key={q.key} style={{ marginBottom: '1.25rem' }}>
+              <label style={styles.attioLabel}>{q.label}</label>
+              <div style={styles.optionGrid}>
+                {q.options.map((opt) => {
+                  const selected = q.multi
+                    ? (attioAnswers[q.key] || []).includes(opt)
+                    : attioAnswers[q.key] === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setAttioAnswer(q.key, opt, q.multi)}
+                      style={{
+                        ...styles.optionBtn,
+                        padding: '0.5rem 0.9rem',
+                        fontSize: 'var(--text-sm)',
+                        ...(selected ? styles.optionSelected : {}),
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <h2 style={styles.sectionTitle}>GTM Tools</h2>
       <p style={styles.sectionDesc}>Which of these tools do you use? (check all that apply)</p>
 
@@ -147,6 +246,20 @@ const styles = {
   navRow: { display: 'flex', gap: '0.75rem', marginTop: '2rem' },
   backBtn: { flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' },
   continueBtn: { flex: 1, padding: '0.75rem', background: 'var(--ls-purple)', color: 'white', border: 'none', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', cursor: 'pointer' },
+  attioBlock: {
+    marginBottom: '2rem',
+    padding: '1.25rem',
+    background: '#EEF2FF',
+    border: '1px solid #C7D2FE',
+    borderRadius: 'var(--radius-md, 8px)',
+  },
+  attioLabel: {
+    display: 'block',
+    fontSize: 'var(--text-sm)',
+    fontWeight: 'var(--font-medium)',
+    marginBottom: '0.5rem',
+    color: '#3730A3',
+  },
   autoDetectedBadge: {
     marginLeft: '0.5rem',
     padding: '0.125rem 0.5rem',

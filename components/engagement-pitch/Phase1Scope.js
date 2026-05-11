@@ -284,56 +284,6 @@ export default function Phase1Scope({ roadmap, customerPath, editMode, onSelectC
         </div>
       </motion.div>
 
-      {/* Selected cohort CTA */}
-      {selectedCohort && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            textAlign: 'center',
-            padding: '1.25rem',
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(167, 139, 250, 0.06) 100%)',
-            border: '1px solid rgba(124, 58, 237, 0.25)',
-          }}
-        >
-          <div style={{
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.9)',
-            marginBottom: '0.6rem',
-          }}>
-            Ready to lock in Cohort {selectedCohort}?
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
-            <button
-              onClick={() => window.open('https://meet.reclaimai.com/u/7f49bc93-ac0e-47eb-9e6a-0936f035cfa8', '_blank')}
-              style={{
-                padding: '0.6rem 1.5rem',
-                borderRadius: 10,
-                border: 'none',
-                background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-                color: 'white',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                letterSpacing: '-0.01em',
-                boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)',
-              }}
-            >
-              Book a Call to Reserve
-            </button>
-          </div>
-          <div style={{
-            fontSize: '0.7rem',
-            color: 'rgba(255,255,255,0.35)',
-            marginTop: '0.5rem',
-          }}>
-            No commitment — we&apos;ll walk through scope and timing together
-          </div>
-        </motion.div>
-      )}
-
       {/* Compact investment strip */}
       <motion.div
         variants={fadeUpItem}

@@ -12,6 +12,7 @@ const QUESTIONS = [
     options: [
       'HubSpot',
       'Salesforce',
+      'Attio',
       { value: 'Both', label: 'Both — Salesforce (CRM) + HubSpot (MAP)' },
       'Other',
     ],

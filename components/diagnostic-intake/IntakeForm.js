@@ -21,11 +21,12 @@ import IntakeProgress from './IntakeProgress';
 import IntakeReview from './IntakeReview';
 import SalesforceConnect from './SalesforceConnect';
 import HubSpotConnect from './HubSpotConnect';
+import AttioConnect from './AttioConnect';
 import AnalyzingScreen from './AnalyzingScreen';
 import IntakeContextPanel from './IntakeContextPanel';
 import TranscriptUpload from '../diagnostic/v3/TranscriptUpload';
 
-const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
+const SECTIONS = ['A', 'transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'attio-connect', 'attio-analyzing', 'B', 'C', 'D', 'E', 'F', 'review'];
 const SECTION_TITLES = {
   A: 'Company Profile',
   transcript: 'Discovery Transcript',
@@ -33,6 +34,8 @@ const SECTION_TITLES = {
   'sf-analyzing': 'Analyzing',
   'hs-connect': 'Connect CRM',
   'hs-analyzing': 'Analyzing',
+  'attio-connect': 'Connect CRM',
+  'attio-analyzing': 'Analyzing',
   B: 'GTM Tools',
   C: 'Team & Organization',
   D: 'Process Maturity',
@@ -55,13 +58,15 @@ export default function IntakeForm() {
   const [hubspotError, setHubspotError] = useState(null);
   const [salesforceStatus, setSalesforceStatus] = useState(null);
   const [salesforceError, setSalesforceError] = useState(null);
+  const [attioStatus, setAttioStatus] = useState(null);
+  const [attioError, setAttioError] = useState(null);
   const [preFill, setPreFill] = useState({});
   const [contextNotes, setContextNotes] = useState(null);
   const [loadingIntake, setLoadingIntake] = useState(true);
   const [transcriptUploaded, setTranscriptUploaded] = useState(false);
   const [vascoPower10, setVascoPower10] = useState({});
 
-  const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected);
+  const crmMetadataExists = !!(salesforceStatus?.connected || hubspotStatus?.connected || attioStatus?.connected);
   const skipRules = getSkipRules(answers, crmMetadataExists);
 
   // Load existing intake answers on mount
@@ -85,6 +90,8 @@ export default function IntakeForm() {
               setCurrentSection('hs-analyzing');
             } else if (router.query.salesforce) {
               setCurrentSection('sf-analyzing');
+            } else if (router.query.attio) {
+              setCurrentSection('attio-analyzing');
             }
           }
         }
@@ -101,6 +108,13 @@ export default function IntakeForm() {
         if (sfRes.ok) {
           const sfData = await sfRes.json();
           setSalesforceStatus(sfData);
+        }
+
+        // Load Attio status
+        const attioRes = await fetch(`/api/attio/status/${customer.id}`);
+        if (attioRes.ok) {
+          const attioData = await attioRes.json();
+          setAttioStatus(attioData);
         }
 
         // Load Vasco Power 10 auto-fill (non-fatal — Section E falls back to manual entry)
@@ -123,9 +137,9 @@ export default function IntakeForm() {
     loadExisting();
   }, [customer?.id, isDemo]);
 
-  // Check for HubSpot / Salesforce callback params
+  // Check for HubSpot / Salesforce / Attio callback params
   useEffect(() => {
-    const { hubspot, portalName, reason, salesforce, orgName } = router.query;
+    const { hubspot, portalName, reason, salesforce, orgName, attio, workspaceName } = router.query;
     if (hubspot === 'connected') {
       setHubspotStatus((prev) => ({
         ...prev,
@@ -145,6 +159,19 @@ export default function IntakeForm() {
       setCurrentSection('sf-analyzing');
     } else if (salesforce === 'error') {
       setSalesforceError(reason || 'Salesforce connection failed. Please try again.');
+    }
+
+    if (attio === 'connected') {
+      setAttioStatus((prev) => ({
+        ...prev,
+        connected: true,
+        workspaceName: workspaceName || prev?.workspaceName,
+        signalsReady: true,
+      }));
+      setAttioError(null);
+      setCurrentSection('attio-analyzing');
+    } else if (attio === 'error') {
+      setAttioError(reason || 'Attio connection failed. You can continue without it or try again.');
     }
   }, [router.query]);
 
@@ -196,7 +223,7 @@ export default function IntakeForm() {
         if (idx < SECTIONS.length - 1) {
           let nextIdx = idx + 1;
           // Skip utility sections when navigating forward
-          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(SECTIONS[nextIdx])) {
+          while (nextIdx < SECTIONS.length - 1 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'attio-connect', 'attio-analyzing'].includes(SECTIONS[nextIdx])) {
             nextIdx++;
           }
           setCurrentSection(SECTIONS[nextIdx]);
@@ -218,6 +245,7 @@ export default function IntakeForm() {
       const crmConnected =
         (crmType === 'HubSpot' && hubspotStatus?.connected) ||
         (crmType === 'Salesforce' && salesforceStatus?.connected) ||
+        (crmType === 'Attio' && attioStatus?.connected) ||
         (crmType === 'Both' && salesforceStatus?.connected && hubspotStatus?.connected);
 
       // Save intake with appropriate status
@@ -267,7 +295,7 @@ export default function IntakeForm() {
     } finally {
       setSubmitting(false);
     }
-  }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus]);
+  }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus, attioStatus]);
 
   // After transcript step, navigate to CRM connection or Section B
   const handleTranscriptNext = () => {
@@ -288,6 +316,12 @@ export default function IntakeForm() {
       } else {
         setCurrentSection('hs-connect');
       }
+    } else if (answers.A1 === 'Attio') {
+      if (attioStatus?.connected) {
+        setCurrentSection('attio-analyzing');
+      } else {
+        setCurrentSection('attio-connect');
+      }
     } else {
       setCurrentSection('B');
     }
@@ -295,7 +329,7 @@ export default function IntakeForm() {
 
   const handleBack = () => {
     // From CRM connect steps, go back to transcript
-    if (currentSection === 'sf-connect' || currentSection === 'hs-connect') {
+    if (currentSection === 'sf-connect' || currentSection === 'hs-connect' || currentSection === 'attio-connect') {
       setCurrentSection('transcript');
       return;
     }
@@ -308,7 +342,7 @@ export default function IntakeForm() {
     if (idx > 0) {
       let prevIdx = idx - 1;
       // Skip utility sections when going back
-      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(SECTIONS[prevIdx])) {
+      while (prevIdx > 0 && ['transcript', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'attio-connect', 'attio-analyzing'].includes(SECTIONS[prevIdx])) {
         prevIdx--;
       }
       setCurrentSection(SECTIONS[prevIdx]);
@@ -369,7 +403,7 @@ export default function IntakeForm() {
 
       {/* Progress */}
       <IntakeProgress
-        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing'].includes(s))}
+        sections={SECTIONS.filter((s) => !['review', 'sf-connect', 'sf-analyzing', 'hs-connect', 'hs-analyzing', 'attio-connect', 'attio-analyzing'].includes(s))}
         sectionTitles={SECTION_TITLES}
         currentSection={currentSection}
         sectionsCompleted={sectionsCompleted}
@@ -564,6 +598,57 @@ export default function IntakeForm() {
               }}
               onError={(errMsg) => {
                 setHubspotError(errMsg);
+                setCurrentSection('B');
+              }}
+            />
+          )}
+
+          {currentSection === 'attio-connect' && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', marginBottom: '0.25rem' }}>
+                Connect Attio
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem' }}>
+                Connect to the customer&apos;s Attio workspace so we can pre-fill the diagnostic.
+                Note: Attio Workflows aren&apos;t exposed via API, so we&apos;ll ask a few extra
+                questions about automation usage.
+              </p>
+              <AttioConnect
+                customerId={customer?.id}
+                slug={customer?.slug}
+                status={attioStatus}
+                onSaveAllAnswers={() => saveSection('A', answers)}
+              />
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem' }}>
+                <button
+                  onClick={() => setCurrentSection('transcript')}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setCurrentSection('B')}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                >
+                  Skip — Connect Later
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentSection === 'attio-analyzing' && (
+            <AnalyzingScreen
+              customerId={customer?.id}
+              crmType="attio"
+              onComplete={(inferredPreFill) => {
+                setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
+                if (inferredPreFill.A2) {
+                  setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
+                }
+                setCurrentSection('B');
+              }}
+              onError={(errMsg) => {
+                setAttioError(errMsg);
                 setCurrentSection('B');
               }}
             />

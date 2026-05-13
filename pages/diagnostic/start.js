@@ -332,6 +332,17 @@ export default function StartDiagnostic() {
                   )}
                 />
 
+                {/* Attio */}
+                <SystemRow
+                  icon="🅰️"
+                  name="Attio"
+                  body={(
+                    <p style={{ margin: 0, color: '#374151', lineHeight: 1.6, fontSize: '0.9rem' }}>
+                      No invite needed — connect via OAuth directly from the intake form. A Workspace Admin clicks <em>Connect Attio</em>, authorizes the read-only scopes, and we pull your data model, lists, members, tasks, and webhooks in about 30 seconds.
+                    </p>
+                  )}
+                />
+
                 {/* Other GTM tools */}
                 <SystemRow
                   icon="🛠️"

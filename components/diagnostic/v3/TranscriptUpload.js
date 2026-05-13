@@ -491,20 +491,23 @@ const styles = {
   divider: {
     textAlign: 'center',
     fontSize: '0.75rem',
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: 'var(--text-secondary, rgba(0, 0, 0, 0.5))',
     margin: '0.75rem 0',
   },
   textarea: {
     width: '100%',
     padding: '0.75rem',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    // Use CSS variables that work on both light and dark backgrounds. The
+    // intake form renders on a light background; the results page renders on
+    // dark. Falling back to a neutral palette keeps text readable in both.
+    border: '1px solid var(--border-color, rgba(0, 0, 0, 0.15))',
     borderRadius: 'var(--radius-md, 8px)',
     fontSize: '0.85rem',
     fontFamily: 'inherit',
     resize: 'vertical',
     boxSizing: 'border-box',
-    background: 'rgba(255, 255, 255, 0.04)',
-    color: '#fff',
+    background: 'var(--bg-subtle, #fff)',
+    color: 'var(--text-primary, #1a1a1a)',
   },
   actions: {
     display: 'flex',

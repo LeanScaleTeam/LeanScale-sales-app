@@ -75,7 +75,13 @@ async function handleUpload(req, res) {
 
     if (error) {
       console.error('Error storing transcript:', error);
-      return res.status(500).json({ error: 'Failed to store transcript' });
+      // Surface the underlying Supabase error so problems like payload size,
+      // constraint violations, or RLS issues are visible to the client.
+      return res.status(500).json({
+        error: 'Failed to store transcript',
+        detail: error.message || String(error),
+        code: error.code || null,
+      });
     }
 
     return res.status(201).json({

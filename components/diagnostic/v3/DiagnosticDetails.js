@@ -230,7 +230,17 @@ export default function DiagnosticDetails({
 
   const engagement = useMemo(() => resolveEngagement(engagementOverrides), [engagementOverrides]);
 
-  const profile = v3Result?.company_profile || {};
+  const rawProfile = v3Result?.company_profile || {};
+  // Multi-CRM defensive coercion: company_profile.crm may be an array
+  // (['attio','hubspot_map']) for rows saved before the engine started
+  // writing the legacy string. Normalize to a comma-joined string so all
+  // string methods downstream (.toUpperCase, .toLowerCase, etc.) work.
+  const profile = {
+    ...rawProfile,
+    crm: Array.isArray(rawProfile.crm)
+      ? rawProfile.crm.join(',')
+      : (rawProfile.crm ?? 'unknown'),
+  };
   const pillarScores = v3Result?.pillar_scores || {};
   const overallScore = v3Result?.overall_score;
 

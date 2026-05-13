@@ -135,7 +135,10 @@ export default function ExecutiveSummary({
 
   const allProjects = useMemo(() => {
     if (!mergedRoadmap?.phases) return [];
-    const crm = (v3Result?.company_profile?.crm || v3Result?.crmType || '').toLowerCase();
+    // Defensive: company_profile.crm or crmType may be an array in multi-CRM
+    // diagnostics if a legacy save snuck through. Coerce to a string before lowering.
+    const crmRaw = v3Result?.company_profile?.crm ?? v3Result?.crmType ?? '';
+    const crm = (Array.isArray(crmRaw) ? crmRaw.join(',') : String(crmRaw)).toLowerCase();
     const CRM_EXCLUDE = {
       salesforce: new Set(['hubspot-impl', 'salesforce-to-hubspot-crm-migration']),
       hubspot: new Set(['salesforce-impl', 'hubspot-to-salesforce-crm-migration']),

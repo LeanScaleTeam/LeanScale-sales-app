@@ -9,7 +9,12 @@
 
 import { supabaseAdmin } from '../../../lib/supabase';
 import { runDiagnostic } from '../../../lib/diagnostic-engine';
-import { mergeSignals } from '../../../lib/diagnostic-engine/signal-merger';
+import { mergeMultiSourceSignals } from '../../../lib/diagnostic-engine/signal-merger';
+import {
+  SYSTEM_KEYS,
+  normalizeCrmSystems,
+  deriveLegacyCrmType,
+} from '../../../lib/diagnostic-engine/crm-systems';
 
 function isAdmin(req) {
   const cookies = req.cookies || {};
@@ -48,19 +53,37 @@ async function handleRun(req, res) {
       return res.status(404).json({ error: 'No intake found. Complete the intake form first.' });
     }
 
-    // Detect CRM type
+    // Detect CRM type. Prefer the new crm_systems array (multi-CRM); fall back
+    // to legacy crm_type + intake A1 if absent.
     const { data: customer } = await supabaseAdmin
       .from('customers')
-      .select('crm_type')
+      .select('crm_type, crm_systems')
       .eq('id', customerId)
       .maybeSingle();
 
-    const crmType = customer?.crm_type || 'unknown';
-    let computedSignals = {};
+    let crmSystems = normalizeCrmSystems(customer?.crm_systems);
+    if (crmSystems.length === 0) {
+      crmSystems = normalizeCrmSystems(customer?.crm_type);
+    }
+    if (crmSystems.length === 0) {
+      crmSystems = normalizeCrmSystems(intake.answers.A1);
+    }
+    const legacyCrmType = deriveLegacyCrmType(crmSystems);
+
+    const needsSalesforce = crmSystems.includes(SYSTEM_KEYS.SALESFORCE);
+    const needsHubspot =
+      crmSystems.includes(SYSTEM_KEYS.HUBSPOT_CRM) ||
+      crmSystems.includes(SYSTEM_KEYS.HUBSPOT_MAP);
+    const needsAttio = crmSystems.includes(SYSTEM_KEYS.ATTIO);
+
     let sfMetadataId = null;
     let hsMetadataId = null;
+    let attioMetadataId = null;
+    let sfSignals = {};
+    let hsSignals = {};
+    let attioSignals = {};
 
-    if (crmType === 'dual' || crmType === 'salesforce') {
+    if (needsSalesforce) {
       const { data: sfMetadata } = await supabaseAdmin
         .from('salesforce_metadata')
         .select('id, computed_signals')
@@ -68,14 +91,13 @@ async function handleRun(req, res) {
         .order('fetched_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-
       if (sfMetadata) {
         sfMetadataId = sfMetadata.id;
-        computedSignals = sfMetadata.computed_signals || {};
+        sfSignals = sfMetadata.computed_signals || {};
       }
     }
 
-    if (crmType === 'dual' || crmType === 'hubspot') {
+    if (needsHubspot) {
       const { data: hsMetadata } = await supabaseAdmin
         .from('hubspot_metadata')
         .select('id, computed_signals')
@@ -83,36 +105,66 @@ async function handleRun(req, res) {
         .order('downloaded_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-
       if (hsMetadata) {
         hsMetadataId = hsMetadata.id;
-        if (crmType === 'dual') {
-          computedSignals = mergeSignals(computedSignals, hsMetadata.computed_signals || {});
-        } else {
-          computedSignals = hsMetadata.computed_signals || {};
-        }
+        hsSignals = hsMetadata.computed_signals || {};
       }
     }
 
-    // Run the diagnostic engine
-    const effectiveCrmType = crmType === 'dual' ? 'salesforce' : crmType;
-    const result = runDiagnostic(intake.answers, computedSignals, effectiveCrmType);
+    if (needsAttio) {
+      const { data: attioMetadata } = await supabaseAdmin
+        .from('attio_metadata')
+        .select('id, computed_signals')
+        .eq('customer_id', customerId)
+        .order('downloaded_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (attioMetadata) {
+        attioMetadataId = attioMetadata.id;
+        attioSignals = attioMetadata.computed_signals || {};
+      }
+    }
+
+    const sourceCount = [
+      Object.keys(sfSignals).length > 0,
+      Object.keys(hsSignals).length > 0,
+      Object.keys(attioSignals).length > 0,
+    ].filter(Boolean).length;
+
+    let computedSignals;
+    if (sourceCount > 1) {
+      computedSignals = mergeMultiSourceSignals({
+        salesforce: sfSignals,
+        hubspot: hsSignals,
+        attio: attioSignals,
+      });
+    } else if (Object.keys(attioSignals).length > 0) {
+      computedSignals = attioSignals;
+    } else if (Object.keys(hsSignals).length > 0) {
+      computedSignals = hsSignals;
+    } else {
+      computedSignals = sfSignals;
+    }
+
+    // Run the diagnostic engine — pass the canonical crm_systems array.
+    const result = runDiagnostic(intake.answers, computedSignals, crmSystems);
 
     // Store result in diagnostic_results (version=2)
     const upsertData = {
       customer_id: customerId,
       diagnostic_type: 'gtm',
       version: 2,
-      crm_type: crmType,
+      crm_type: legacyCrmType,
       items: result.items,
       scores: result.scores,
       company_profile: result.company_profile,
       metadata: result.metadata,
       intake_id: intake.id,
-      hubspot_metadata_id: hsMetadataId || (crmType === 'hubspot' ? null : undefined),
-      salesforce_metadata_id: sfMetadataId || (crmType === 'salesforce' ? null : undefined),
+      hubspot_metadata_id: hsMetadataId,
+      salesforce_metadata_id: sfMetadataId,
+      attio_metadata_id: attioMetadataId,
     };
-    if (crmType === 'dual') {
+    if (sourceCount > 1) {
       upsertData.merged_signals = computedSignals;
     }
     // Remove undefined keys so Supabase doesn't try to set missing columns

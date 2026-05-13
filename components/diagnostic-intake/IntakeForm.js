@@ -10,6 +10,10 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../../context/CustomerContext';
 import { getSkipRules } from '../../lib/diagnostic-engine/skip-logic';
+import {
+  SYSTEM_KEYS,
+  normalizeCrmSystems,
+} from '../../lib/diagnostic-engine/crm-systems';
 import { DEMO_INTAKE_ANSWERS } from '../../data/demo-v3-intake';
 import SectionA from './SectionA_CompanyProfile';
 import SectionB from './SectionB_Tools';
@@ -240,13 +244,29 @@ export default function IntakeForm() {
     setError(null);
 
     try {
-      // Check if CRM is connected
-      const crmType = answers.A1;
+      // Check if every system the customer selected is connected.
+      // Customers can also reach this point with no selections at all (Other / unknown).
+      const crmSystems = normalizeCrmSystems(answers.A1);
+      const needsSalesforce =
+        crmSystems.includes(SYSTEM_KEYS.SALESFORCE);
+      const needsHubspot =
+        crmSystems.includes(SYSTEM_KEYS.HUBSPOT_CRM) ||
+        crmSystems.includes(SYSTEM_KEYS.HUBSPOT_MAP);
+      const needsAttio =
+        crmSystems.includes(SYSTEM_KEYS.ATTIO);
+
+      // 'Other'-only selection → no CRM connection required, run intake-only diagnostic
+      const noConnectableSystems =
+        crmSystems.length === 0 ||
+        (crmSystems.length === 1 && crmSystems[0] === SYSTEM_KEYS.OTHER);
+
       const crmConnected =
-        (crmType === 'HubSpot' && hubspotStatus?.connected) ||
-        (crmType === 'Salesforce' && salesforceStatus?.connected) ||
-        (crmType === 'Attio' && attioStatus?.connected) ||
-        (crmType === 'Both' && salesforceStatus?.connected && hubspotStatus?.connected);
+        noConnectableSystems ||
+        (
+          (!needsSalesforce || salesforceStatus?.connected) &&
+          (!needsHubspot || hubspotStatus?.connected) &&
+          (!needsAttio || attioStatus?.connected)
+        );
 
       // Save intake with appropriate status
       const status = crmConnected ? 'complete' : 'awaiting_crm_data';
@@ -297,34 +317,40 @@ export default function IntakeForm() {
     }
   }, [customer?.id, isDemo, answers, customerPath, router, hubspotStatus, salesforceStatus, attioStatus]);
 
-  // After transcript step, navigate to CRM connection or Section B
+  /**
+   * Compute the next connect step the user needs to complete.
+   * Order: Salesforce → HubSpot (CRM or MAP) → Attio. Skips systems
+   * the customer didn't select OR has already connected.
+   * `skipSystem` lets the caller skip past a specific system (e.g. when the
+   * "Skip — Connect Later" button is clicked).
+   * Returns the section id to navigate to ('B' if everything is done/skipped).
+   */
+  const nextConnectStep = (skipSystem = null) => {
+    const crmSystems = normalizeCrmSystems(answers.A1);
+
+    const needsSalesforce =
+      skipSystem !== 'salesforce' &&
+      crmSystems.includes(SYSTEM_KEYS.SALESFORCE) &&
+      !salesforceStatus?.connected;
+    const needsHubspot =
+      skipSystem !== 'hubspot' &&
+      (crmSystems.includes(SYSTEM_KEYS.HUBSPOT_CRM) ||
+        crmSystems.includes(SYSTEM_KEYS.HUBSPOT_MAP)) &&
+      !hubspotStatus?.connected;
+    const needsAttio =
+      skipSystem !== 'attio' &&
+      crmSystems.includes(SYSTEM_KEYS.ATTIO) &&
+      !attioStatus?.connected;
+
+    if (needsSalesforce) return 'sf-connect';
+    if (needsHubspot) return 'hs-connect';
+    if (needsAttio) return 'attio-connect';
+    return 'B';
+  };
+
+  // After transcript step, drive into the per-system connect queue.
   const handleTranscriptNext = () => {
-    if (answers.A1 === 'Both') {
-      // Dual mode: connect SF first, then HS
-      if (salesforceStatus?.connected && hubspotStatus?.connected) {
-        setCurrentSection('B'); // both already connected
-      } else if (salesforceStatus?.connected) {
-        setCurrentSection('hs-connect'); // SF done, need HS
-      } else {
-        setCurrentSection('sf-connect'); // start with SF
-      }
-    } else if (answers.A1 === 'Salesforce') {
-      setCurrentSection('sf-connect');
-    } else if (answers.A1 === 'HubSpot') {
-      if (hubspotStatus?.connected) {
-        setCurrentSection('hs-analyzing');
-      } else {
-        setCurrentSection('hs-connect');
-      }
-    } else if (answers.A1 === 'Attio') {
-      if (attioStatus?.connected) {
-        setCurrentSection('attio-analyzing');
-      } else {
-        setCurrentSection('attio-connect');
-      }
-    } else {
-      setCurrentSection('B');
-    }
+    setCurrentSection(nextConnectStep());
   };
 
   const handleBack = () => {
@@ -516,6 +542,12 @@ export default function IntakeForm() {
                 >
                   Back
                 </button>
+                <button
+                  onClick={() => setCurrentSection(nextConnectStep('salesforce'))}
+                  style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                >
+                  Skip — Connect Later
+                </button>
               </div>
             </div>
           )}
@@ -525,30 +557,18 @@ export default function IntakeForm() {
               customerId={customer?.id}
               crmType="salesforce"
               onComplete={(inferredPreFill) => {
-                // Merge CRM inference on top of any existing Slack form pre-fills
-                // CRM inference takes precedence for overlapping fields
+                // Merge CRM inference on top of any existing Slack form pre-fills.
+                // CRM inference takes precedence for overlapping fields.
                 setPreFill((prev) => ({ ...prev, ...inferredPreFill }));
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
-                // Dual mode: after SF, go to HS connect
-                if (answers.A1 === 'Both') {
-                  if (hubspotStatus?.connected) {
-                    setCurrentSection('hs-analyzing');
-                  } else {
-                    setCurrentSection('hs-connect');
-                  }
-                } else {
-                  setCurrentSection('B');
-                }
+                // Continue the per-system connect queue.
+                setCurrentSection(nextConnectStep());
               }}
               onError={(errMsg) => {
                 setSalesforceError(errMsg);
-                if (answers.A1 === 'Both') {
-                  setCurrentSection('hs-connect');
-                } else {
-                  setCurrentSection('B');
-                }
+                setCurrentSection(nextConnectStep());
               }}
             />
           )}
@@ -576,7 +596,7 @@ export default function IntakeForm() {
                   Back
                 </button>
                 <button
-                  onClick={() => setCurrentSection('B')}
+                  onClick={() => setCurrentSection(nextConnectStep('hubspot'))}
                   style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer', color: 'var(--text-secondary)' }}
                 >
                   Skip — Connect Later
@@ -594,11 +614,11 @@ export default function IntakeForm() {
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
-                setCurrentSection('B');
+                setCurrentSection(nextConnectStep());
               }}
               onError={(errMsg) => {
                 setHubspotError(errMsg);
-                setCurrentSection('B');
+                setCurrentSection(nextConnectStep());
               }}
             />
           )}
@@ -627,7 +647,7 @@ export default function IntakeForm() {
                   Back
                 </button>
                 <button
-                  onClick={() => setCurrentSection('B')}
+                  onClick={() => setCurrentSection(nextConnectStep('attio'))}
                   style={{ flex: '0 0 auto', padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md, 8px)', fontSize: 'var(--text-sm)', cursor: 'pointer', color: 'var(--text-secondary)' }}
                 >
                   Skip — Connect Later
@@ -645,11 +665,11 @@ export default function IntakeForm() {
                 if (inferredPreFill.A2) {
                   setAnswers((prev) => ({ ...prev, A2: inferredPreFill.A2.value }));
                 }
-                setCurrentSection('B');
+                setCurrentSection(nextConnectStep());
               }}
               onError={(errMsg) => {
                 setAttioError(errMsg);
-                setCurrentSection('B');
+                setCurrentSection(nextConnectStep());
               }}
             />
           )}

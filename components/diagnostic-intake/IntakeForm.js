@@ -176,6 +176,10 @@ export default function IntakeForm() {
       setCurrentSection('attio-analyzing');
     } else if (attio === 'error') {
       setAttioError(reason || 'Attio connection failed. You can continue without it or try again.');
+      // Land back on the connect screen so the customer can see the error in
+      // context and retry (instead of being stranded on whatever section the
+      // URL-resume logic picked).
+      setCurrentSection('attio-connect');
     }
   }, [router.query]);
 
@@ -424,6 +428,14 @@ export default function IntakeForm() {
         <div style={salesforceErrorBannerStyle}>
           <span>{salesforceError}</span>
           <button onClick={() => setSalesforceError(null)} style={errorDismissStyle}>&times;</button>
+        </div>
+      )}
+
+      {/* Attio error banner */}
+      {attioError && (
+        <div style={hubspotErrorBannerStyle}>
+          <span>Attio connection failed: {attioError}</span>
+          <button onClick={() => setAttioError(null)} style={errorDismissStyle}>&times;</button>
         </div>
       )}
 

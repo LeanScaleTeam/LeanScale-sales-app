@@ -60,13 +60,22 @@ async function handleUpload(req, res) {
     return res.status(400).json({ error: 'customerId and text are required' });
   }
 
+  // Postgres TEXT columns reject NUL bytes and other malformed Unicode
+  // (error 22P05 "unsupported Unicode escape sequence"). PDF parsing via
+  // pdf.js occasionally emits NULs, other C0 control chars, and lone UTF-16
+  // surrogates. Strip them before insert; they have no legitimate meaning
+  // in transcript content. Preserved: \t \n \r.
+  const sanitizedText = String(text)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+    .replace(/[\uD800-\uDFFF]/g, '');
+
   try {
     const { data, error } = await supabaseAdmin
       .from('diagnostic_transcripts')
       .insert({
         customer_id: customerId,
         source,
-        raw_text: text,
+        raw_text: sanitizedText,
         uploaded_by: uploadedBy || 'unknown',
         uploaded_at: new Date().toISOString(),
       })

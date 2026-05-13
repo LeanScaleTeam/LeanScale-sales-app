@@ -178,7 +178,17 @@ export default function ExecutiveSummary({
     );
   }
 
-  const profile = v3Result.company_profile || {};
+  const rawProfile = v3Result.company_profile || {};
+  // Multi-CRM defensive coercion: company_profile.crm may be an array
+  // (['attio','hubspot_map']) for rows saved before the engine started
+  // writing the legacy string. Normalize to a comma-joined string so all
+  // string methods downstream (.toUpperCase, .toLowerCase, etc.) work.
+  const profile = {
+    ...rawProfile,
+    crm: Array.isArray(rawProfile.crm)
+      ? rawProfile.crm.join(',')
+      : (rawProfile.crm ?? 'unknown'),
+  };
   const pillarScores = v3Result.pillar_scores || {};
   const deptScores = v3Result.department_scores || {};
   const dataCoverage = v3Result.data_coverage;

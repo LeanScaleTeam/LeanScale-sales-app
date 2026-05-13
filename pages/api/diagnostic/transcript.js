@@ -54,7 +54,7 @@ export default async function handler(req, res) {
  * Body: { customerId, text, source?, uploadedBy? }
  */
 async function handleUpload(req, res) {
-  const { customerId, text, source = 'upload', uploadedBy } = req.body;
+  const { customerId, text, source = 'upload', uploadedBy, fileName } = req.body;
 
   if (!customerId || !text) {
     return res.status(400).json({ error: 'customerId and text are required' });
@@ -76,6 +76,9 @@ async function handleUpload(req, res) {
         customer_id: customerId,
         source,
         raw_text: sanitizedText,
+        // Original document name when the user dropped/selected a file. Pasted
+        // text leaves this null — the UI falls back to a generic label.
+        file_name: typeof fileName === 'string' && fileName.trim() ? fileName.trim().slice(0, 255) : null,
         uploaded_by: uploadedBy || 'unknown',
         uploaded_at: new Date().toISOString(),
       })
@@ -478,7 +481,7 @@ async function handleList(req, res) {
   try {
     const { data: transcripts, error } = await supabaseAdmin
       .from('diagnostic_transcripts')
-      .select('id, source, uploaded_by, uploaded_at, duration_seconds')
+      .select('id, source, file_name, uploaded_by, uploaded_at, duration_seconds')
       .eq('customer_id', customerId)
       .order('uploaded_at', { ascending: false });
 

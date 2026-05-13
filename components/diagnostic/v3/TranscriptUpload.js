@@ -17,6 +17,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
   const [dragOver, setDragOver] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [lastFileType, setLastFileType] = useState(null);
+  const [lastFileName, setLastFileName] = useState(null);
   const [existingTranscripts, setExistingTranscripts] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -100,7 +101,12 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       const uploadRes = await fetch('/api/diagnostic/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, text: text.trim(), source: lastFileType || 'paste' }),
+        body: JSON.stringify({
+          customerId,
+          text: text.trim(),
+          source: lastFileType || 'paste',
+          fileName: lastFileName || null,
+        }),
       });
 
       const uploadJson = await safeJson(uploadRes, 'Upload');
@@ -286,6 +292,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
       const text = await parseDocument(file);
       setText(text);
       setLastFileType(ext.replace('.', ''));
+      setLastFileName(file.name);
     } catch (err) {
       setError(err.message || 'Failed to parse document');
     } finally {
@@ -329,8 +336,8 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
                   }}>
                     {SOURCE_LABELS[t.source] || t.source?.toUpperCase() || 'FILE'}
                   </span>
-                  <span style={{ color: 'rgba(255,255,255,0.55)', flex: 1 }}>
-                    Transcript {existingTranscripts.length - i}
+                  <span style={{ color: 'rgba(255,255,255,0.55)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {t.file_name || `Transcript ${existingTranscripts.length - i}`}
                     {t.uploaded_at ? ` — ${fmtDate(t.uploaded_at)}` : ''}
                   </span>
                   <span style={{
@@ -454,7 +461,7 @@ export default function TranscriptUpload({ customerId, onUploadComplete, onIntak
           </div>
           <button
             style={styles.resetBtn}
-            onClick={() => { setResult(null); setText(''); }}
+            onClick={() => { setResult(null); setText(''); setLastFileName(null); setLastFileType(null); }}
           >
             Upload Another
           </button>

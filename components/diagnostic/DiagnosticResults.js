@@ -945,7 +945,14 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
             </h1>
             {/* CRM type badge */}
             {isV3 && (() => {
-              const effectiveCrmType = crmSignals.crmType || v3Result?.crm_type || 'salesforce';
+              // Multi-CRM aware: derive a label + color from crm_systems (new)
+              // falling back to crm_type (legacy single string). Previously this
+              // defaulted to "Salesforce" for any unrecognized value — wrong for
+              // Attio, Attio+HubSpot, etc.
+              const rawSystems = v3Result?.crm_systems || v3Result?.company_profile?.crmSystems;
+              const systems = Array.isArray(rawSystems) ? rawSystems : [];
+              const effectiveCrmType = crmSignals.crmType || v3Result?.crm_type || 'unknown';
+
               const badgeStyle = {
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -955,38 +962,60 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
                 fontSize: '0.7rem',
                 fontWeight: 600,
               };
-              if (effectiveCrmType === 'dual') {
-                return (
-                  <span style={{
-                    ...badgeStyle,
-                    background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.1), rgba(134, 239, 172, 0.1))',
-                    border: '1px solid rgba(147, 197, 253, 0.3)',
-                    color: '#93c5fd',
-                  }}>
-                    Salesforce + HubSpot
-                  </span>
-                );
+
+              // Friendly label for each canonical system key
+              const SYSTEM_LABEL = {
+                salesforce: 'Salesforce',
+                hubspot_crm: 'HubSpot CRM',
+                hubspot_map: 'HubSpot MAP',
+                attio: 'Attio',
+                other: 'Other',
+              };
+
+              // If we have a real systems array, render its joined labels.
+              let label;
+              let colorClass;
+              if (systems.length > 0) {
+                label = systems.map((s) => SYSTEM_LABEL[s] || s).join(' + ');
+                colorClass = systems.length > 1 ? 'multi' : systems[0];
+              } else if (effectiveCrmType === 'dual') {
+                label = 'Salesforce + HubSpot';
+                colorClass = 'multi';
+              } else if (effectiveCrmType === 'hubspot') {
+                label = 'HubSpot';
+                colorClass = 'hubspot_crm';
+              } else if (effectiveCrmType === 'attio') {
+                label = 'Attio';
+                colorClass = 'attio';
+              } else if (effectiveCrmType === 'salesforce') {
+                label = 'Salesforce';
+                colorClass = 'salesforce';
+              } else if (effectiveCrmType === 'multi') {
+                label = 'Multi-CRM';
+                colorClass = 'multi';
+              } else {
+                // Unknown / other / nothing connected — don't pretend it's Salesforce
+                return null;
               }
-              if (effectiveCrmType === 'hubspot') {
-                return (
-                  <span style={{
-                    ...badgeStyle,
-                    background: 'rgba(251, 146, 60, 0.15)',
-                    border: '1px solid rgba(251, 146, 60, 0.3)',
-                    color: '#fb923c',
-                  }}>
-                    HubSpot
-                  </span>
-                );
-              }
+
+              const COLOR = {
+                salesforce: { bg: 'rgba(147, 197, 253, 0.1)', border: 'rgba(147, 197, 253, 0.3)', fg: '#93c5fd' },
+                hubspot_crm: { bg: 'rgba(251, 146, 60, 0.15)', border: 'rgba(251, 146, 60, 0.3)', fg: '#fb923c' },
+                hubspot_map: { bg: 'rgba(251, 146, 60, 0.15)', border: 'rgba(251, 146, 60, 0.3)', fg: '#fb923c' },
+                attio: { bg: 'rgba(167, 139, 250, 0.15)', border: 'rgba(167, 139, 250, 0.35)', fg: '#a78bfa' },
+                multi: { bg: 'linear-gradient(135deg, rgba(147, 197, 253, 0.12), rgba(167, 139, 250, 0.12))', border: 'rgba(167, 139, 250, 0.3)', fg: '#cbd5e1' },
+                other: { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', fg: '#cbd5e1' },
+              };
+              const c = COLOR[colorClass] || COLOR.other;
+
               return (
                 <span style={{
                   ...badgeStyle,
-                  background: 'rgba(147, 197, 253, 0.1)',
-                  border: '1px solid rgba(147, 197, 253, 0.3)',
-                  color: '#93c5fd',
+                  background: c.bg,
+                  border: `1px solid ${c.border}`,
+                  color: c.fg,
                 }}>
-                  Salesforce
+                  {label}
                 </span>
               );
             })()}
@@ -1170,7 +1199,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
               <GTMLandscape
                 companyProfile={v3Result?.company_profile || {}}
                 computedSignals={crmSignals.computedSignals || {}}
-                crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+                crmType={crmSignals.crmType || v3Result?.crm_type || 'unknown'}
                 editMode={editMode}
                 overrides={engagementOverrides}
                 onOverride={(section, key, value) => {
@@ -1184,7 +1213,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
               {/* Tech Stack Scorecard — auto-detects from CRM signals + Vasco tech_stack overrides */}
               <TechStackGrid
                 computedSignals={crmSignals.computedSignals || {}}
-                crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+                crmType={crmSignals.crmType || v3Result?.crm_type || 'unknown'}
                 editMode={editMode}
                 overrides={engagementOverrides}
                 onOverride={(section, key, value) => {
@@ -1414,7 +1443,7 @@ export default function DiagnosticResults({ diagnosticType, isAdminSession }) {
           {isV3 && isAdmin && activeView === 'consultant' && (
             <ConsultantAuditForm
               customerId={customer?.id}
-              crmType={crmSignals.crmType || v3Result?.crm_type || 'salesforce'}
+              crmType={crmSignals.crmType || v3Result?.crm_type || 'unknown'}
               computedSignals={crmSignals.computedSignals || {}}
               enhancedSignals={crmSignals.enhancedSignals || {}}
               metadata={v3Result?.metadata || {}}

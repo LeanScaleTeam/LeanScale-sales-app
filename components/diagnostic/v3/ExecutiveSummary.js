@@ -140,8 +140,18 @@ export default function ExecutiveSummary({
     const crmRaw = v3Result?.company_profile?.crm ?? v3Result?.crmType ?? '';
     const crm = (Array.isArray(crmRaw) ? crmRaw.join(',') : String(crmRaw)).toLowerCase();
     const CRM_EXCLUDE = {
-      salesforce: new Set(['hubspot-impl', 'salesforce-to-hubspot-crm-migration']),
-      hubspot: new Set(['salesforce-impl', 'hubspot-to-salesforce-crm-migration']),
+      salesforce: new Set([
+        'hubspot-impl', 'attio-impl',
+        'salesforce-to-hubspot-crm-migration', 'salesforce-to-attio-crm-migration',
+      ]),
+      hubspot: new Set([
+        'salesforce-impl', 'attio-impl',
+        'hubspot-to-salesforce-crm-migration', 'hubspot-to-attio-crm-migration',
+      ]),
+      attio: new Set([
+        'salesforce-impl', 'hubspot-impl', 'attio-impl',
+        'hubspot-to-attio-crm-migration', 'salesforce-to-attio-crm-migration',
+      ]),
     };
     const excluded = CRM_EXCLUDE[crm] || new Set();
     return mergedRoadmap.phases.flatMap((p) =>

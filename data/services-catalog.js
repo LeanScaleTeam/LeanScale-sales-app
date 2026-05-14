@@ -17,6 +17,8 @@ export const strategicProjects = {
     { id: 'arr-reporting', name: 'ARR Reporting', icon: '📊', hasPlaybook: true, description: 'Annual Recurring Revenue tracking, reporting, and analysis dashboards.' },
     { id: 'monthly-quarterly-gtm-reporting-pack', name: 'Monthly/Quarterly GTM Reporting Pack', icon: '📅', hasPlaybook: true, description: 'Standardized reporting package for regular GTM performance reviews.' },
     { id: 'salesforce-to-hubspot-crm-migration', name: 'Salesforce to Hubspot CRM Migration', icon: '🚚', hasPlaybook: true, description: 'Full data and process migration from Salesforce to HubSpot with minimal disruption.' },
+    { id: 'hubspot-to-attio-crm-migration', name: 'Hubspot to Attio CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from HubSpot to Attio with minimal business disruption.' },
+    { id: 'salesforce-to-attio-crm-migration', name: 'Salesforce to Attio CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from Salesforce to Attio with minimal business disruption.' },
     { id: 'gtm-diagnostic', name: 'GTM Diagnostic', icon: '🩺', hasPlaybook: true, description: 'Comprehensive assessment of your GTM operations maturity and improvement opportunities.' },
     { id: 'crm-erp-integration', name: 'CRM-ERP Integration', icon: '🔗', hasPlaybook: true, description: 'Connect your CRM with ERP systems for unified financial and customer data.' },
   ],
@@ -83,6 +85,7 @@ export const managedServices = {
   crossFunctional: [
     { id: 'salesforce-impl', name: 'Salesforce', icon: '☁️', description: 'Full Salesforce CRM implementation and configuration.' },
     { id: 'hubspot-impl', name: 'Hubspot', icon: '🟠', description: 'HubSpot CRM and marketing hub implementation.' },
+    { id: 'attio-impl', name: 'Attio', icon: '🅰️', description: 'Attio CRM implementation, data model design, and workflow configuration.' },
     { id: 'clay-impl', name: 'Clay', icon: '🧱', description: 'Clay data enrichment and automation platform setup.' },
     { id: 'looker-impl', name: 'Looker', icon: '📊', description: 'Looker BI implementation for GTM analytics.' },
     { id: 'tableau-impl', name: 'Tableau', icon: '📈', description: 'Tableau dashboard and visualization setup.' },

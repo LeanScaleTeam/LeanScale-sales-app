@@ -19,6 +19,8 @@ export const strategicProjects = {
     { id: 'salesforce-to-hubspot-crm-migration', name: 'Salesforce to Hubspot CRM Migration', icon: '🚚', hasPlaybook: true, description: 'Full data and process migration from Salesforce to HubSpot with minimal disruption.' },
     { id: 'hubspot-to-attio-crm-migration', name: 'Hubspot to Attio CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from HubSpot to Attio with minimal business disruption.' },
     { id: 'salesforce-to-attio-crm-migration', name: 'Salesforce to Attio CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from Salesforce to Attio with minimal business disruption.' },
+    { id: 'attio-to-hubspot-crm-migration', name: 'Attio to Hubspot CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from Attio to HubSpot with minimal business disruption.' },
+    { id: 'attio-to-salesforce-crm-migration', name: 'Attio to Salesforce CRM Migration', icon: '🚚', hasPlaybook: false, description: 'Full data and process migration from Attio to Salesforce with minimal business disruption.' },
     { id: 'gtm-diagnostic', name: 'GTM Diagnostic', icon: '🩺', hasPlaybook: true, description: 'Comprehensive assessment of your GTM operations maturity and improvement opportunities.' },
     { id: 'crm-erp-integration', name: 'CRM-ERP Integration', icon: '🔗', hasPlaybook: true, description: 'Connect your CRM with ERP systems for unified financial and customer data.' },
   ],

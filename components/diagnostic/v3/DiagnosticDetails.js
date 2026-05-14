@@ -261,6 +261,7 @@ export default function DiagnosticDetails({
       attio: new Set([
         'salesforce-impl', 'hubspot-impl', 'attio-impl',
         'hubspot-to-attio-crm-migration', 'salesforce-to-attio-crm-migration',
+        'attio-to-hubspot-crm-migration', 'attio-to-salesforce-crm-migration',
       ]),
     };
     return CRM_EXCLUDE[crm] || new Set();

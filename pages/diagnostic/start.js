@@ -52,7 +52,7 @@ export default function StartDiagnostic() {
 
   // Default NDA link if not configured for customer
   const ndaLink = customer.ndaLink || 'https://powerforms.docusign.net/0758efed-0a42-4275-b5d9-f26875d64ae6?env=na4&acct=9287b4d2-50a6-4309-b7e8-7f0b785470c0&accountId=9287b4d2-50a6-4309-b7e8-7f0b785470c0';
-  const intakeFormLink = customer.intakeFormLink || 'https://forms.fillout.com/t/nqEbrHoL5Eus';
+  const intakeFormLink = customer.intakeFormLink || 'https://form.fillout.com/t/u5LcbcwuJqus';
 
   // HubSpot Partner Admin invite link (updated)
   const hubspotInviteLink = 'https://app-na2.hubspot.com/l/settings/users/partnerInviteLink/Mzk2ODEwNjk9NzgwODA5MDA';
